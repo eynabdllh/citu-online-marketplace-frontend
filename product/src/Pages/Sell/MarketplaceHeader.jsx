@@ -1,15 +1,56 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { AppBar, Toolbar, IconButton, Typography, Button, Box } from '@mui/material';
-import AccountCircle from '@mui/icons-material/AccountCircle'; 
-//import logo from '../../images/On.png'; if inside a folder
+import AccountCircle from '@mui/icons-material/AccountCircle';
+import { useNavigate } from 'react-router-dom';
 
 const MarketplaceHeader = () => {
+  const [activeButton, setActiveButton] = useState('');
+  const navigate = useNavigate();
+
+  const baseButtonStyle = { width: '250px', color: 'white' };
+  const activeButtonStyle = {
+    bgcolor: '#ffd700',
+    height: '50px',
+    width: '250px',
+    borderRadius: '0px',
+    color: '#89343b',
+    fontWeight: 'bold',
+  };
+
+  const handleButtonClick = (label) => {
+    setActiveButton(label);
+    
+    // Map labels to routes
+    switch (label) {
+      case 'Home':
+        navigate('/');
+        break;
+      case 'Buy':
+        navigate('/buy');
+        break;
+      case 'Sell':
+        navigate('/sell');
+        break;
+      case 'Message/Inquiry':
+        navigate('/message');
+        break;
+      case 'Feedback':
+        navigate('/feedback');
+        break;
+      case 'Bookmark/Saving':
+        navigate('/bookmark');
+        break;
+      default:
+        navigate('/');
+    }
+  };
+
   return (
     <Box>
-      <AppBar position="static" sx={{ backgroundColor: 'transparent'}}>
-        <Toolbar sx={{display:'flex', justifyContent:'space-between'}}>
+      <AppBar position="static" sx={{ backgroundColor: 'transparent' }}>
+        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
-          <img
+            <img
               src='/images/On.png'
               alt="Logo"
               style={{ width: '270px', height: '60px' }} 
@@ -26,12 +67,15 @@ const MarketplaceHeader = () => {
 
       {/* Nav Bar */}
       <Box sx={{ display: 'flex', justifyContent: 'space-around', bgcolor: '#89343b', height: '50px' }}>
-        <Button sx={{ width:'250px', color:'white'}}>Home</Button>
-        <Button sx={{ width:'250px', color:'white'}}>Buy</Button>
-        <Button sx={{bgcolor:'#ffd700', height:'50px', width:'250px',borderRadius:'0px', color:'#89343b'}} variant="contained">Sell</Button> {/* Highlighted Button */}
-        <Button sx={{ width:'250px', color:'white'}}>Message/Inquiry</Button>
-        <Button sx={{ width:'250px', color:'white'}}>Feedback</Button>
-        <Button sx={{ width:'250px', color:'white'}}>Bookmark/Saving</Button>
+        {['Home', 'Buy', 'Sell', 'Message/Inquiry', 'Feedback', 'Bookmark/Saving'].map((label) => (
+          <Button
+            key={label}
+            sx={activeButton === label ? activeButtonStyle : baseButtonStyle}
+            onClick={() => handleButtonClick(label)}
+          >
+            {label}
+          </Button>
+        ))}
       </Box>
     </Box>
   );

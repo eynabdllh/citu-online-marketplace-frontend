@@ -35,7 +35,7 @@ const SellPage = () => {
 
   return (
     <Box sx={{ padding: '16px'}}>
-        <Box sx={{ position: 'fixed', right: '20px', zIndex: 1000    }}>
+        <Box sx={{ position: 'absolute', right: '20px', zIndex: 1000    }}>
         <Button
         variant="contained"
         color="primary"
