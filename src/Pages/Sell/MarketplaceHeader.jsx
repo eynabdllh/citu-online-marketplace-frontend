@@ -1,12 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { AppBar, Toolbar, IconButton, Typography, Button, Box } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Typography, Button, Box, Menu, MenuItem } from '@mui/material';
 import AccountCircle from '@mui/icons-material/AccountCircle';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 
 const MarketplaceHeader = () => {
   const [activeButton, setActiveButton] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+  const [anchor, setAnchor] = React.useState(null);
+  const open = Boolean(anchor);
+  const firstName = sessionStorage.getItem('firstName');
+
+  const handleClick = (event) => {
+    setAnchor(event.currentTarget);
+  };
+
+  const handleClose = () => {
+      setAnchor(null);
+  };
 
   const baseButtonStyle = { width: '250px', color: 'white' };
   const activeButtonStyle = {
@@ -50,7 +61,7 @@ const MarketplaceHeader = () => {
     // Map labels to routes
     switch (label) {
       case 'Home':
-        navigate('/');
+        navigate('/home ');
         break;
       case 'Buy':
         navigate('/buy');
@@ -83,12 +94,21 @@ const MarketplaceHeader = () => {
               style={{ width: '270px', height: '60px' }} 
             />
           </IconButton>
-          <IconButton edge="end" color="black" aria-label="profile">
+          <IconButton edge="end" color="black" aria-label="profile" onClick={handleClick}>
             <AccountCircle />
             <Typography variant="subtitle1" sx={{ ml: 1 }}>
-              John Doe
+              {firstName}
             </Typography>
           </IconButton>
+          <Menu
+              anchorEl={anchor}
+              open={open}
+              onClose={handleClose}
+          >
+              <MenuItem onClick={handleClose}><Link to="/profile">Profile</Link></MenuItem>
+              <MenuItem onClick={handleClose}><Link to="/account">My Account</Link></MenuItem>
+              <MenuItem onClick={handleClose}>Logout</MenuItem>
+          </Menu>
         </Toolbar>
       </AppBar>
 

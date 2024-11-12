@@ -1,5 +1,5 @@
 import React from 'react';
-import { Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import SellPage from './Pages/Sell/SellPage';
 import AddProductForm from './Pages/Sell/AddProductForm';
 import ViewProduct from './Pages/Sell/ViewProduct';
@@ -7,15 +7,24 @@ import UpdateProductForm from './Pages/Sell/UpdateProductForm';
 import MarketplaceHeader from './Pages/Sell/MarketplaceHeader';
 import HomePage from './Pages/Sell/HomePage';
 import BuyPage from './Pages/Sell/BuyPage';
+import Register from './Pages/Sell/Register';
+import Login from './Pages/Sell/Login';
+import UserAccount from './Pages/Sell/UserAccount';
 import './App.css';
 
 const App = () => {
+  const location = useLocation();
+
   return (
     <div>
-      <MarketplaceHeader />
+       {/* Conditionally render MarketplaceHeader based on the current route */}
+      {location.pathname !== '/' && location.pathname !== '/register' && <MarketplaceHeader />}
 
       <Routes>
-        <Route path="/" element={<HomePage />} />
+      <Route path="/" element={<Login />} /> 
+        <Route path="/home" element={<HomePage />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/account" element={<UserAccount />} />
         <Route path="/buy" element={<BuyPage />} />
         <Route path="/sell" element={<SellPage />} />
         <Route path="/addnewproduct" element={<AddProductForm />} />
