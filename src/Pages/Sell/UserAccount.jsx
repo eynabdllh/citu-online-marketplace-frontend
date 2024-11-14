@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Typography, Avatar, Button, Divider, TextField, List, ListItem, ListItemIcon, ListItemText, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import PersonIcon from '@mui/icons-material/Person';
 import SettingsIcon from '@mui/icons-material/Settings';
@@ -13,6 +13,8 @@ const UserAccount = () => {
     const [address, setAddress] = useState(sessionStorage.getItem('address') || '');
     const [contactNo, setContactNo] = useState(sessionStorage.getItem('contactNo') || '');
     const [editMode, setEditMode] = useState(false);
+    const [profileImage, setProfileImage] = useState(null);
+    const [previewImage, setPreviewImage] = useState('');
 
     // State for Change Password
     const [openChangePassword, setOpenChangePassword] = useState(false);
@@ -68,29 +70,108 @@ const UserAccount = () => {
     };
 
     const handleChangePassword = async () => {
+        // Check if the new password and confirm password match
+        if (newPassword !== confirmPassword) {
+            alert('New password and confirm password do not match!');
+            return;
+        }
+    
+        // Perform any other validation checks here (e.g., password length, complexity)
+        if (newPassword.length < 8) {
+            alert('New password should be at least 8 characters long.');
+            return;
+        }
+    
         try {
             const username = sessionStorage.getItem('username'); // Get the username from session storage
+    
+            // Send the request to change the password
             const response = await axios.put(`http://localhost:8080/api/seller/changePassword/${username}`, {
                 currentPassword,
                 newPassword,
             });
-
+    
+            // Handle successful response
             if (response.status === 200) {
-                alert('Password changed successfully!'); // Notify the user of success
-                setOpenChangePassword(false); // Close the modal
-                // Clear the password fields
+                alert('Password changed successfully!');
+                setOpenChangePassword(false); 
+    
+                // Clear the password fields after a successful change
                 setCurrentPassword('');
                 setNewPassword('');
                 setConfirmPassword('');
             } else {
+                // If the API returns an error status, show it
                 console.error('Error changing password:', response.data);
-                alert(response.data); // Display the error message returned by the server
+                alert(response.data.message || 'An error occurred while changing the password.');
             }
         } catch (error) {
+            // Handle server or network errors
             console.error('Error changing password:', error);
-            alert('An error occurred while changing the password.'); // Notify the user of any errors
+            alert('An error occurred while changing the password. Please try again.');
         }
     };
+    
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if(file) {
+            setProfileImage(file);
+            setPreviewImage(URL.createObjectURL(file));
+        }
+    };
+
+    const handleUploadProfileImage = async () => {
+        if(!profileImage) 
+            return;
+
+        const username = sessionStorage.getItem('username');
+        const formData = new FormData();
+        formData.append('file', profileImage);
+
+        try {
+            const response = await axios.post(`http://localhost:8080/api/seller/uploadProfilePhoto/${username}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data'},
+            });
+
+            if(response.status === 200) {
+                alert('Profile picture updated successfully!');
+                setPreviewImage(response.data.fileName);
+                //setPreviewImage(URL.createObjectURL(profileImage));
+                //sessionStorage.setItem('profilePhoto', response.data.fileName);
+            }
+        } catch (error) {
+            console.error('Error uploading profile photo: ', error);
+            alert('Failed to upload profile photo');
+        }
+    };
+
+    useEffect(() => {
+        const fetchProfileData = async () => {
+            const username = sessionStorage.getItem('username');
+            try {
+                const response = await axios.get(`http://localhost:8080/api/seller/getSellerRecord/${username}`);
+                if (response.status === 200) {
+                    const { firstName, lastName, email, address, contactNo, profilePhoto } = response.data;
+    
+                    setFirstName(firstName);
+                    setLastName(lastName);
+                    setEmail(email);
+                    setAddress(address);
+                    setContactNo(contactNo);
+
+                    if (profilePhoto) {
+                        setPreviewImage(`http://localhost:8080/profile-images/${profilePhoto}`);
+                }
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
+            }
+        };
+    
+        fetchProfileData();
+    }, []);
+    
 
     return (
         <Box display="flex" sx={{ height: '100vh' }}>
@@ -102,21 +183,56 @@ const UserAccount = () => {
                         <ListItemIcon><PersonIcon /></ListItemIcon>
                         <ListItemText primary="Personal" />
                     </ListItem>
-                    <ListItem button>
+                    {/*<ListItem button>
                         <ListItemIcon><SettingsIcon /></ListItemIcon>
                         <ListItemText primary="Settings" />
-                    </ListItem>
+                    </ListItem>*/}
                 </List>
             </Box>
 
             <Box sx={{ flex: 1, p: 4 }}>
                 <Box display="flex" alignItems="center" gap={2}>
-                    <Avatar sx={{ bgcolor: '#8A252C', width: 80, height: 80 }}></Avatar>
+                <Avatar
+                    src={previewImage ? previewImage : 'default-placeholder-url'}
+                    sx={{ bgcolor: '#8A252C', width: 80, height: 80 }}
+                ></Avatar>
                     <Box>
                         <Typography variant="h5">{firstName} {lastName}</Typography>
                         <Typography color="textSecondary">{email}</Typography>
-                        <Button variant="outlined" sx={{ mt: 1, borderColor: '#8A252C', color: '#8A252C'}}>Upload profile picture</Button>
-                        <Button variant="outlined" onClick={() => setOpenChangePassword(true)} sx={{ mt: 1, borderColor: '#8A252C', color: '#8A252C', marginLeft: '5px'}}>Change Password</Button>
+
+                        {/* Hidden file input */}
+                        <input
+                            type="file"
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={handleImageChange}
+                            id="profile-upload"
+                        />
+                        
+                        <Button
+                            variant="outlined"
+                            onClick={() => document.getElementById('profile-upload').click()}
+                            sx={{ mt: 1, borderColor: '#8A252C', color: '#8A252C' }}
+                        >
+                            Upload Profile Picture
+                        </Button>
+
+                        {/* Save button */}
+                        <Button
+                            variant="outlined"
+                            onClick={handleUploadProfileImage}
+                            sx={{ mt: 1, borderColor: '#8A252C', color: '#8A252C', marginLeft: '5px' }}
+                        >
+                            Save Profile Picture
+                        </Button>
+
+                        <Button 
+                            variant="outlined" 
+                            onClick={() => setOpenChangePassword(true)} 
+                            sx={{ mt: 1, borderColor: '#8A252C', color: '#8A252C', marginLeft: '5px'}}
+                        >
+                            Change Password
+                        </Button>
                     </Box>
                 </Box>
 

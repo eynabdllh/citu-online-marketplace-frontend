@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { AppBar, Toolbar, IconButton, Typography, Button, Box, Menu, MenuItem } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Typography, Button, Box, Menu, MenuItem, Avatar } from '@mui/material';
 import AccountCircle from '@mui/icons-material/AccountCircle';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
+import axios from 'axios';
 
 const MarketplaceHeader = () => {
   const [activeButton, setActiveButton] = useState('');
@@ -10,6 +11,7 @@ const MarketplaceHeader = () => {
   const [anchor, setAnchor] = React.useState(null);
   const open = Boolean(anchor);
   const firstName = sessionStorage.getItem('firstName');
+  const [profilePhoto, setProfilePhoto] = useState(''); 
 
   const handleClick = (event) => {
     setAnchor(event.currentTarget);
@@ -55,6 +57,27 @@ const MarketplaceHeader = () => {
     }
   }, [location.pathname]);
 
+  useEffect(() => {
+    const fetchProfileData = async () => {
+        const username = sessionStorage.getItem('username');
+        try {
+            const response = await axios.get(`http://localhost:8080/api/seller/getSellerRecord/${username}`);
+            if (response.status === 200) {
+                const { profilePhoto } = response.data;
+
+                // Construct image URL using the server path
+                if (profilePhoto) {
+                    setProfilePhoto(`http://localhost:8080/profile-images/${profilePhoto}`);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching user data:', error);
+        }
+    };
+
+    fetchProfileData();
+}, []);
+
   const handleButtonClick = (label) => {
     setActiveButton(label);
     
@@ -95,20 +118,54 @@ const MarketplaceHeader = () => {
             />
           </IconButton>
           <IconButton edge="end" color="black" aria-label="profile" onClick={handleClick}>
-            <AccountCircle />
+            <Avatar src={profilePhoto} />
             <Typography variant="subtitle1" sx={{ ml: 1 }}>
               {firstName}
             </Typography>
           </IconButton>
           <Menu
-              anchorEl={anchor}
-              open={open}
-              onClose={handleClose}
+            anchorEl={anchor}
+            open={open}
+            onClose={handleClose}
+            sx={{
+                '& .MuiPaper-root': {
+                    backgroundColor: '#f0f0f0', 
+                    color: '#333', 
+                    boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)', 
+                },
+            }}
           >
-              <MenuItem onClick={handleClose}><Link to="/profile">Profile</Link></MenuItem>
-              <MenuItem onClick={handleClose}><Link to="/account">My Account</Link></MenuItem>
-              <MenuItem onClick={handleClose}>Logout</MenuItem>
-          </Menu>
+            <MenuItem
+                onClick={handleClose}
+                sx={{
+                    '&:hover': {
+                        backgroundColor: 'white', 
+                    },
+                }}
+            >
+                <Link to="/profile" style={{ textDecoration: 'none', color: 'inherit' }}>Profile</Link>
+            </MenuItem>
+            <MenuItem
+                onClick={handleClose}
+                sx={{
+                    '&:hover': {
+                        backgroundColor: 'white',
+                    },
+                }}
+            >
+            <Link to="/account" style={{ textDecoration: 'none', color: 'inherit' }}>My Account</Link>
+            </MenuItem>
+            <MenuItem
+                onClick={handleClose}
+                sx={{
+                    '&:hover': {
+                        backgroundColor: 'white',
+                    },
+                }}
+            >
+                Logout
+            </MenuItem>
+        </Menu>
         </Toolbar>
       </AppBar>
 

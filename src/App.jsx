@@ -10,6 +10,7 @@ import BuyPage from './Pages/Sell/BuyPage';
 import Register from './Pages/Sell/Register';
 import Login from './Pages/Sell/Login';
 import UserAccount from './Pages/Sell/UserAccount';
+import UserProfile from './Pages/Sell/UserProfile';
 import './App.css';
 
 const App = () => {
@@ -25,6 +26,7 @@ const App = () => {
         <Route path="/home" element={<HomePage />} />
         <Route path="/register" element={<Register />} />
         <Route path="/account" element={<UserAccount />} />
+        <Route path="/profile" element={<UserProfile />} />
         <Route path="/buy" element={<BuyPage />} />
         <Route path="/sell" element={<SellPage />} />
         <Route path="/addnewproduct" element={<AddProductForm />} />
