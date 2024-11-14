@@ -35,8 +35,8 @@ const AddProductForm = () => {
   
     try {
         const response = await axios.post('http://localhost:8080/api/product/postproduct', formData);
-        alert(response.data);
-        navigate('/'); 
+        alert(response.data.message || 'Product added successfully!');
+        navigate('/home'); 
       } catch (error) {
         console.error('Error adding product:', error);
         if (error.response) {

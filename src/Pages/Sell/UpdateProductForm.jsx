@@ -63,7 +63,7 @@ const UpdateProductForm = ({ product, onUpdateSuccess }) => {
 
       alert(response.data.message || 'Product updated successfully!');
       onUpdateSuccess(); 
-      navigate(`/`); 
+      navigate(`/home`); 
     } catch (error) {
       console.error('Error updating product:', error);
       if (error.response) {
@@ -112,8 +112,7 @@ const UpdateProductForm = ({ product, onUpdateSuccess }) => {
               <MenuItem value="Clothes">Clothes</MenuItem>
               <MenuItem value="Accessories">Accessories</MenuItem>
               <MenuItem value="Stationery or Arts and Crafts">Stationery / Arts and Crafts</MenuItem>
-
-              <MenuItem value="merchandise">Merchandise</MenuItem>
+              <MenuItem value="Merchandise">Merchandise</MenuItem>
             </Select>
           </FormControl>
 
