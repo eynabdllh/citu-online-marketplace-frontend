@@ -58,7 +58,7 @@ const AddProductForm = () => {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          maxHeight: '100vh',
+          minHeight: '100vh',
         }}
       >
         <Typography variant="h5" sx={{fontSize: '30px', fontWeight: '800', color: '#89343b'}}>Add New Product</Typography>

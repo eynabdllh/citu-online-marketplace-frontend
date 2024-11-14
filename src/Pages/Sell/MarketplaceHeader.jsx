@@ -35,7 +35,7 @@ const MarketplaceHeader = () => {
   // active button
   useEffect(() => {
     switch (true) {
-      case location.pathname === '/':
+      case location.pathname === '/home':
         setActiveButton('Home');
         break;
       case location.pathname.startsWith('/buy'):
@@ -85,7 +85,7 @@ const MarketplaceHeader = () => {
     // Map labels to routes
     switch (label) {
       case 'Home':
-        navigate('/home ');
+        navigate('/home');
         break;
       case 'Buy':
         navigate('/buy');
