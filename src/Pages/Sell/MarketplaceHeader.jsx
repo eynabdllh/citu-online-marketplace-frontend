@@ -16,27 +16,28 @@ const MarketplaceHeader = () => {
     borderRadius: '0px',
     color: '#89343b',
     fontWeight: 'bold',
+    boxShadow: 'inset 0px 4px 8px rgba(0, 0, 0, 0.4)',
   };
 
-  // Set active button based on current pathname
+  // active button
   useEffect(() => {
-    switch (location.pathname) {
-      case '/':
+    switch (true) {
+      case location.pathname === '/':
         setActiveButton('Home');
         break;
-      case '/buy':
+      case location.pathname.startsWith('/buy'):
         setActiveButton('Buy');
         break;
-      case '/sell':
+      case location.pathname === '/sell' || location.pathname === '/addnewproduct' || /^\/sell\/product\/\d+$/.test(location.pathname):
         setActiveButton('Sell');
         break;
-      case '/message':
+      case location.pathname === '/message':
         setActiveButton('Message/Inquiry');
         break;
-      case '/feedback':
+      case location.pathname === '/feedback':
         setActiveButton('Feedback');
         break;
-      case '/bookmark':
+      case location.pathname === '/bookmark':
         setActiveButton('Bookmark/Saving');
         break;
       default:

@@ -14,7 +14,7 @@ const SellPage = () => {
   };
 
   const handleCardClick = (code) => {
-    navigate(`/product/${code}`); 
+    navigate(`product/${code}`); 
   };
 
   useEffect(() => {

@@ -39,25 +39,33 @@
 
 body {
   margin: 0;
-  padding: 0;
+  padding: 5px;
   min-height: 100vh;
-  position: relative; 
   background: linear-gradient(180deg, rgba(255, 215, 0, 0.31) 4%, rgba(140, 24, 35, 0.5) 100%);
+  background-attachment: fixed; /* Ensures the gradient stays fixed */
+  display: flex;
+  flex-direction: column;
 }
 
 body::before {
   content: '';
-  position: absolute; 
+  position: fixed; /* Keeps the logo in a fixed position */
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: url('./images/logoCIT.png');
-  background-position: bottom right;
-  background-repeat: no-repeat;
-  background-size: auto, 500px 500px;
-  background-attachment: fixed;
+  background: url('./images/logoCIT.png') bottom right no-repeat;
+  background-size: 500px 500px;
+  background-attachment: fixed; /* Ensures the logo stays fixed */
   opacity: 0.3;
   z-index: -1; 
 }
 
+#app {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow-y: auto; /* Enables vertical scrolling within the app */
+  padding-bottom: 20px; /* Adds some padding at the bottom to prevent content from touching the edge */
+}

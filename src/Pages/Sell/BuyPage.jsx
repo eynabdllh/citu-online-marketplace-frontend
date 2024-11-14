@@ -14,7 +14,7 @@ const BuyPage = () => {
   const [searchTerm, setSearchTerm] = useState("");
 
   const handleCardClick = (code) => {
-    navigate(`/product/${code}`);
+    navigate(`product/${code}`);
   };
 
   const Search = styled('div')(({ theme }) => ({

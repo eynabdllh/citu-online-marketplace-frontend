@@ -84,6 +84,12 @@ const ViewProduct = () => {
                 <Typography variant="body2" color="textSecondary">
                   {product.pdtDescription}
                 </Typography>
+                <Typography variant="h7" color="black">
+                  {product.status}
+                </Typography>
+                <Typography variant="h7" color="black">
+                  {product.conditionType}
+                </Typography>
                 <Box sx={{ display: 'flex', gap: '20px', marginTop: '16px' }}>
                   <Button variant="contained" sx={{ bgcolor: '#89343b' }} onClick={() => setEditing(true)}>
                     Update
