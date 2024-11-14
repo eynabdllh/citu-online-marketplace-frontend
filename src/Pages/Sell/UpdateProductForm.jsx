@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { TextField, Button, Container, Typography, Box } from '@mui/material';
+import { TextField, Button, Container, Typography, Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
 import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom'; 
 import '../../App.css';
-
 
 const BoldTextField = styled(TextField)({
   '& .MuiInputBase-input': {
@@ -17,7 +16,10 @@ const UpdateProductForm = ({ product, onUpdateSuccess }) => {
   const [description, setDescription] = useState(product.pdtDescription || '');
   const [quantity, setQuantity] = useState(product.qtyInStock || '');
   const [price, setPrice] = useState(product.buyPrice || '');
-  const [imageFile, setImageFile] = useState(null); 
+  const [imageFile, setImageFile] = useState(null);
+  const [category, setCategory] = useState(product.category || '');
+  const [status, setStatus] = useState(product.status || '');
+  const [conditionType, setConditionType] = useState(product.conditionType || '');
   const navigate = useNavigate(); 
 
   useEffect(() => {
@@ -25,6 +27,9 @@ const UpdateProductForm = ({ product, onUpdateSuccess }) => {
     setDescription(product.pdtDescription || '');
     setQuantity(product.qtyInStock || '');
     setPrice(product.buyPrice || '');
+    setCategory(product.category || '');
+    setStatus(product.status || '');
+    setConditionType(product.conditionType || '');
   }, [product]);
 
   const handleSubmit = async (e) => {
@@ -36,6 +41,9 @@ const UpdateProductForm = ({ product, onUpdateSuccess }) => {
       pdtDescription: description,
       qtyInStock: quantity,
       buyPrice: price,
+      category,
+      status,
+      conditionType: conditionType,
     };
 
     formData.append('product', new Blob([JSON.stringify(productData)], {
@@ -73,10 +81,10 @@ const UpdateProductForm = ({ product, onUpdateSuccess }) => {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          maxHeight: '100vh',
+          minHeight: '100vh',
         }}
       >
-        <Typography variant="h5" sx={{fontSize:'30px', fontWeight:'800', color:'#89343b'}}> Update Product</Typography>
+        <Typography variant="h5" sx={{ fontSize: '30px', fontWeight: '800', color: '#89343b' }}>Update Product</Typography>
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
           <BoldTextField
             margin="normal"
@@ -96,6 +104,36 @@ const UpdateProductForm = ({ product, onUpdateSuccess }) => {
             value={description}
             onChange={(e) => setDescription(e.target.value)}
           />
+
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Category</InputLabel>
+            <Select value={category} onChange={(e) => setCategory(e.target.value)} required>
+              <MenuItem value="Food">Food</MenuItem>
+              <MenuItem value="Clothes">Clothes</MenuItem>
+              <MenuItem value="Accessories">Accessories</MenuItem>
+              <MenuItem value="Stationery or Arts and Crafts">Stationery / Arts and Crafts</MenuItem>
+
+              <MenuItem value="merchandise">Merchandise</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Status</InputLabel>
+            <Select value={status} onChange={(e) => setStatus(e.target.value)} required>
+              <MenuItem value="Available">Available</MenuItem>
+              <MenuItem value="Sold">Sold</MenuItem>
+            </Select>
+          </FormControl>
+
+          <FormControl fullWidth margin="normal">
+            <InputLabel>Condition</InputLabel>
+            <Select value={conditionType} onChange={(e) => setConditionType(e.target.value)} required>
+              <MenuItem value="Brand New">Brand New</MenuItem>
+              <MenuItem value="Pre-Loved">Pre-Loved</MenuItem>
+              <MenuItem value="None">None</MenuItem>
+            </Select>
+          </FormControl>
+
           <BoldTextField
             margin="normal"
             required
