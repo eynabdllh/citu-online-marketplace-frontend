@@ -34,17 +34,19 @@ const AddProductForm = () => {
     }
   
     try {
-      const response = await axios.post('http://localhost:8080/api/product/postproduct', formData);
-      alert(response.data);
-      navigate('/'); 
-    } catch (error) {
-      console.error('Error adding product:', error);
-      if (error.response) {
-        alert(`Failed to add product: ${error.response.data.message || 'An error occurred.'}`);
-      } else {
-        alert('Failed to add product. Make sure the image is selected.');
+        const response = await axios.post('http://localhost:8080/api/product/postproduct', formData);
+        alert(response.data);
+        navigate('/'); 
+      } catch (error) {
+        console.error('Error adding product:', error);
+        if (error.response) {
+          console.error('Response data:', error.response.data);
+          console.error('Response status:', error.response.status);
+          alert(`Failed to add product: ${error.response.data.message || 'An error occurred.'}`);
+        } else {
+          alert('Failed to add product. Make sure the image is selected.');
+        }
       }
-    }
   };
 
   return (

@@ -10,6 +10,7 @@ const ViewProduct = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [editing, setEditing] = useState(false);
+  const [message, setMessage] = useState(false);
   const navigate = useNavigate(); 
 
   useEffect(() => {
@@ -80,6 +81,9 @@ const ViewProduct = () => {
                 <Typography variant="body2" color="textSecondary" sx={{ marginBottom: '8px' }}>
                   5.0 ★★★★★ | 10K+ Sold
                 </Typography>
+                <Button variant="contained" sx={{ bgcolor: '#89343b' }} onClick={() => setMessage(true)}>
+                    Message
+                  </Button>
                 <Typography variant="h6" sx={{ marginBottom: '8px' }}>Description</Typography>
                 <Typography variant="body2" color="textSecondary">
                   {product.pdtDescription}
