@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AppBar, Toolbar, IconButton, Typography, Button, Box, Menu, MenuItem, Avatar } from '@mui/material';
+import AccountCircle from '@mui/icons-material/AccountCircle';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -80,7 +81,7 @@ const MarketplaceHeader = () => {
 
   const handleButtonClick = (label) => {
     setActiveButton(label);
-    
+
     // Map labels to routes
     switch (label) {
       case 'Home':
