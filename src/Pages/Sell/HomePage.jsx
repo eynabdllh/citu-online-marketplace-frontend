@@ -5,10 +5,10 @@ import { Box, Typography, Button, Grid } from '@mui/material';
 function HomePage() {
     return (
         <Box sx={{ display: 'flex', flexDirection: 'column', maxHeight: '100vh' }}>
-            {/* Main Content */}
+            
             <Box sx={{ flex: 1, padding: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <Grid container spacing={4} alignItems="center" maxWidth="lg">
-                    {/* Left Side: Text Content */}
+                    
                     <Grid item xs={12} md={6} sx={{ textAlign: { xs: 'center', md: 'left' } }}>
                         <Typography variant="h4" sx={{ fontWeight: 'bold', mb: 2 }}>
                             Welcome Wildcat!
