@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AppBar, Toolbar, IconButton, Typography, Button, Box, Menu, MenuItem, Avatar } from '@mui/material';
+import AccountCircle from '@mui/icons-material/AccountCircle';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -31,10 +32,7 @@ const MarketplaceHeader = () => {
     boxShadow: 'inset 0px 4px 8px rgba(0, 0, 0, 0.4)',
   };
 
-<<<<<<< HEAD
   // active button
-=======
->>>>>>> 47fed00 ([Ana] fixed logo and homepage)
   useEffect(() => {
     switch (true) {
       case location.pathname === '/home':
@@ -52,13 +50,8 @@ const MarketplaceHeader = () => {
       case location.pathname === '/feedback':
         setActiveButton('Feedback');
         break;
-<<<<<<< HEAD
       case location.pathname === '/bookmark':
         setActiveButton('Bookmark/Saving');
-=======
-      case '/bookmark':
-        setActiveButton('Saved Items');
->>>>>>> 47fed00 ([Ana] fixed logo and homepage)
         break;
       default:
         setActiveButton('');
@@ -89,6 +82,7 @@ const MarketplaceHeader = () => {
   const handleButtonClick = (label) => {
     setActiveButton(label);
 
+    // Map labels to routes
     switch (label) {
       case 'Home':
         navigate('/home');
@@ -105,7 +99,7 @@ const MarketplaceHeader = () => {
       case 'Feedback':
         navigate('/feedback');
         break;
-      case 'Saved Items':
+      case 'Bookmark/Saving':
         navigate('/bookmark');
         break;
       default:
@@ -119,22 +113,15 @@ const MarketplaceHeader = () => {
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
             <img
-              src='/images/logoCIT.png'
+              src='/images/On.png'
               alt="Logo"
-              style={{ width: '350px', height: '80px'}} 
+              style={{ width: '270px', height: '60px' }} 
             />
           </IconButton>
-<<<<<<< HEAD
           <IconButton edge="end" color="black" aria-label="profile" onClick={handleClick}>
             <Avatar src={profilePhoto} />
             <Typography variant="subtitle1" sx={{ ml: 1 }}>
               {firstName}
-=======
-          <IconButton edge="end" color="black" aria-label="profile">
-            <AccountCircle />
-            <Typography variant="subtitle1" sx={{ ml: 1, marginRight: 3 }}>
-              John Doe
->>>>>>> 47fed00 ([Ana] fixed logo and homepage)
             </Typography>
           </IconButton>
           <Menu
@@ -184,16 +171,11 @@ const MarketplaceHeader = () => {
       </AppBar>
 
       {/* Nav Bar */}
-      <Box sx={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        bgcolor: '#89343b', 
-        height: '50px'
-        }}>
-        {['Home', 'Buy', 'Sell', 'Message/Inquiry', 'Feedback', 'Saved Items'].map((label) => (
+      <Box sx={{ display: 'flex', justifyContent: 'space-around', bgcolor: '#89343b', height: '50px' }}>
+        {['Home', 'Buy', 'Sell', 'Message/Inquiry', 'Feedback', 'Bookmark/Saving'].map((label) => (
           <Button
             key={label}
-            sx={activeButton === label ? activeButtonStyle : baseButtonStyle} 
+            sx={activeButton === label ? activeButtonStyle : baseButtonStyle}
             onClick={() => handleButtonClick(label)}
           >
             {label}
