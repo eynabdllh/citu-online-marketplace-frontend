@@ -41,34 +41,21 @@ body {
   margin: 0;
   padding: 5px;
   min-height: 100vh;
-<<<<<<< HEAD
-  background: linear-gradient(180deg, rgba(255, 215, 0, 0.31) 4%, rgba(140, 24, 35, 0.5) 100%);
-  background-attachment: fixed; /* Ensures the gradient stays fixed */
-  display: flex;
-  flex-direction: column;
-=======
   position: relative; 
   background: linear-gradient(180deg, hsla(51, 100%, 50%, 0.31) 4%, rgba(140, 24, 35, 0.5) 100%);
->>>>>>> 47fed00 ([Ana] fixed logo and homepage)
 }
 
 body::before {
   content: '';
-  position: fixed; /* Keeps the logo in a fixed position */
+  position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-<<<<<<< HEAD
-  background: url('./images/logoCIT.png') bottom right no-repeat;
-  background-size: 500px 500px;
-  background-attachment: fixed; /* Ensures the logo stays fixed */
-=======
   background-position: bottom right;
   background-repeat: no-repeat;
   background-size: auto, 500px 500px;
   background-attachment: fixed;
->>>>>>> 47fed00 ([Ana] fixed logo and homepage)
   opacity: 0.3;
   z-index: -1; 
 }
@@ -78,6 +65,6 @@ body::before {
   display: flex;
   flex-direction: column;
   align-items: center;
-  overflow-y: auto; /* Enables vertical scrolling within the app */
-  padding-bottom: 20px; /* Adds some padding at the bottom to prevent content from touching the edge */
+  overflow-y: auto; 
+  padding-bottom: 20px; 
 }
