@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { TextField, Button, Container, Typography, Box, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
 import { useNavigate } from 'react-router-dom'; 
@@ -13,10 +13,40 @@ const AddProductForm = () => {
   const [category, setCategory] = useState('');
   const [status, setStatus] = useState('');
   const [conditionType, setConditionType] = useState('');
-  const navigate = useNavigate(); 
+  const [sellerUsername, setSellerUsername] = useState('');
+  const [sellerInfo, setSellerInfo] = useState(null); 
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const username = sessionStorage.getItem('username');
+    if (username) {
+      setSellerUsername(username); 
+      axios.get(`http://localhost:8080/api/seller/getUsername/${username}`)
+        .then(response => {
+          setSellerInfo(response.data);  // Save the seller information
+        })
+        .catch(error => {
+          console.error('Error fetching seller information:', error);
+          alert('Could not retrieve seller data');
+        });
+    } else {
+      navigate('/login');  
+    }
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!productName || !description || !quantity || !price || !category || !status || !conditionType || !imageFile) {
+      alert('All fields must be filled in');
+      return;
+    }
+
+    if (isNaN(price) || isNaN(quantity)) {
+      alert('Price and Quantity must be valid numbers');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('name', productName);
     formData.append('pdtDescription', description);
@@ -25,43 +55,33 @@ const AddProductForm = () => {
     formData.append('category', category);
     formData.append('status', status);
     formData.append('conditionType', conditionType);
-  
+    formData.append('seller_username', sellerUsername); 
+
     if (imageFile) {
       formData.append('image', imageFile);
     } else {
       alert('No image selected.');
       return;
     }
-  
+
     try {
-        const response = await axios.post('http://localhost:8080/api/product/postproduct', formData);
-        alert(response.data.message || 'Product added successfully!');
-        navigate('/home'); 
-      } catch (error) {
-        console.error('Error adding product:', error);
-        if (error.response) {
-          console.error('Response data:', error.response.data);
-          console.error('Response status:', error.response.status);
-          alert(`Failed to add product: ${error.response.data.message || 'An error occurred.'}`);
-        } else {
-          alert('Failed to add product. Make sure the image is selected.');
+      const response = await axios.post('http://localhost:8080/api/product/postproduct', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data',  
         }
-      }
+      });
+      alert(response.data.message || 'Product added successfully!');
+      navigate('/home');  
+    } catch (error) {
+      console.error('Error adding product:', error);
+      alert('Failed to add product. Please check the console for details.');
+    }
   };
 
   return (
     <Container component="main" maxWidth="sm">
-      <Box
-        sx={{
-          marginTop: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-        }}
-      >
-        <Typography variant="h5" sx={{fontSize: '30px', fontWeight: '800', color: '#89343b'}}>Add New Product</Typography>
+      <Box sx={{ marginTop: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+        <Typography variant="h5" sx={{ fontSize: '30px', fontWeight: '800', color: '#89343b' }}>Add New Product</Typography>
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
           <TextField 
             margin="normal" 
@@ -70,13 +90,6 @@ const AddProductForm = () => {
             label="Product Name" 
             value={productName} 
             onChange={(e) => setProductName(e.target.value)} 
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                '& fieldset': { borderColor: '#5A5A5A' },
-                '&:hover fieldset': { borderColor: 'black' },
-                '&.Mui-focused fieldset': { borderColor: '#89343b' },
-              },
-            }}
           />
           <TextField 
             margin="normal" 
@@ -87,27 +100,20 @@ const AddProductForm = () => {
             rows={4} 
             value={description} 
             onChange={(e) => setDescription(e.target.value)} 
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                '& fieldset': { borderColor: '#5A5A5A' },
-                '&:hover fieldset': { borderColor: 'black' },
-                '&.Mui-focused fieldset': { borderColor: '#89343b' },
-              },
-            }}
           />
           <FormControl fullWidth margin="normal">
             <InputLabel>Category</InputLabel>
             <Select value={category} onChange={(e) => setCategory(e.target.value)} required>
               <MenuItem value="Food">Food</MenuItem>
-                <MenuItem value="Clothes">Clothes</MenuItem>
-                <MenuItem value="Accessories">Accessories</MenuItem>
-                <MenuItem value="Stationery or Arts and Crafts">Stationery / Arts and Crafts</MenuItem>
-                <MenuItem value="Merchandise">Merchandise</MenuItem>
-                <MenuItem value="Supplies">Supplies</MenuItem>
-                <MenuItem value="Electronics">Electronics</MenuItem>
-                <MenuItem value="Beauty">Beauty</MenuItem>
-                <MenuItem value="Books">Books</MenuItem>
-                <MenuItem value="Other">Other</MenuItem>
+              <MenuItem value="Clothes">Clothes</MenuItem>
+              <MenuItem value="Accessories">Accessories</MenuItem>
+              <MenuItem value="Stationery or Arts and Crafts">Stationery / Arts and Crafts</MenuItem>
+              <MenuItem value="Merchandise">Merchandise</MenuItem>
+              <MenuItem value="Supplies">Supplies</MenuItem>
+              <MenuItem value="Electronics">Electronics</MenuItem>
+              <MenuItem value="Beauty">Beauty</MenuItem>
+              <MenuItem value="Books">Books</MenuItem>
+              <MenuItem value="Other">Other</MenuItem>
             </Select>
           </FormControl>
 
@@ -136,13 +142,6 @@ const AddProductForm = () => {
             label="Quantity in Stock" 
             value={quantity} 
             onChange={(e) => setQuantity(e.target.value)} 
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                '& fieldset': { borderColor: '#5A5A5A' },
-                '&:hover fieldset': { borderColor: 'black' },
-                '&.Mui-focused fieldset': { borderColor: '#89343b' },
-              },
-            }}
           />
           <TextField 
             margin="normal" 
@@ -152,32 +151,25 @@ const AddProductForm = () => {
             label="Price" 
             value={price} 
             onChange={(e) => setPrice(e.target.value)} 
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                '& fieldset': { borderColor: '#5A5A5A' },
-                '&:hover fieldset': { borderColor: 'black' },
-                '&.Mui-focused fieldset': { borderColor: '#89343b' },
-              },
-            }}
           />
+          <TextField
+            margin="normal"
+            fullWidth
+            label="Seller Username"
+            value={sellerUsername}
+            readOnly
+          />
+
           <div>
             <label>Image:</label>
             <input 
               type="file" 
-              onChange={(e) => {
-                const file = e.target.files[0];
-                setImageFile(file);
-                console.log("Selected file:", file); // Debugging line
-              }} 
+              onChange={(e) => setImageFile(e.target.files[0])} 
               required 
             />
           </div>
-          <Button 
-            type="submit" 
-            variant="contained" 
-            color="primary" 
-            sx={{ marginTop: 3, width: '100%', bgcolor: '#89343b' }}
-          >
+
+          <Button type="submit" variant="contained" color="primary" sx={{ marginTop: 3, width: '100%', bgcolor: '#89343b' }}>
             Add Product
           </Button>
         </Box>
