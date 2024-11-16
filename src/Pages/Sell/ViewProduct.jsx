@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom'; 
 import { Box, Typography, Card, CardMedia, CardContent, Button, Grid } from '@mui/material';
 import axios from 'axios';
-import UpdateProductForm from './UpdateProductForm'; 
+import UpdateProductForm from '../Sell/UpdateProductForm'; 
 import '../../App.css';
 
 const ViewProduct = () => {

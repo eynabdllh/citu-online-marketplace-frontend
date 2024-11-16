@@ -4,13 +4,13 @@ import SellPage from './Pages/Sell/SellPage';
 import AddProductForm from './Pages/Sell/AddProductForm';
 import ViewProduct from './Pages/Sell/ViewProduct';
 import UpdateProductForm from './Pages/Sell/UpdateProductForm';
-import MarketplaceHeader from './Pages/Sell/MarketplaceHeader';
-import HomePage from './Pages/Sell/HomePage';
-import BuyPage from './Pages/Sell/BuyPage';
-import Register from './Pages/Sell/Register';
-import Login from './Pages/Sell/Login';
-import UserAccount from './Pages/Sell/UserAccount';
-import UserProfile from './Pages/Sell/UserProfile';
+import MarketplaceHeader from './components/MarketplaceHeader';
+import HomePage from './Pages/Homepage/HomePage';
+import BuyPage from './Pages/Buy/BuyPage';
+import Register from './Pages/LoginRegister/Register';
+import Login from './Pages/LoginRegister/Login';
+import UserAccount from './Pages/Profile/UserAccount';
+import UserProfile from './Pages/Profile/UserProfile';
 import './App.css';
 
 const App = () => {
@@ -18,7 +18,6 @@ const App = () => {
 
   return (
     <div>
-       {/* Conditionally render MarketplaceHeader based on the current route */}
       {location.pathname !== '/' && location.pathname !== '/register' && <MarketplaceHeader />}
 
       <Routes>
@@ -34,7 +33,6 @@ const App = () => {
         <Route path="/addnewproduct" element={<AddProductForm />} />
         <Route path="/product/:code" element={<ViewProduct />} />
         <Route path="/update/:code" element={<UpdateProductForm />} />
-        {/* Additional Routes for New Pages */}
         {/* <Route path="/message" element={<MessagePage />} />
         <Route path="/feedback" element={<FeedbackPage />} /> */}
       </Routes>

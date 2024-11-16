@@ -45,13 +45,13 @@ const MarketplaceHeader = () => {
         setActiveButton('Sell');
         break;
       case location.pathname === '/message':
-        setActiveButton('Message/Inquiry');
+        setActiveButton('Message');
         break;
       case location.pathname === '/feedback':
         setActiveButton('Feedback');
         break;
       case location.pathname === '/bookmark':
-        setActiveButton('Bookmark/Saving');
+        setActiveButton('Saved Items');
         break;
       default:
         setActiveButton('');
@@ -82,7 +82,6 @@ const MarketplaceHeader = () => {
   const handleButtonClick = (label) => {
     setActiveButton(label);
 
-    // Map labels to routes
     switch (label) {
       case 'Home':
         navigate('/home');
@@ -113,7 +112,7 @@ const MarketplaceHeader = () => {
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
           <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
             <img
-              src='/images/On.png'
+              src='/images/logoCIT.png'
               alt="Logo"
               style={{ width: '270px', height: '60px' }} 
             />

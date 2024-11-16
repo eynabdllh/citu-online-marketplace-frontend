@@ -61,7 +61,7 @@ function HomePage() {
           zIndex: 2, 
         }}
       >
-        <Typography variant="h2" align="center" sx={{ fontWeight: 'bold', mt: 2, zIndex: 2, marginBottom: 3}}>
+        <Typography variant="h2" align="center" sx={{ fontWeight: 'bold', mt: 2, zIndex: 2, marginBottom: 3, color: 'white'}}>
           Welcome Wildcats!
         </Typography>
 
