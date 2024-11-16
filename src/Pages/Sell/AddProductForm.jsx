@@ -99,10 +99,15 @@ const AddProductForm = () => {
             <InputLabel>Category</InputLabel>
             <Select value={category} onChange={(e) => setCategory(e.target.value)} required>
               <MenuItem value="Food">Food</MenuItem>
-              <MenuItem value="Clothes">Clothes</MenuItem>
-              <MenuItem value="Accessories">Accessories</MenuItem>
-              <MenuItem value="Stationery or Arts and Crafts">Stationery / Arts and Crafts</MenuItem>
-              <MenuItem value="Merchandise">Merchandise</MenuItem>
+                <MenuItem value="Clothes">Clothes</MenuItem>
+                <MenuItem value="Accessories">Accessories</MenuItem>
+                <MenuItem value="Stationery or Arts and Crafts">Stationery / Arts and Crafts</MenuItem>
+                <MenuItem value="Merchandise">Merchandise</MenuItem>
+                <MenuItem value="Supplies">Supplies</MenuItem>
+                <MenuItem value="Electronics">Electronics</MenuItem>
+                <MenuItem value="Beauty">Beauty</MenuItem>
+                <MenuItem value="Books">Books</MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
             </Select>
           </FormControl>
 
