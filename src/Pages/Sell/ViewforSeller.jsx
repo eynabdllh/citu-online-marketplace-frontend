@@ -6,7 +6,7 @@ import UpdateProductForm from '../Sell/UpdateProductForm';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import '../../App.css';
 
-const ViewProduct = () => {
+const ViewforSeller = () => {
   const { code } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -98,11 +98,11 @@ const ViewProduct = () => {
                   <strong>Condition:</strong> {product.conditionType}
                 </Typography>
                 <Box sx={{ display: 'flex', gap: '20px', marginTop: '16px' }}>
-                  <Button variant="contained" sx={{ bgcolor: '#89343b' }} onClick={() => setEditing(false)}>
-                    Bookmark
+                  <Button variant="contained" sx={{ bgcolor: '#89343b' }} onClick={() => setEditing(true)}>
+                    Update
                   </Button>
-                  <Button variant="outlined" color="error" >
-                    Buy
+                  <Button variant="outlined" color="error" onClick={handleDelete}>
+                    Delete
                   </Button>
                 </Box>
               </CardContent>
@@ -114,4 +114,4 @@ const ViewProduct = () => {
   );
 };
 
-export default ViewProduct;
+export default ViewforSeller;

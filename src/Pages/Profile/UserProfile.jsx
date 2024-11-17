@@ -27,7 +27,7 @@ const UserProfile = () => {
     };
 
     const handleCardClick = (code) => {
-        navigate(`/product/${code}`); 
+        navigate(`/sell/product/${code}`); 
       };
 
     useEffect(() => {

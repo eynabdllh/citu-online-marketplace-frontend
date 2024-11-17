@@ -1,15 +1,9 @@
-  import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { TextField, Button, Container, Typography, Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
-import { styled } from '@mui/material/styles';
 import { useNavigate } from 'react-router-dom'; 
 import '../../App.css';
 
-const BoldTextField = styled(TextField)({
-  '& .MuiInputBase-input': {
-    fontWeight: 'bold', 
-  },
-});
 
 const UpdateProductForm = ({ product, onUpdateSuccess }) => {
   const [productName, setProductName] = useState(product.name || '');
@@ -74,19 +68,10 @@ const UpdateProductForm = ({ product, onUpdateSuccess }) => {
 
   return (
     <Container component="main" maxWidth="sm">
-      <Box
-        sx={{
-          marginTop: 1,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          minHeight: '100vh',
-        }}
-      >
+      <Box sx={{ marginTop: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <Typography variant="h5" sx={{ fontSize: '30px', fontWeight: '800', color: '#89343b' }}>Update Product</Typography>
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
-          <BoldTextField
+          <TextField
             margin="normal"
             required
             fullWidth
@@ -94,7 +79,7 @@ const UpdateProductForm = ({ product, onUpdateSuccess }) => {
             value={productName}
             onChange={(e) => setProductName(e.target.value)}
           />
-          <BoldTextField
+          <TextField
             margin="normal"
             required
             fullWidth
@@ -138,7 +123,7 @@ const UpdateProductForm = ({ product, onUpdateSuccess }) => {
             </Select>
           </FormControl>
 
-          <BoldTextField
+          <TextField
             margin="normal"
             required
             fullWidth
@@ -147,7 +132,7 @@ const UpdateProductForm = ({ product, onUpdateSuccess }) => {
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
           />
-          <BoldTextField
+          <TextField
             margin="normal"
             required
             fullWidth

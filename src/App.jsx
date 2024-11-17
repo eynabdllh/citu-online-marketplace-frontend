@@ -15,6 +15,7 @@ import UserAccount from './Pages/Profile/UserAccount';
 import UserProfile from './Pages/Profile/UserProfile';
 import Likes from './Pages/Profile/Likes';
 import { AuthProvider } from './contexts/AuthContext'; 
+import ViewforSeller from './Pages/Sell/ViewforSeller';
 import './App.css';
 
 const App = () => {
@@ -35,9 +36,9 @@ const App = () => {
           <Route path="/buy" element={<BuyPage />} />
           <Route path="/buy/product/:code" element={<ViewProduct section="Buy" />} />
           <Route path="/sell" element={<SellPage />} />
-          <Route path="/sell/product/:code" element={<ViewProduct section="Sell" />} />
           <Route path="/addnewproduct" element={<AddProductForm />} />
           <Route path="/product/:code" element={<ViewProduct />} />
+          <Route path="sell/product/:code" element={<ViewforSeller />} /> 
           <Route path="/update/:code" element={<UpdateProductForm />} />
         </Routes>
       </div>
