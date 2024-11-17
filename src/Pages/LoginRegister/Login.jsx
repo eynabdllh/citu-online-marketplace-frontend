@@ -14,12 +14,21 @@ const Login = () => {
 
     const handleLogin = async (e) => {
         e.preventDefault();
+
+        if (!credentials.username || !credentials.password) {
+            setErrorMessage('Please enter username and password');
+            return;
+        }
+  
+        console.log('Logging in with credentials:', credentials);
         try {
             const response = await axios.post('http://localhost:8080/api/seller/login', credentials);
+            console.log('Login Successful', response.data);
             const userData = response.data;
 
             // Call login from AuthContext with the user data
             login(userData);
+            setErrorMessage('')
             navigate('/home');
         } catch (error) {
             setErrorMessage('Invalid username or password');
@@ -34,7 +43,9 @@ const Login = () => {
                 <h2>Welcome to CIT-U Marketplace</h2>
                 <span>Login to your account</span>
                 <form onSubmit={handleLogin}>
-                    {errorMessage && <div className="error-message">{errorMessage}</div>}
+                    {errorMessage && 
+                    <div className="error-message">{errorMessage}</div>
+                    }
                     <div className="form-group">
                         <input 
                             type="text" 

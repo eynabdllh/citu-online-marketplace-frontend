@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { AppBar, Toolbar, IconButton, Typography, Button, Box, Menu, MenuItem, Avatar } from '@mui/material';
 import AccountCircle from '@mui/icons-material/AccountCircle';
+import Person2OutlinedIcon from '@mui/icons-material/Person2Outlined';
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
+import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
+import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -17,8 +23,20 @@ const MarketplaceHeader = () => {
     setAnchor(event.currentTarget);
   };
 
+  const handleLogout = () => {
+    sessionStorage.clear();
+    navigate('/');
+  };
   const handleClose = () => {
       setAnchor(null);
+  };
+
+  const handleLikesClick = () => {
+    navigate('/likes');
+  };
+
+  const handleMessageClick = () => {
+    navigate('/message');
   };
 
   const baseButtonStyle = { width: '250px', color: 'white' };
@@ -117,12 +135,23 @@ const MarketplaceHeader = () => {
               style={{ width: '270px', height: '60px' }} 
             />
           </IconButton>
-          <IconButton edge="end" color="black" aria-label="profile" onClick={handleClick}>
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+          <IconButton edge="end" color="black" aria-label="profile" onClick={handleClick} >
             <Avatar src={profilePhoto} />
             <Typography variant="subtitle1" sx={{ ml: 1 }}>
               {firstName}
             </Typography>
           </IconButton>
+          <IconButton edge="end" color="black"  onClick={handleLikesClick} sx={{marginLeft: "25px"}}>
+              <FavoriteBorderOutlinedIcon sx={{ fontSize: "30px" }}/>
+          </IconButton>
+          <IconButton edge="end" color="black" sx={{marginLeft: "10px"}}>
+              <NotificationsNoneOutlinedIcon sx={{ fontSize: "30px"}}/>
+          </IconButton>
+          <IconButton edge="end" color="black" onClick={handleMessageClick} sx={{marginLeft: "10px"}}>
+              <MailOutlineOutlinedIcon sx={{ fontSize: "30px"}}/>
+          </IconButton>
+          </Box>
           <Menu
             anchorEl={anchor}
             open={open}
@@ -143,8 +172,25 @@ const MarketplaceHeader = () => {
                     },
                 }}
             >
-                <Link to="/profile" style={{ textDecoration: 'none', color: 'inherit' }}>Profile</Link>
+                <Link to="/profile" style={{ textDecoration: 'none', color: 'inherit'}}> 
+                  <Person2OutlinedIcon style={{ verticalAlign: 'middle', marginBottom: '5px', marginLeft: '-5px' }}/> 
+                  <span style={{ marginLeft: '10px', textDecoration: 'none', color: 'inherit', fontSize: '16px' }}>Profile</span>
+                </Link>
             </MenuItem>
+
+            <Typography
+              variant="body2"
+              sx={{
+                marginLeft: 2,
+                marginTop: 1,
+                marginBottom: 0.5,
+                color: "gray",
+                fontWeight: "bold",
+                textDecoration: 'none'
+              }}
+            >
+              Buying
+            </Typography>
             <MenuItem
                 onClick={handleClose}
                 sx={{
@@ -153,8 +199,25 @@ const MarketplaceHeader = () => {
                     },
                 }}
             >
-            <Link to="/account" style={{ textDecoration: 'none', color: 'inherit' }}>My Account</Link>
+            <Link to="/likes" style={{ textDecoration: 'none', color: 'inherit'}}> 
+                <FavoriteBorderOutlinedIcon style={{ verticalAlign: 'middle', marginBottom: '5px', marginLeft: '-5px' }}/> 
+                <span style={{ marginLeft: '10px', textDecoration: 'none', color: 'inherit', fontSize: '16px' }}>Likes</span>
+            </Link>
             </MenuItem>
+
+            <Typography
+              variant="body2"
+              sx={{
+                marginLeft: 2,
+                marginTop: 1,
+                marginBottom: 0.5,
+                color: "gray",
+                fontWeight: "bold",
+                textDecoration: 'none'
+              }}
+            >
+              Account
+            </Typography>
             <MenuItem
                 onClick={handleClose}
                 sx={{
@@ -162,7 +225,25 @@ const MarketplaceHeader = () => {
                         backgroundColor: 'white',
                     },
                 }}
+            ><Link to="/account" style={{ textDecoration: 'none', color: 'inherit' }}>
+            <SettingsOutlinedIcon fontSize='medium' style={{ verticalAlign: 'middle', marginBottom: '5px', marginLeft: '-5px' }}/> 
+            <span style={{ marginLeft: '10px', textDecoration: 'none', color: 'inherit', fontSize: '16px' }}>Settings</span>
+            </Link>
+            </MenuItem>
+            <MenuItem
+                onClick={() => {
+                  handleClose(); 
+                  handleLogout(); 
+              }}
+                sx={{
+                  display: 'flex',       
+                  alignItems: 'center',
+                    '&:hover': {
+                        backgroundColor: 'white',
+                    },
+                }}
             >
+              <LogoutOutlinedIcon style={{ marginLeft: '-4px', marginRight: '8px' }} />
                 Logout
             </MenuItem>
         </Menu>
@@ -171,7 +252,7 @@ const MarketplaceHeader = () => {
 
       {/* Nav Bar */}
       <Box sx={{ display: 'flex', justifyContent: 'space-around', bgcolor: '#89343b', height: '50px' }}>
-        {['Home', 'Buy', 'Sell', 'Message/Inquiry', 'Feedback', 'Bookmark/Saving'].map((label) => (
+        {['Home', 'Buy', 'Sell', 'Message/Inquiry', 'Feedback'].map((label) => (
           <Button
             key={label}
             sx={activeButton === label ? activeButtonStyle : baseButtonStyle}

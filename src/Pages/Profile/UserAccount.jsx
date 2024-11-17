@@ -1,12 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Avatar, Button, Divider, TextField, List, ListItem, ListItemIcon, ListItemText, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
-import PersonIcon from '@mui/icons-material/Person';
-import SettingsIcon from '@mui/icons-material/Settings';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import { Box, Typography, Avatar, Button, Divider, TextField, List, ListItem, ListItemIcon, ListItemText, Paper, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import Tabs from '@mui/material/Tabs';
+import Tab from '@mui/material/Tab';
+import PropTypes from 'prop-types';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import axios from 'axios';
 import '../../App.css';
 
-const UserAccount = () => {
+function TabPanel(props) {
+    const { children, value, index, ...other } = props;
+  
+    return (
+      <div
+        role="tabpanel"
+        hidden={value !== index}
+        id={`vertical-tabpanel-${index}`}
+        aria-labelledby={`vertical-tab-${index}`}
+        {...other}
+      >
+        {value === index && (
+          <Box sx={{ p: 3 }}>
+            {children}
+          </Box>
+        )}
+      </div>
+    );
+  }
+
+  TabPanel.propTypes = {
+    children: PropTypes.node,
+    index: PropTypes.number.isRequired,
+    value: PropTypes.number.isRequired,
+  };
+  
+  function a11yProps(index) {
+    return {
+      id: `vertical-tab-${index}`,
+      'aria-controls': `vertical-tabpanel-${index}`,
+    };
+  }
+const UserAccount = (props) => {
+    const [value, setValue] = useState(0);
+    const [username, setUsername] = useState(sessionStorage.getItem('userName') || '');
     const [firstName, setFirstName] = useState(sessionStorage.getItem('firstName') || '');
     const [lastName, setLastName] = useState(sessionStorage.getItem('lastName') || '');
     const [email, setEmail] = useState(sessionStorage.getItem('email') || '');
@@ -25,6 +60,10 @@ const UserAccount = () => {
     const toggleEditMode = () => {
         setEditMode((prev) => !prev);
     };
+
+    const handleChange = (event, newValue) => {
+        setValue(newValue);
+      };
 
     const handleSave = async () => {
         try {
@@ -159,6 +198,7 @@ const UserAccount = () => {
                     setEmail(email);
                     setAddress(address);
                     setContactNo(contactNo);
+                    setUsername(username);
 
                     if (profilePhoto) {
                         setPreviewImage(`http://localhost:8080/profile-images/${profilePhoto}`);
@@ -174,33 +214,43 @@ const UserAccount = () => {
     
 
     return (
-        <Box display="flex" sx={{ height: '100vh' }}>
-            <Box sx={{ width: '250px', p: 2, boxShadow: 1 }}>
-                <Button startIcon={<ArrowBackIosIcon />} sx={{ mb: 3 }}>
-                </Button>
-                <List component="nav">
-                    <ListItem button selected>
-                        <ListItemIcon><PersonIcon /></ListItemIcon>
-                        <ListItemText primary="Personal" />
-                    </ListItem>
-                    {/*<ListItem button>
-                        <ListItemIcon><SettingsIcon /></ListItemIcon>
-                        <ListItemText primary="Settings" />
-                    </ListItem>*/}
-                </List>
-            </Box>
+        <Box 
+            sx={{ 
+                display: 'flex',
+                padding: '50px'
+            }}
+        >
+            {/* Vertical Tabs */}
+            <Tabs
+                orientation="vertical"
+                variant="scrollable"
+                value={value}
+                onChange={handleChange}
+                textColor="black"
+                aria-label="Vertical tabs example"
+                sx={{ borderRight: 1, borderColor: 'divider', width: '250px', '& .MuiTabs-indicator': {backgroundColor: '#8A252C'} }}
+            >
+                <Tab label="Personal Info" {...a11yProps(0)} />
+                <Tab label="Change Password" {...a11yProps(1)} />
+            </Tabs>
 
-            <Box sx={{ flex: 1, p: 4 }}>
-                <Box display="flex" alignItems="center" gap={2}>
-                <Avatar
-                    src={previewImage ? previewImage : 'default-placeholder-url'}
-                    sx={{ bgcolor: '#8A252C', width: 80, height: 80 }}
-                ></Avatar>
-                    <Box>
-                        <Typography variant="h5">{firstName} {lastName}</Typography>
-                        <Typography color="textSecondary">{email}</Typography>
+            <TabPanel value={value} index={0}>
+                <Paper elevation={1} sx={{ padding: 3, marginTop: '-25px', backgroundColor: '#f0f0f0', border: '2px solid #8A252C', borderRadius: '10px' }}>
+                    <Typography variant="h5" sx={{fontWeight: 'bold'}}>Edit Profile</Typography>
+                    <Typography variant="h6" sx={{ marginTop: 5, marginBottom: 1, fontWeight: '600' }}>
+                        Profile Photo
+                    </Typography>
+                    <Box sx={{ mt: 2, display: 'flex', alignItems: 'center' }}>
+                    <Avatar
+                        src={previewImage ? previewImage : 'default-placeholder-url'}
+                        sx={{ bgcolor: '#8A252C', width: 150, height: 150, marginRight: 2 }}
+                    />
 
-                        {/* Hidden file input */}
+                    <Box sx={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                        <Typography sx={{ marginBottom: 1, fontSize: { xs: '18px', sm: '16px', md: '14px' }}}>
+                            Clear frontal face photos are an important way for buyers and sellers to learn about each other.
+                        </Typography>
+                        <Box>
                         <input
                             type="file"
                             accept="image/*"
@@ -208,125 +258,118 @@ const UserAccount = () => {
                             onChange={handleImageChange}
                             id="profile-upload"
                         />
-                        
                         <Button
                             variant="outlined"
                             onClick={() => document.getElementById('profile-upload').click()}
-                            sx={{ mt: 1, borderColor: '#8A252C', color: '#8A252C' }}
+                            sx={{ mt: 1, borderColor: '#8A252C', color: '#8A252C', textTransform: 'none' }}
                         >
-                            Upload Profile Picture
+                            Upload a photo
                         </Button>
-
-                        {/* Save button */}
                         <Button
                             variant="outlined"
                             onClick={handleUploadProfileImage}
-                            sx={{ mt: 1, borderColor: '#8A252C', color: '#8A252C', marginLeft: '5px' }}
+                            sx={{ mt: 1, borderColor: '#8A252C', color: '#8A252C', marginLeft: '5px', textTransform: 'none' }}
                         >
-                            Save Profile Picture
+                            Save
                         </Button>
-
-                        <Button 
-                            variant="outlined" 
-                            onClick={() => setOpenChangePassword(true)} 
-                            sx={{ mt: 1, borderColor: '#8A252C', color: '#8A252C', marginLeft: '5px'}}
-                        >
-                            Change Password
-                        </Button>
+                        </Box>
                     </Box>
-                </Box>
-
-                <Divider sx={{ my: 4 }} />
-
-                
-                <Typography variant="h6">Personal</Typography>
-                <Box sx={{ mt: 2 }}>
-                    <Typography variant="body2" color="grey">First Name</Typography>
-                    {editMode ? (
-                        <TextField
+                    </Box>
+                    <Typography variant="h6" sx={{ marginTop: 3, marginBottom: 1, fontWeight: '600' }}>
+                       Public Profile
+                    </Typography>
+                    <Box sx={{ mt: 2 }}>
+                        <Typography variant="body2" color="grey">Username</Typography>
+                        <Typography variant="body1">{username}</Typography>
+                    </Box>
+                    <Box sx={{ mt: 2 }}>
+                        <Typography variant="body2" color="grey">First Name</Typography>
+                        {editMode ? (
+                            <TextField
                             fullWidth
                             value={firstName}
                             onChange={(e) => setFirstName(e.target.value)}
-                        />
-                    ) : (
-                        <Typography variant="body1" color="black">{firstName}</Typography>
-                    )}
-                </Box>
-
-                <Box sx={{ mt: 2 }}>
-                    <Typography variant="body2" color="grey">Last Name</Typography>
-                    {editMode ? (
-                        <TextField
+                            />
+                        ) : (
+                            <Typography variant="body1">{firstName}</Typography>
+                        )}
+                    </Box>
+                    <Box sx={{ mt: 2 }}>
+                        <Typography variant="body2" color="grey">Last Name</Typography>
+                        {editMode ? (
+                            <TextField
                             fullWidth
                             value={lastName}
                             onChange={(e) => setLastName(e.target.value)}
-                        />
-                    ) : (
-                        <Typography variant="body1" color="black">{lastName}</Typography>
-                    )}
-                </Box>
-
-                <Box sx={{ mt: 2 }}>
-                    <Typography variant="body2" color="grey">Address</Typography>
-                    {editMode ? (
+                            />
+                        ) : (
+                            <Typography variant="body1">{lastName}</Typography>
+                        )}
+                    </Box>
+                    <Box sx={{ mt: 2 }}>
+                        <Typography variant="body2" color="grey">Address</Typography>
+                        {editMode ? (
                         <TextField
                             fullWidth
                             value={address}
                             onChange={(e) => setAddress(e.target.value)}
                         />
-                    ) : (
+                        ) : (
                         <Typography variant="body1" color="black">{address}</Typography>
-                    )}
-                </Box>
-
-                <Box sx={{ mt: 2 }}>
-                    <Typography variant="body2" color="grey">Email</Typography>
-                    {editMode ? (
+                        )}
+                    </Box>
+                    <Typography variant="h6" sx={{ marginTop: 3, marginBottom: 1, fontWeight: '600' }}>
+                       Private Information
+                    </Typography>
+                    <LockOutlinedIcon style={{ verticalAlign: 'middle', marginBottom: '5px', marginLeft: '-5px' }}/> 
+                    <span style={{ marginLeft: '10px', textDecoration: 'none', color: 'inherit', fontSize: '14px' }}>We do not share this information with other users unless explicit permission is given by you.</span>
+                    <Box sx={{ mt: 2 }}>
+                        <Typography variant="body2" color="grey">Email</Typography>
+                        {editMode ? (
                         <TextField
                             fullWidth
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                         />
-                    ) : (
+                        ) : (
                         <Typography variant="body1" color="black">{email}</Typography>
-                    )}
-                </Box>
-
-                <Box sx={{ mt: 2 }}>
-                    <Typography variant="body2" color="grey">Contact No.</Typography>
-                    {editMode ? (
+                        )}
+                    </Box>
+                    <Box sx={{ mt: 2 }}>
+                        <Typography variant="body2" color="grey">Contact No.</Typography>
+                        {editMode ? (
                         <TextField
                             fullWidth
                             value={contactNo}
                             onChange={(e) => setContactNo(e.target.value)}
                         />
-                    ) : (
+                        ) : (
                         <Typography variant="body1" color="black">{contactNo}</Typography>
-                    )}
-                </Box>
-
-                <Button
+                        )}
+                    </Box>
+                    
+                    <Button
                     variant="outlined"
                     onClick={editMode ? handleSave : toggleEditMode}
                     sx={{ mt: 3, color: 'black', borderColor: 'rgba(0, 0, 0, 0.23)', borderRadius: '20px', textTransform: 'none' }}
-                >
+                    >
                     {editMode ? 'Save Changes' : 'Edit Information'}
-                </Button>
-
-                <Button
+                    </Button>
+                    <Button
                     variant="outlined"
                     onClick={handleDeleteAccount}
                     sx={{ mt: 3, color: 'black', borderColor: 'rgba(0, 0, 0, 0.23)', borderRadius: '20px', textTransform: 'none', marginLeft: '5px' }}
-                >
+                    >
                     Delete Account
                 </Button>
+                </Paper>
+            </TabPanel>
 
-                {/* Change Password Dialog */}
-                <Dialog open={openChangePassword} onClose={() => setOpenChangePassword(false)}>
-                    <DialogTitle>Change Password</DialogTitle>
-                    <DialogContent>
+            <TabPanel value={value} index={1}>
+                <Paper elevation={1} sx={{ padding: 3, marginTop: '-25px', backgroundColor: '#f0f0f0', border: '2px solid #8A252C', borderRadius: '10px' }}>
+                    <Typography variant="h6" sx={{fontWeight: 'bold'}}>Change Password</Typography>
+                    <Box sx={{ mt: 2 }}>
                         <TextField
-                            autoFocus
                             margin="dense"
                             label="Current Password"
                             type="password"
@@ -353,17 +396,10 @@ const UserAccount = () => {
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
                         />
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setOpenChangePassword(false)} color="primary">
-                            Cancel
-                        </Button>
-                        <Button onClick={handleChangePassword} color="primary">
-                            Change Password
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-            </Box>
+                        </Box>
+                        <Button onClick={handleChangePassword} color="primary" variant="outlined" sx={{ mt: 1, borderColor: '#8A252C', color: '#8A252C' }}  >Change Password</Button>
+                </Paper>
+            </TabPanel>
         </Box>
     );
 };

@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Grid, Typography, Avatar, Box, Paper, List, ListItem, ListItemText, ListItemAvatar, Badge, Tabs, Tab, Card, CardContent, CardMedia } from '@mui/material';
+import { Container, Grid, Typography, Avatar, Box, Button, Paper, List, ListItem, ListItemText, ListItemAvatar, Badge, Tabs, Tab, Card, CardContent, CardMedia } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
+import { Link } from "react-router-dom";
 import StarIcon from '@mui/icons-material/Star';
 import VerifiedIcon from '@mui/icons-material/Verified';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -99,6 +101,28 @@ const UserProfile = () => {
                                     top: -10,
                                 }}
                             />
+                            <Button 
+                                component={Link} 
+                                to="/account" 
+                                color="white"
+                                variant="outlined" 
+                                sx={{
+                                    width: "130px",            
+                                    height: "20px",           
+                                    padding: "10px 5px",      
+                                    lineHeight: 1,            
+                                    fontSize: "14px",         
+                                    position: "absolute",
+                                    top: -40,
+                                    left: 980,
+                                    transition: "all 0.3s ease", 
+                                    "&:hover": {
+                                        backgroundColor: "rgba(255, 255, 255, 0.2)", 
+                                    },
+                                }}
+                            >
+                                Edit Profile
+                            </Button>
                         </Box>
                     </Grid>
                     <Grid item xs sx={{ textAlign: 'left', marginLeft: 3 }}>

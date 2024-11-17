@@ -21,7 +21,7 @@ const Register = () => {
       setSellers([...sellers,response.data]);
       setNewSeller({ firstName: '', lastName: '', address: '', contactNo: '', email: '', username: '', password: '' }); // Clear form
       setErrorMessage('');
-      navigate('/login');
+      navigate('/');
     } catch (error) {
       if(error.response && error.response.status === 409) {
         setErrorMessage('An error occured while creating an account. Please try to refresh.');

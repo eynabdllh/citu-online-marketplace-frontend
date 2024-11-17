@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Box, Typography, Card, CardMedia, CardContent, Button, Grid } from '@mui/material';
 import axios from 'axios';
 import UpdateProductForm from '../Sell/UpdateProductForm'; 
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import '../../App.css';
 
 const ViewProduct = () => {
@@ -84,6 +85,9 @@ const ViewProduct = () => {
                 <Button variant="contained" sx={{ bgcolor: '#89343b' }} onClick={() => setMessage(true)}>
                     Message
                   </Button>
+                <Button variant="contained" sx={{ bgcolor: '#89343b', marginLeft: '5px' }}>
+                  {<FavoriteBorderIcon />}
+                </Button>
                 <Typography variant="h6" sx={{ marginBottom: '8px' }}>Description</Typography>
                 <Typography variant="body2" color="textSecondary">
                   {product.pdtDescription}

@@ -13,6 +13,7 @@ import Register from './Pages/LoginRegister/Register';
 import Login from './Pages/LoginRegister/Login';
 import UserAccount from './Pages/Profile/UserAccount';
 import UserProfile from './Pages/Profile/UserProfile';
+import Likes from './Pages/Profile/Likes';
 import { AuthProvider } from './contexts/AuthContext'; 
 import './App.css';
 
@@ -30,6 +31,7 @@ const App = () => {
           <Route path="/register" element={<Register />} />
           <Route path="/account" element={<UserAccount />} />
           <Route path="/profile" element={<UserProfile />} />
+          <Route path="/likes" element={<Likes />} />
           <Route path="/buy" element={<BuyPage />} />
           <Route path="/buy/product/:code" element={<ViewProduct section="Buy" />} />
           <Route path="/sell" element={<SellPage />} />
