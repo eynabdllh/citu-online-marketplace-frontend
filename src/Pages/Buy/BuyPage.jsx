@@ -1,12 +1,40 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { styled, alpha } from '@mui/material/styles';
-import { Avatar, Box, Typography, Card, CardContent, Grid, CardMedia, IconButton, Menu, FormControl, Select, InputLabel, MenuItem } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
-import FilterListIcon from '@mui/icons-material/FilterList';
-import InputBase from '@mui/material/InputBase';
+import { Box, Grid, Typography, Card, CardContent, CardMedia, Avatar, FormControl, InputLabel, Select, MenuItem, InputBase, IconButton, Menu, Button } from '@mui/material';
+import { Search as SearchIcon, FilterList as FilterListIcon } from '@mui/icons-material';
 import axios from 'axios';
-import '../../App.css';
+import { useNavigate } from 'react-router-dom';
+import { styled } from '@mui/system';
+
+// Styled components
+const Search = styled('div')({
+  position: 'relative',
+  borderRadius: '4px',
+  backgroundColor: '#f1f1f1',
+  '&:hover': {
+    backgroundColor: '#e0e0e0',
+  },
+  marginLeft: 0,
+  width: '20%',
+  alignContent: 'center',
+});
+
+const SearchIconWrapper = styled('div')({
+  position: 'absolute',
+  left: '10px',
+  top: '50%',
+  transform: 'translateY(-50%)',
+});
+
+const StyledInputBase = styled(InputBase)(({ theme }) => ({
+  color: 'inherit',
+  paddingLeft: `calc(1em + ${theme.spacing(4)})`, // to make space for the icon
+  paddingRight: theme.spacing(2),
+  width: '100%',
+}));
+
+const FilterButton = styled(IconButton)({
+  marginLeft: '10px',
+});
 
 const BuyPage = () => {
   const navigate = useNavigate();
@@ -39,6 +67,18 @@ const BuyPage = () => {
     setFilters((prevFilters) => ({ ...prevFilters, [key]: value }));
   };
 
+  const handleSearchChange = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const handleClearFilters = () => {
+    setFilters({
+      category: '',
+      status: '',
+      conditionType: '',
+    });
+  };
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -56,51 +96,22 @@ const BuyPage = () => {
     fetchProducts();
   }, [loggedInUser]);
 
-  const Search = styled('div')(({ theme }) => ({
-    position: 'relative',
-    borderRadius: `${theme.shape.borderRadius}px 0 0 ${theme.shape.borderRadius}px`, 
-    backgroundColor: alpha(theme.palette.common.white, 0.80),
-    '&:hover': {
-      backgroundColor: alpha(theme.palette.common.white, 1),
-    },
-    marginLeft: 0,
-    width: '100%',
-    [theme.breakpoints.up('sm')]: {
-      marginLeft: theme.spacing(3),
-      width: 'auto',
-    },
-  }));
-
-  const SearchIconWrapper = styled('div')(({ theme }) => ({
-    padding: theme.spacing(0, 2),
-    height: '100%',
-    position: 'absolute',
-    pointerEvents: 'none',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  }));
-
-  const StyledInputBase = styled(InputBase)(({ theme }) => ({
-    color: 'inherit',
-    '& .MuiInputBase-input': {
-      padding: theme.spacing(1, 1, 1, 0),
-      paddingLeft: `calc(1em + ${theme.spacing(4)})`,
-      transition: theme.transitions.create('width'),
-      width: '100%',
-      [theme.breakpoints.up('md')]: {
-        width: '20ch',
-      },
-    },
-  }));
-
-  const FilterButton = styled(IconButton)(({ theme }) => ({
-    backgroundColor: alpha(theme.palette.common.white, 0.8),
-    borderRadius: `0 ${theme.shape.borderRadius}px ${theme.shape.borderRadius}px 0`,
-    '&:hover': {
-      backgroundColor: alpha(theme.palette.common.white, 1),
-    },
-  }));
+  const filteredProducts = products.filter((product) => {
+    const matchesSearchTerm =
+      (product.name && product.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (product.pdtDescription && product.pdtDescription.toLowerCase().includes(searchTerm.toLowerCase()));
+  
+    const matchesCategory =
+      !filters.category || (product.category && product.category.toLowerCase() === filters.category.toLowerCase());
+    const matchesStatus =
+      !filters.status || (product.status && product.status.toLowerCase() === filters.status.toLowerCase());
+    const matchesCondition =
+      !filters.conditionType || (product.conditionType && product.conditionType.toLowerCase() === filters.conditionType.toLowerCase());
+  
+    return (
+      matchesSearchTerm && matchesCategory && matchesStatus && matchesCondition
+    );
+  });
 
   if (loading) return <div>Loading...</div>;
 
@@ -114,10 +125,10 @@ const BuyPage = () => {
           marginBottom: '32px',
           position: 'relative',
           zIndex: 1000,
-          height: '40px', 
+          height: '40px',
         }}
       >
-        <Search sx={{ height: '100%', }}>
+        <Search sx={{ height: '100%' }}>
           <SearchIconWrapper>
             <SearchIcon />
           </SearchIconWrapper>
@@ -125,13 +136,12 @@ const BuyPage = () => {
             placeholder="Search…"
             inputProps={{ 'aria-label': 'search' }}
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={handleSearchChange}
             autoFocus
           />
         </Search>
 
-        <FilterButton onClick={handleFilterClick}
-        sx={{ height: '100%', }}>
+        <FilterButton onClick={handleFilterClick} sx={{ height: '100%' }}>
           <FilterListIcon />
         </FilterButton>
         <Menu
@@ -140,7 +150,7 @@ const BuyPage = () => {
           onClose={handleFilterClose}
           sx={{
             '& .MuiPaper-root': {
-              backgroundColor: alpha('#ffffff', 0.95),
+              backgroundColor: '#ffffff',
               padding: 2,
             },
           }}
@@ -166,7 +176,7 @@ const BuyPage = () => {
                 <MenuItem value="Other">Other</MenuItem>
               </Select>
             </FormControl>
-            
+
             <FormControl fullWidth sx={{ marginBottom: 2 }}>
               <InputLabel>Status</InputLabel>
               <Select
@@ -185,7 +195,7 @@ const BuyPage = () => {
               <Select
                 value={filters.conditionType}
                 onChange={(e) => handleFilterChange('conditionType', e.target.value)}
-                label="ConditionType"
+                label="Condition"
               >
                 <MenuItem value="">All</MenuItem>
                 <MenuItem value="Brand New">Brand New</MenuItem>
@@ -193,55 +203,72 @@ const BuyPage = () => {
                 <MenuItem value="None">None</MenuItem>
               </Select>
             </FormControl>
+            
+            <Button
+              variant="outlined"
+              onClick={handleClearFilters}
+              sx={{ marginTop: 2 }}
+            >
+              Clear Filters
+            </Button>
           </Box>
         </Menu>
       </Box>
-      
-    <Grid container spacing={2}>
-    {Array.isArray(products) && products.length > 0 ? (
-          products.map((product) => (
-            <Grid item xs={2.4} key={ product.code }>
-              <Card onClick={() => handleCardClick(product.code)}
-              sx={{
-                width: '100%',
-                marginLeft: '30px',
-                marginTop: '20px',
-                backgroundColor: 'transparent', 
-                boxShadow: 'none', 
-                transition: '0.3s', 
-                '&:hover': {
-                  boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
-                },
-              }}
-            >
-              <Box sx={{ display: 'flex', alignItems: 'center', margin: '5px', color: 'gray', padding: '10px'}}>
-                <Avatar />
-                <Box sx={{ ml: 1}}> 
-                  <Typography variant="subtitle1" color="black" sx={{ lineHeight: 1, mb: 0, fontWeight: 500 }}>{product.sellerUsername}</Typography>
-                  <Typography variant="subtitle2" color="gray" sx={{ mt: 0, fontSize: "12px"}}>2 months ago</Typography>
-                </Box>
-              </Box>
 
-              <CardMedia
-                component="img"
-                height="140"
-                image={`http://localhost:8080/${product.imagePath}`}
-                alt={product.name}
-              />
-              <CardContent>
-                <Typography color="black" noWrap>{product.name}</Typography>
-                  <Typography variant="h6" noWrap sx={{ mt: 0, fontWeight: "bold"}}>PHP {product.buyPrice}</Typography>
+      <Grid container spacing={2}>
+        {Array.isArray(filteredProducts) && filteredProducts.length > 0 ? (
+          filteredProducts.map((product) => (
+            <Grid item xs={2.4} key={product.code}>
+              <Card
+                onClick={() => handleCardClick(product.code)}
+                sx={{
+                  width: '100%',
+                  marginLeft: '30px',
+                  marginTop: '20px',
+                  backgroundColor: 'transparent',
+                  boxShadow: 'none',
+                  transition: '0.3s',
+                  '&:hover': {
+                    boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
+                  },
+                }}
+              >
+                <Box sx={{ display: 'flex', alignItems: 'center', margin: '5px', color: 'gray', padding: '10px' }}>
+                  <Avatar />
+                  <Box sx={{ ml: 1 }}>
+                    <Typography variant="subtitle1" color="black" sx={{ lineHeight: 1, mb: 0, fontWeight: 500 }}>
+                      {product.sellerUsername}
+                    </Typography>
+                    <Typography variant="subtitle2" color="gray" sx={{ mt: 0, fontSize: '12px' }}>
+                      2 months ago
+                    </Typography>
+                  </Box>
+                </Box>
+
+                <CardMedia
+                  component="img"
+                  height="140"
+                  image={`http://localhost:8080/${product.imagePath}`}
+                  alt={product.name}
+                />
+                <CardContent>
+                  <Typography color="black" noWrap>
+                    {product.name}
+                  </Typography>
+                  <Typography variant="h6" noWrap sx={{ mt: 0, fontWeight: 'bold' }}>
+                    PHP {product.buyPrice}
+                  </Typography>
                   <Typography variant="body1">{product.pdtDescription}</Typography>
                 </CardContent>
-            </Card>
-          </Grid>
+              </Card>
+            </Grid>
           ))
         ) : (
           <Typography variant="h6" sx={{ textAlign: 'center', marginTop: 4 }}>
             No products to display.
           </Typography>
         )}
-    </Grid>
+      </Grid>
     </Box>
   );
 };
