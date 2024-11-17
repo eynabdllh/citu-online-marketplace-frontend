@@ -9,11 +9,32 @@ const Register = () => {
     const [sellers, setSellers] = useState([]); 
     const [newSeller, setNewSeller] = useState({ username: '', password: '', firstName: '', lastName: '', address: '', contactNo: '', email: ''});
     const [errorMessage, setErrorMessage] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
   // Create a new seller
   const createSeller = async (e) => {
-    e.preventDefault(); // Prevent default form submission
+    e.preventDefault(); 
+    setIsLoading(true);
+
+    if (!newSeller.username || !newSeller.password || !newSeller.firstName || !newSeller.lastName || !newSeller.address || !newSeller.contactNo || !newSeller.email) {
+      setErrorMessage('All fields are required. Please fill out the entire form.');
+      setIsLoading(false);
+      return;
+    }
+
+    if (newSeller.password.length < 8) {
+      setErrorMessage('Password must be at least 8 characters long.');
+      setIsLoading(false);
+      return;
+    }
+
+    if(newSeller.contactNo.length < 11) {
+      setErrorMessage('Please enter a valid phone number.');
+      setIsLoading(false);
+      return;
+    }
+
     try {
       console.log(newSeller); 
       const response = await axios.post('http://localhost:8080/api/seller/postSellerRecord', newSeller);
@@ -23,12 +44,22 @@ const Register = () => {
       setErrorMessage('');
       navigate('/');
     } catch (error) {
-      if(error.response && error.response.status === 409) {
-        setErrorMessage('An error occured while creating an account. Please try to refresh.');
+      if (error.response) {
+        const serverMessage = error.response.data.message;
+        
+        if (error.response.status === 409 && serverMessage === 'Email already exists') {
+          setErrorMessage('This email is already registered. Please use another email.');
+        } else if (error.response.status === 409) {
+          setErrorMessage(serverMessage);
+        } else {
+          setErrorMessage('An unexpected error occurred. Please try again later.');
+        }
       } else {
-        setErrorMessage('Username already exists. Please enter another username.');
+        setErrorMessage('An unexpected error occurred. Please try again later.');
       }
-      console.error('Error creating seller:', error);
+        console.error('Error creating seller:', error);
+    } finally {
+      setIsLoading(false); 
     }
   };
 
@@ -108,7 +139,7 @@ const Register = () => {
             />
           </div>
           <div className="button-container">
-            <button type="submit">Register</button>
+            <button type="submit" disabled={isLoading}>{isLoading ? 'Registering...' : 'Register'}</button>
             <p className="login-text">Already have an account?  <Link to="/">Login</Link></p>
           </div>
         </form>

@@ -6,7 +6,6 @@ import '../../App.css';
 
 const SellPage = () => {
   const navigate = useNavigate();
-  const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const handleAddNewProduct = () => {
@@ -16,22 +15,6 @@ const SellPage = () => {
   const handleCardClick = (code) => {
     navigate(`product/${code}`); 
   };
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/api/product/getAllProducts');
-        console.log('Fetched Products:', response.data);
-        setProducts(response.data);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
 
   return (
     <Box sx={{ padding: '16px'}}>
@@ -50,6 +33,7 @@ const SellPage = () => {
         + Add New Product
       </Button>
         </Box>
+        {/*
       {loading ? (
         <Typography variant="h6" sx={{ marginTop: '16px' }}>
           Loading products...
@@ -83,7 +67,7 @@ const SellPage = () => {
             );
           })}
         </Grid>
-      )}
+      )} */ }
     </Box>
   );
 };

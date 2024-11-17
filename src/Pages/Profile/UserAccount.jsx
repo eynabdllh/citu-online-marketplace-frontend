@@ -66,25 +66,27 @@ const UserAccount = (props) => {
       };
 
     const handleSave = async () => {
-        try {
-            const updatedData = { firstName, lastName, email, address, contactNo };
-            const username = sessionStorage.getItem('username'); 
-
-            const response = await axios.put(`http://localhost:8080/api/seller/putSellerRecord/${username}`, updatedData);
-
-            if (response.status === 200) {
-                sessionStorage.setItem('firstName', firstName);
-                sessionStorage.setItem('lastName', lastName);
-                sessionStorage.setItem('email', email);
-                sessionStorage.setItem('address', address);
-                sessionStorage.setItem('contactNo', contactNo);
-
-                setEditMode(false); 
-            } else {
-                console.error('Error updating user data:', response.statusText);
+        if (window.confirm('Are you sure you want to update your account?')) {
+            try {
+                const updatedData = { firstName, lastName, email, address, contactNo };
+                const username = sessionStorage.getItem('username'); 
+    
+                const response = await axios.put(`http://localhost:8080/api/seller/putSellerRecord/${username}`, updatedData);
+    
+                if (response.status === 200) {
+                    sessionStorage.setItem('firstName', firstName);
+                    sessionStorage.setItem('lastName', lastName);
+                    sessionStorage.setItem('email', email);
+                    sessionStorage.setItem('address', address);
+                    sessionStorage.setItem('contactNo', contactNo);
+    
+                    setEditMode(false); 
+                } else {
+                    console.error('Error updating user data:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Error updating user data:', error);
             }
-        } catch (error) {
-            console.error('Error updating user data:', error);
         }
     };
 
@@ -109,43 +111,39 @@ const UserAccount = (props) => {
     };
 
     const handleChangePassword = async () => {
-        // Check if the new password and confirm password match
+        if (!newPassword) {
+            alert('New password cannot be empty! Please input neccessary details.');
+            return;
+        }
         if (newPassword !== confirmPassword) {
             alert('New password and confirm password do not match!');
             return;
         }
-    
-        // Perform any other validation checks here (e.g., password length, complexity)
         if (newPassword.length < 8) {
             alert('New password should be at least 8 characters long.');
             return;
         }
+        
     
         try {
-            const username = sessionStorage.getItem('username'); // Get the username from session storage
-    
-            // Send the request to change the password
+            const username = sessionStorage.getItem('username'); 
             const response = await axios.put(`http://localhost:8080/api/seller/changePassword/${username}`, {
                 currentPassword,
                 newPassword,
             });
     
-            // Handle successful response
             if (response.status === 200) {
                 alert('Password changed successfully!');
                 setOpenChangePassword(false); 
     
-                // Clear the password fields after a successful change
                 setCurrentPassword('');
                 setNewPassword('');
                 setConfirmPassword('');
             } else {
-                // If the API returns an error status, show it
                 console.error('Error changing password:', response.data);
                 alert(response.data.message || 'An error occurred while changing the password.');
             }
         } catch (error) {
-            // Handle server or network errors
             console.error('Error changing password:', error);
             alert('An error occurred while changing the password. Please try again.');
         }

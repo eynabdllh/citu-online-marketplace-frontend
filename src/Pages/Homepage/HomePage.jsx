@@ -1,25 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Grid, Card, CardMedia, TextField, InputAdornment, Button } from '@mui/material';
+import { Box, Typography, Grid, Avatar, CardContent, Card, CardMedia, TextField, InputAdornment, Button } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 
 function HomePage() {
-  const [products, setProducts] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/api/product/getAllProducts');
-        setProducts(response.data);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-      }
-    };
-    fetchProducts();
-  }, []);
+  const loggedInUser = sessionStorage.getItem('username');
+  console.log("Logged-in username:", loggedInUser);
 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
@@ -28,6 +20,23 @@ function HomePage() {
   const handleCardClick = (code) => {
     navigate(`/product/${code}`);
   };
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8080/api/product/getAllProducts/${loggedInUser}`
+        );
+        console.log("API Response: ", response.data);
+        setProducts(response.data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, [loggedInUser]);
 
   return (
     <>
@@ -99,25 +108,51 @@ function HomePage() {
         <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2, marginLeft: 10, marginBottom: 5 }}>
           Listed Recently
         </Typography>
-        <Grid container spacing={2} marginLeft={9}>
-          {products.map((product) => (
-            <Grid item xs={6} sm={4} md={2.4} key={product.id}> 
-              <Card onClick={() => handleCardClick(product.code)} sx={{ cursor: 'pointer', borderRadius: '8px' }}>
-                <CardMedia
-                  component="img"
-                  height="300"
-                  image={`http://localhost:8080/${product.imagePath}`}
-                  alt={product.name}
-                  sx={{ borderRadius: '8px', objectFit: 'cover' }}
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src = 'https://via.placeholder.com/200';
-                  }}
-                />
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
+        <Grid container spacing={2}>
+          {Array.isArray(products) && products.length > 0 ? (
+                products.map((product) => (
+                  <Grid item xs={2.4} key={ product.code }>
+                    <Card onClick={() => handleCardClick(product.code)}
+                    sx={{
+                      width: '100%',
+                      marginLeft: '55px',
+                      marginTop: '0px',
+                      backgroundColor: 'white', 
+                      boxShadow: 'none', 
+                      transition: '0.3s', 
+                      '&:hover': {
+                        boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
+                      },
+                    }}
+                  >
+                    <Box sx={{ display: 'flex', alignItems: 'center', margin: '5px', color: 'gray', padding: '10px'}}>
+                      <Avatar />
+                      <Box sx={{ ml: 1}}> 
+                        <Typography variant="subtitle1" color="black" sx={{ lineHeight: 1, mb: 0, fontWeight: 500 }}>{product.sellerUsername}</Typography>
+                        <Typography variant="subtitle2" color="gray" sx={{ mt: 0, fontSize: "12px"}}>2 months ago</Typography>
+                      </Box>
+                    </Box>
+
+                    <CardMedia
+                      component="img"
+                      height="140"
+                      image={`http://localhost:8080/${product.imagePath}`}
+                      alt={product.name}
+                    />
+                    <CardContent>
+                      <Typography color="black" noWrap>{product.name}</Typography>
+                        <Typography variant="h6" noWrap sx={{ mt: 0, fontWeight: "bold"}}>PHP {product.buyPrice}</Typography>
+                        <Typography variant="body1">{product.pdtDescription}</Typography>
+                      </CardContent>
+                  </Card>
+                </Grid>
+                ))
+              ) : (
+                <Typography variant="h6" sx={{ textAlign: 'center', marginTop: 4 }}>
+                  No products to display.
+                </Typography>
+              )}
+          </Grid>
       </Box>
     </>
   );

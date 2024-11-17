@@ -38,6 +38,10 @@ const MarketplaceHeader = () => {
   const handleMessageClick = () => {
     navigate('/message');
   };
+  
+  const handleAddNewProduct = () => {
+    navigate('/addnewproduct');
+  };
 
   const baseButtonStyle = { width: '250px', color: 'white' };
   const activeButtonStyle = {
@@ -128,7 +132,7 @@ const MarketplaceHeader = () => {
     <Box>
       <AppBar position="static" sx={{ backgroundColor: 'transparent' }}>
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between' }}>
-          <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }}>
+          <IconButton edge="start" color="inherit" aria-label="menu" sx={{ mr: 2 }} onClick={() => navigate('/home')}>
             <img
               src='/images/logoCIT.png'
               alt="Logo"
@@ -151,6 +155,19 @@ const MarketplaceHeader = () => {
           <IconButton edge="end" color="black" onClick={handleMessageClick} sx={{marginLeft: "10px"}}>
               <MailOutlineOutlinedIcon sx={{ fontSize: "30px"}}/>
           </IconButton>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleAddNewProduct}
+            sx={{backgroundColor: '#89343b', color: 'white',marginLeft: '15px',
+                  '&:hover': {
+                    backgroundColor: '#ffd700',
+                    color:'#89343b',
+                },
+            }}
+          >
+            Sell
+          </Button>
           </Box>
           <Menu
             anchorEl={anchor}
@@ -252,7 +269,7 @@ const MarketplaceHeader = () => {
 
       {/* Nav Bar */}
       <Box sx={{ display: 'flex', justifyContent: 'space-around', bgcolor: '#89343b', height: '50px' }}>
-        {['Home', 'Buy', 'Sell', 'Message/Inquiry', 'Feedback'].map((label) => (
+        {['Home', 'Buy', 'Message/Inquiry', 'Feedback'].map((label) => (
           <Button
             key={label}
             sx={activeButton === label ? activeButtonStyle : baseButtonStyle}

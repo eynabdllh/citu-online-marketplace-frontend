@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { styled, alpha } from '@mui/material/styles';
-import { Box, Typography, Card, CardContent, Grid, CardMedia, IconButton, Menu, FormControl, Select, InputLabel, MenuItem } from '@mui/material';
+import { Avatar, Box, Typography, Card, CardContent, Grid, CardMedia, IconButton, Menu, FormControl, Select, InputLabel, MenuItem } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import InputBase from '@mui/material/InputBase';
@@ -20,6 +20,9 @@ const BuyPage = () => {
     conditionType: '',
   });
 
+  const loggedInUser = sessionStorage.getItem('username');
+  console.log("Logged-in username:", loggedInUser);
+
   const handleCardClick = (code) => {
     navigate(`product/${code}`);
   };
@@ -35,6 +38,23 @@ const BuyPage = () => {
   const handleFilterChange = (key, value) => {
     setFilters((prevFilters) => ({ ...prevFilters, [key]: value }));
   };
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get(
+          `http://localhost:8080/api/product/getAllProducts/${loggedInUser}`
+        );
+        console.log("API Response: ", response.data);
+        setProducts(response.data);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, [loggedInUser]);
 
   const Search = styled('div')(({ theme }) => ({
     position: 'relative',
@@ -82,26 +102,7 @@ const BuyPage = () => {
     },
   }));
 
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const response = await axios.get('http://localhost:8080/api/product/getAllProducts');
-        setProducts(response.data);
-      } catch (error) {
-        console.error('Error fetching products:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProducts();
-  }, []);
-
-  const filteredProducts = products
-    .filter((product) => product.name.toLowerCase().includes(searchTerm.toLowerCase()))
-    .filter((product) => !filters.category || product.category === filters.category)
-    .filter((product) => !filters.status || product.status === filters.status)
-    .filter((product) => !filters.conditionType || product.conditionType === filters.conditionType);
+  if (loading) return <div>Loading...</div>;
 
   return (
     <Box sx={{ padding: '16px' }}>
@@ -195,38 +196,52 @@ const BuyPage = () => {
           </Box>
         </Menu>
       </Box>
+      
+    <Grid container spacing={2}>
+    {Array.isArray(products) && products.length > 0 ? (
+          products.map((product) => (
+            <Grid item xs={2.4} key={ product.code }>
+              <Card onClick={() => handleCardClick(product.code)}
+              sx={{
+                width: '100%',
+                marginLeft: '30px',
+                marginTop: '20px',
+                backgroundColor: 'transparent', 
+                boxShadow: 'none', 
+                transition: '0.3s', 
+                '&:hover': {
+                  boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
+                },
+              }}
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', margin: '5px', color: 'gray', padding: '10px'}}>
+                <Avatar />
+                <Box sx={{ ml: 1}}> 
+                  <Typography variant="subtitle1" color="black" sx={{ lineHeight: 1, mb: 0, fontWeight: 500 }}>{product.sellerUsername}</Typography>
+                  <Typography variant="subtitle2" color="gray" sx={{ mt: 0, fontSize: "12px"}}>2 months ago</Typography>
+                </Box>
+              </Box>
 
-      {loading ? (
-        <Typography variant="h6" sx={{ marginTop: '16px' }}>
-          Loading products...
-        </Typography>
-      ) : filteredProducts.length === 0 ? (
-        <Typography variant="h6" sx={{ marginTop: '16px' }}>
-          No products available.
-        </Typography>
-      ) : (
-        <Grid container spacing={2}>
-          {filteredProducts.map((product) => (
-            <Grid item xs={2.4} key={product.id}>
-              <Card sx={{ width: '100%' }} onClick={() => handleCardClick(product.code)}>
-                <CardMedia
-                  component="img"
-                  alt={product.name}
-                  height="140"
-                  image={`http://localhost:8080/${product.imagePath}`}
-                  onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/140'; }}
-                />
-                <CardContent>
-                  <Typography variant="h6" noWrap>{product.name}</Typography>
-                  <Typography color="textSecondary" noWrap>{product.pdtDescription}</Typography>
-                  <Typography variant="body1">Quantity: {product.qtyInStock}</Typography>
-                  <Typography variant="body1">Price: ₱{product.buyPrice.toFixed(2)}</Typography>
+              <CardMedia
+                component="img"
+                height="140"
+                image={`http://localhost:8080/${product.imagePath}`}
+                alt={product.name}
+              />
+              <CardContent>
+                <Typography color="black" noWrap>{product.name}</Typography>
+                  <Typography variant="h6" noWrap sx={{ mt: 0, fontWeight: "bold"}}>PHP {product.buyPrice}</Typography>
+                  <Typography variant="body1">{product.pdtDescription}</Typography>
                 </CardContent>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      )}
+            </Card>
+          </Grid>
+          ))
+        ) : (
+          <Typography variant="h6" sx={{ textAlign: 'center', marginTop: 4 }}>
+            No products to display.
+          </Typography>
+        )}
+    </Grid>
     </Box>
   );
 };

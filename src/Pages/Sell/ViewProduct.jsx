@@ -39,7 +39,7 @@ const ViewProduct = () => {
       try {
         await axios.delete(`http://localhost:8080/api/product/deleteProduct/${code}`);
         alert('Product deleted successfully');
-        navigate('/'); 
+        navigate('/home'); 
       } catch (error) {
         console.error('Error deleting product:', error);
         alert('Failed to delete the product');

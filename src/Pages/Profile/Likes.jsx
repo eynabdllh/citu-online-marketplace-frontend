@@ -116,18 +116,10 @@ const SearchBar = () => {
               },
             }}
           >
-            <Box
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                margin: '5px',
-                color: 'gray',
-                padding: '10px'
-              }}
-            >
+            <Box sx={{ display: 'flex', alignItems: 'center', margin: '5px', color: 'gray', padding: '10px'}}
+              >
               <Avatar />
-              <Box sx={{ ml: 1}}> {/* Reduce line height to decrease space */}
-                {/* Username and date with reduced spacing and black color */}
+              <Box sx={{ ml: 1}}> 
                 <Typography variant="subtitle1" color="black" sx={{ lineHeight: 1, mb: 0, fontWeight: 500 }}>karenleankay</Typography>
                 <Typography variant="subtitle2" color="gray" sx={{ mt: 0, fontSize: "12px"}}>2 months ago</Typography>
               </Box>
@@ -149,8 +141,6 @@ const SearchBar = () => {
           </Card>
         </Grid>
       </Grid>
-
-
     </Box>
   );
 };

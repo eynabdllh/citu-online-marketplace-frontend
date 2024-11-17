@@ -19,6 +19,9 @@ const UserProfile = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    const loggedInUser = sessionStorage.getItem('username');
+    console.log("Logged-in username:", loggedInUser);
+
     const handleChange = (event, newValue) => {
         setTabValue(newValue);
     };
@@ -30,8 +33,8 @@ const UserProfile = () => {
     useEffect(() => {
         const fetchProducts = async () => {
           try {
-            const response = await axios.get('http://localhost:8080/api/product/getAllProducts');
-            console.log('Fetched Products:', response.data);
+            const response = await axios.get(`http://localhost:8080/api/product/getProductsBySeller/${loggedInUser}`);
+            console.log('API Response:', response.data);
             setProducts(response.data);
           } catch (error) {
             console.error('Error fetching products:', error);
@@ -304,6 +307,7 @@ const UserProfile = () => {
                     </TabPanel>
                 </TabContext>
             </Box>
+            
         </Container>
     );
 };
