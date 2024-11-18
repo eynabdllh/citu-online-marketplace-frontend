@@ -114,13 +114,13 @@ const MarketplaceHeader = () => {
       case 'Sell':
         navigate('/sell');
         break;
-      case 'Message/Inquiry':
+      case 'Message':
         navigate('/message');
         break;
       case 'Feedback':
         navigate('/feedback');
         break;
-      case 'Bookmark/Saving':
+      case 'Saved Items':
         navigate('/bookmark');
         break;
       default:
@@ -269,7 +269,7 @@ const MarketplaceHeader = () => {
 
       {/* Nav Bar */}
       <Box sx={{ display: 'flex', justifyContent: 'space-around', bgcolor: '#89343b', height: '50px' }}>
-        {['Home', 'Buy', 'Message/Inquiry', 'Feedback'].map((label) => (
+        {['Home', 'Buy', 'Message', 'Feedback'].map((label) => (
           <Button
             key={label}
             sx={activeButton === label ? activeButtonStyle : baseButtonStyle}
