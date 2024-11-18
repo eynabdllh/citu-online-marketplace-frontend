@@ -305,5 +305,4 @@ const BuyPage = () => {
     </Box>
   );
 };
-
 export default BuyPage;
