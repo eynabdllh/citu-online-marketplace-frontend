@@ -5,7 +5,6 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/system';
 
-// Styled components
 const Search = styled('div')({
   position: 'relative',
   borderRadius: '4px',
@@ -27,7 +26,7 @@ const SearchIconWrapper = styled('div')({
 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
   color: 'inherit',
-  paddingLeft: `calc(1em + ${theme.spacing(4)})`, // to make space for the icon
+  paddingLeft: `calc(1em + ${theme.spacing(4)})`,
   paddingRight: theme.spacing(2),
   width: '100%',
 }));
@@ -38,7 +37,8 @@ const FilterButton = styled(IconButton)({
 
 const BuyPage = () => {
   const navigate = useNavigate();
-  const [products, setProducts] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
@@ -68,7 +68,17 @@ const BuyPage = () => {
   };
 
   const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value);
+    const searchValue = event.target.value;
+    setSearchTerm(searchValue);
+  
+    if (searchValue === '') {
+      setFilters({
+        category: '',
+        status: '',
+        conditionType: '',
+      });
+      setFilteredProducts(allProducts); 
+    }
   };
 
   const handleClearFilters = () => {
@@ -77,19 +87,45 @@ const BuyPage = () => {
       status: '',
       conditionType: '',
     });
-    setSearchTerm('');
   };
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const fetchAllProducts = async () => {
+      try {
+        const response = await axios.get(`http://localhost:8080/api/product/getAllProducts/${loggedInUser}`);
+        console.log("All products fetched:", response.data);
+        setAllProducts(response.data); 
+        setFilteredProducts(response.data); 
+      } catch (error) {
+        console.error("Error fetching all products:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchAllProducts();
+  }, [loggedInUser]);
+
+  useEffect(() => {
+    const fetchFilteredProducts = async () => {
+      console.log('Fetching filtered products with filters:', filters);
+      setLoading(true);
       try {
         const response = await axios.get(
-          `http://localhost:8080/api/product/getAllProducts/${loggedInUser}`
+          `http://localhost:8080/api/product/getAllProductsFilter/${loggedInUser}`,
+          {
+            params: {
+              username: loggedInUser,
+              category: filters.category,
+              status: filters.status,
+              conditionType: filters.conditionType,
+            },
+          }
         );
-        console.log("API Response: ", response.data);
-        setProducts(response.data);
+        console.log("Filtered products from API:", response.data);
+        setFilteredProducts(response.data); 
       } catch (error) {
-        console.error("Error fetching products:", error);
+        console.error("Error fetching filtered products:", error);
       } finally {
         setLoading(false);
       }
@@ -99,30 +135,25 @@ const BuyPage = () => {
 
   const filteredProducts = products.filter((product) => {
     const matchesSearchTerm =
-      !searchTerm || 
-      (product.name?.toLowerCase().includes(searchTerm.toLowerCase())) || 
-      (product.pdtDescription?.toLowerCase().includes(searchTerm.toLowerCase()));
-
-    const matchesCategory = 
-      !filters.category || 
-      (product.category?.toLowerCase() === filters.category.toLowerCase());
-
-    const matchesStatus = 
-      !filters.status || 
-      (product.status?.toLowerCase() === filters.status.toLowerCase());
-
-    const matchesCondition = 
-      !filters.conditionType || 
-      (product.conditionType?.toLowerCase() === filters.conditionType.toLowerCase());
-
-    return matchesSearchTerm && matchesCategory && matchesStatus && matchesCondition;
+      (product.name && product.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (product.pdtDescription && product.pdtDescription.toLowerCase().includes(searchTerm.toLowerCase()));
+  
+    const matchesCategory =
+      !filters.category || (product.category && product.category.toLowerCase() === filters.category.toLowerCase());
+    const matchesStatus =
+      !filters.status || (product.status && product.status.toLowerCase() === filters.status.toLowerCase());
+    const matchesCondition =
+      !filters.conditionType || (product.conditionType && product.conditionType.toLowerCase() === filters.conditionType.toLowerCase());
+  
+    return (
+      matchesSearchTerm && matchesCategory && matchesStatus && matchesCondition
+    );
   });
 
   if (loading) return <div>Loading...</div>;
 
   return (
     <Box sx={{ padding: '16px' }}>
-      {/* Filters and Search */}
       <Box
         sx={{
           display: 'flex',
@@ -154,6 +185,12 @@ const BuyPage = () => {
           anchorEl={filterAnchorEl}
           open={Boolean(filterAnchorEl)}
           onClose={handleFilterClose}
+          sx={{
+            '& .MuiPaper-root': {
+              backgroundColor: '#ffffff',
+              padding: 2,
+            },
+          }}
         >
           <Box sx={{ padding: 2 }}>
             <FormControl fullWidth sx={{ marginBottom: 2 }}>
@@ -167,22 +204,28 @@ const BuyPage = () => {
                 <MenuItem value="Food">Food</MenuItem>
                 <MenuItem value="Clothes">Clothes</MenuItem>
                 <MenuItem value="Accessories">Accessories</MenuItem>
+                <MenuItem value="Stationery or Arts and Crafts">Stationery / Arts and Crafts</MenuItem>
+                <MenuItem value="Merchandise">Merchandise</MenuItem>
+                <MenuItem value="Supplies">Supplies</MenuItem>
                 <MenuItem value="Electronics">Electronics</MenuItem>
+                <MenuItem value="Beauty">Beauty</MenuItem>
+                <MenuItem value="Books">Books</MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
               </Select>
             </FormControl>
 
-            <FormControl fullWidth sx={{ marginBottom: 2 }}>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={filters.status}
-                onChange={(e) => handleFilterChange('status', e.target.value)}
-                label="Status"
-              >
-                <MenuItem value="">All</MenuItem>
-                <MenuItem value="Available">Available</MenuItem>
-                <MenuItem value="Sold">Sold</MenuItem>
-              </Select>
-            </FormControl>
+              <FormControl fullWidth sx={{ marginBottom: 2 }}>
+                <InputLabel>Status</InputLabel>
+                <Select
+                  value={filters.status}
+                  onChange={(e) => handleFilterChange('status', e.target.value)}
+                  label="status"
+                >
+                  <MenuItem value="">All</MenuItem>
+                  <MenuItem value="Available">Available</MenuItem>
+                  <MenuItem value="Sold">Sold</MenuItem>
+                </Select>
+              </FormControl>
 
             <FormControl fullWidth>
               <InputLabel>Condition</InputLabel>
@@ -194,6 +237,7 @@ const BuyPage = () => {
                 <MenuItem value="">All</MenuItem>
                 <MenuItem value="Brand New">Brand New</MenuItem>
                 <MenuItem value="Pre-Loved">Pre-Loved</MenuItem>
+                <MenuItem value="None">None</MenuItem>
               </Select>
             </FormControl>
             
@@ -220,18 +264,24 @@ const BuyPage = () => {
                   alt={product.name}
                 />
                 <CardContent>
-                  <Typography>{product.name}</Typography>
-                  <Typography>{product.price}</Typography>
+                  <Typography color="black" noWrap>
+                    {product.name}
+                  </Typography>
+                  <Typography variant="h6" noWrap sx={{ mt: 0, fontWeight: 'bold' }}>
+                    PHP {product.buyPrice}
+                  </Typography>
+                  <Typography variant="body1">{product.pdtDescription}</Typography>
                 </CardContent>
               </Card>
             </Grid>
           ))
         ) : (
-          <Typography>No Products Found</Typography>
+          <Typography variant="h6" sx={{ textAlign: 'center', marginTop: 4 }}>
+            No products to display.
+          </Typography>
         )}
       </Grid>
     </Box>
   );
 };
-
 export default BuyPage;
