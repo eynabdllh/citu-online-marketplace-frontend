@@ -23,7 +23,6 @@ function HomePage() {
  
   const loggedInUser = sessionStorage.getItem("username") || "User";
   const firstName = loggedInUser.split(" ")[0];
- 
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
@@ -126,7 +125,7 @@ function HomePage() {
             paddingBottom: 2,
             scrollbarWidth: "none",
             "&::-webkit-scrollbar": {
-              display: "none",
+              display: "none", 
             },
             zIndex: 2,
           }}
@@ -171,10 +170,11 @@ function HomePage() {
             gap: 2,
             overflowX: "scroll",
             whiteSpace: "nowrap",
+            marginLeft: 2,
             paddingBottom: 2,
             scrollbarWidth: "none",
             "&::-webkit-scrollbar": {
-              display: "none",
+              display: "none", 
             },
           }}
         >
@@ -240,7 +240,6 @@ function HomePage() {
           )}
         </Box>
       </Box>
- 
     </>
   );
 }

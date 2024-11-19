@@ -4,7 +4,7 @@ import { Search as SearchIcon, FilterList as FilterListIcon } from '@mui/icons-m
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { styled } from '@mui/system';
-
+ 
 const Search = styled('div')({
   position: 'relative',
   borderRadius: '4px',
@@ -16,25 +16,25 @@ const Search = styled('div')({
   width: '20%',
   alignContent: 'center',
 });
-
+ 
 const SearchIconWrapper = styled('div')({
   position: 'absolute',
   left: '10px',
   top: '50%',
   transform: 'translateY(-50%)',
 });
-
+ 
 const StyledInputBase = styled(InputBase)(({ theme }) => ({
   color: 'inherit',
   paddingLeft: `calc(1em + ${theme.spacing(4)})`,
   paddingRight: theme.spacing(2),
   width: '100%',
 }));
-
+ 
 const FilterButton = styled(IconButton)({
   marginLeft: '10px',
 });
-
+ 
 const BuyPage = () => {
   const navigate = useNavigate();
   const [allProducts, setAllProducts] = useState([]);
@@ -47,40 +47,40 @@ const BuyPage = () => {
     status: '',
     conditionType: '',
   });
-
+ 
   const loggedInUser = sessionStorage.getItem('username');
   console.log("Logged-in username:", loggedInUser);
-
+ 
   const handleCardClick = (code) => {
     navigate(`product/${code}`);
   };
-
+ 
   const handleFilterClick = (event) => {
     setFilterAnchorEl(event.currentTarget);
   };
-
+ 
   const handleFilterClose = () => {
     setFilterAnchorEl(null);
   };
-
+ 
   const handleFilterChange = (key, value) => {
     setFilters((prevFilters) => ({ ...prevFilters, [key]: value }));
   };
-
+ 
   const handleSearchChange = (event) => {
     const searchValue = event.target.value;
     setSearchTerm(searchValue);
-  
+ 
     if (searchValue === '') {
       setFilters({
         category: '',
         status: '',
         conditionType: '',
       });
-      setFilteredProducts(allProducts); 
+      setFilteredProducts(allProducts);
     }
   };
-
+ 
   const handleClearFilters = () => {
     setFilters({
       category: '',
@@ -89,24 +89,24 @@ const BuyPage = () => {
     });
     setFilteredProducts(allProducts);
   };
-
+ 
   useEffect(() => {
     const fetchAllProducts = async () => {
       try {
         const response = await axios.get(`http://localhost:8080/api/product/getAllProducts/${loggedInUser}`);
         console.log("All products fetched:", response.data);
-        setAllProducts(response.data); 
-        setFilteredProducts(response.data); 
+        setAllProducts(response.data);
+        setFilteredProducts(response.data);
       } catch (error) {
         console.error("Error fetching all products:", error);
       } finally {
         setLoading(false);
       }
     };
-
+ 
     fetchAllProducts();
   }, [loggedInUser]);
-
+ 
   useEffect(() => {
     const fetchFilteredProducts = async () => {
       console.log('Fetching filtered products with filters:', filters);
@@ -124,22 +124,22 @@ const BuyPage = () => {
           }
         );
         console.log("Filtered products from API:", response.data);
-        setFilteredProducts(response.data); 
+        setFilteredProducts(response.data);
       } catch (error) {
         console.error("Error fetching filtered products:", error);
       } finally {
         setLoading(false);
       }
     };
-
+ 
     if (filters.category || filters.status || filters.conditionType) {
       fetchFilteredProducts();
     } else {
-      
-      setFilteredProducts([]); 
+     
+      setFilteredProducts([]);
     }
   }, [filters, loggedInUser]);
-
+ 
   useEffect(() => {
     console.log("Search term changed:", searchTerm);
     if (searchTerm) {
@@ -154,10 +154,10 @@ const BuyPage = () => {
       console.log("Resetting filtered products after clearing search.");
       setFilteredProducts(filteredProducts);
     }
-  }, [searchTerm, filteredProducts]); 
-
+  }, [searchTerm, filteredProducts]);
+ 
   if (loading) return <div>Loading...</div>;
-
+ 
   return (
     <Box sx={{ padding: '16px' }}>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '32px', position: 'relative', zIndex: 1000, height: '40px' }}>
@@ -173,7 +173,7 @@ const BuyPage = () => {
             autoFocus
           />
         </Search>
-
+ 
         <FilterButton onClick={handleFilterClick} sx={{ height: '100%' }}>
           <FilterListIcon />
         </FilterButton>
@@ -215,7 +215,7 @@ const BuyPage = () => {
                   <MenuItem value="Other">Other</MenuItem>
                 </Select>
               </FormControl>
-
+ 
               <FormControl fullWidth sx={{ marginBottom: 2 }}>
                 <InputLabel>Status</InputLabel>
                 <Select
@@ -228,7 +228,7 @@ const BuyPage = () => {
                   <MenuItem value="Sold">Sold</MenuItem>
                 </Select>
               </FormControl>
-
+ 
               <FormControl fullWidth sx={{ marginBottom: 2 }}>
                 <InputLabel>Condition</InputLabel>
                 <Select
@@ -242,14 +242,14 @@ const BuyPage = () => {
                   <MenuItem value="None">None</MenuItem>
                 </Select>
               </FormControl>
-
+ 
               <Button onClick={handleClearFilters} variant="outlined" color="primary" sx={{ width: '100%' }}>
                 Clear Filters
               </Button>
             </Box>
           </Menu>
       </Box>
-
+ 
       <Grid container spacing={2}>
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
@@ -279,7 +279,7 @@ const BuyPage = () => {
                     </Typography>
                   </Box>
                 </Box>
-
+ 
                 <CardMedia
                   component="img"
                   height="140"
