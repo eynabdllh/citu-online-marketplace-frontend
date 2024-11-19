@@ -14,32 +14,31 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
+ 
 function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-
+ 
   const loggedInUser = sessionStorage.getItem("username") || "User";
   const firstName = loggedInUser.split(" ")[0];
-
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
-
+ 
   const handleSearchSubmit = () => {
     navigate(`/buy?search=${searchQuery}`);
   };
-
+ 
   const handleCategoryClick = (category) => {
     navigate(`/buy?category=${category}`);
   };
-
+ 
   const handleCardClick = (code) => {
     navigate(`/product/${code}`);
   };
-
+ 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -55,7 +54,7 @@ function HomePage() {
     };
     fetchProducts();
   }, [loggedInUser]);
-
+ 
   return (
     <>
       <Box
@@ -95,7 +94,7 @@ function HomePage() {
         >
           Welcome, {firstName}!
         </Typography>
-
+ 
         {/* Search Bar */}
         <Box sx={{ display: "flex", justifyContent: "center", mt: 3, zIndex: 2 }}>
           <TextField
@@ -114,7 +113,7 @@ function HomePage() {
             }}
           />
         </Box>
-
+ 
         {/* Scrollable Category Buttons */}
         <Box
           sx={{
@@ -159,7 +158,7 @@ function HomePage() {
           ))}
         </Box>
       </Box>
-
+ 
       {/* Recently Listed Products */}
       <Box sx={{ mt: 4, marginBottom: 3, overflowX: "auto", whiteSpace: "nowrap", px: 2 }}>
         <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, marginLeft: 2 }}>
@@ -241,9 +240,8 @@ function HomePage() {
           )}
         </Box>
       </Box>
-
     </>
   );
 }
-
+ 
 export default HomePage;

@@ -272,7 +272,7 @@ const BuyPage = () => {
                   <Avatar />
                   <Box sx={{ ml: 1 }}>
                     <Typography variant="subtitle1" color="black" sx={{ lineHeight: 1, mb: 0, fontWeight: 500 }}>
-                      {product.sellerUsername}
+                      {product.sellerUsername} {/*username*/}
                     </Typography>
                     <Typography variant="subtitle2" color="gray" sx={{ mt: 0, fontSize: '12px' }}>
                       2 months ago
