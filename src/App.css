@@ -42,7 +42,7 @@ body {
   padding: 5px;
   min-height: 100vh;
   position: relative; 
-  background-color: #FEFCE8;
+  background: linear-gradient(180deg, rgba(255, 215, 0, 0.31) 4%, rgba(140, 24, 35, 0.5) 100%);
 }
 
 body::before {
