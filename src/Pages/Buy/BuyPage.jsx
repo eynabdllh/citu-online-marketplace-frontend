@@ -77,6 +77,7 @@ const BuyPage = () => {
       status: '',
       conditionType: '',
     });
+    setSearchTerm('');
   };
 
   useEffect(() => {
@@ -98,25 +99,30 @@ const BuyPage = () => {
 
   const filteredProducts = products.filter((product) => {
     const matchesSearchTerm =
-      (product.name && product.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (product.pdtDescription && product.pdtDescription.toLowerCase().includes(searchTerm.toLowerCase()));
-  
-    const matchesCategory =
-      !filters.category || (product.category && product.category.toLowerCase() === filters.category.toLowerCase());
-    const matchesStatus =
-      !filters.status || (product.status && product.status.toLowerCase() === filters.status.toLowerCase());
-    const matchesCondition =
-      !filters.conditionType || (product.conditionType && product.conditionType.toLowerCase() === filters.conditionType.toLowerCase());
-  
-    return (
-      matchesSearchTerm && matchesCategory && matchesStatus && matchesCondition
-    );
+      !searchTerm || 
+      (product.name?.toLowerCase().includes(searchTerm.toLowerCase())) || 
+      (product.pdtDescription?.toLowerCase().includes(searchTerm.toLowerCase()));
+
+    const matchesCategory = 
+      !filters.category || 
+      (product.category?.toLowerCase() === filters.category.toLowerCase());
+
+    const matchesStatus = 
+      !filters.status || 
+      (product.status?.toLowerCase() === filters.status.toLowerCase());
+
+    const matchesCondition = 
+      !filters.conditionType || 
+      (product.conditionType?.toLowerCase() === filters.conditionType.toLowerCase());
+
+    return matchesSearchTerm && matchesCategory && matchesStatus && matchesCondition;
   });
 
   if (loading) return <div>Loading...</div>;
 
   return (
     <Box sx={{ padding: '16px' }}>
+      {/* Filters and Search */}
       <Box
         sx={{
           display: 'flex',
@@ -148,12 +154,6 @@ const BuyPage = () => {
           anchorEl={filterAnchorEl}
           open={Boolean(filterAnchorEl)}
           onClose={handleFilterClose}
-          sx={{
-            '& .MuiPaper-root': {
-              backgroundColor: '#ffffff',
-              padding: 2,
-            },
-          }}
         >
           <Box sx={{ padding: 2 }}>
             <FormControl fullWidth sx={{ marginBottom: 2 }}>
@@ -167,13 +167,7 @@ const BuyPage = () => {
                 <MenuItem value="Food">Food</MenuItem>
                 <MenuItem value="Clothes">Clothes</MenuItem>
                 <MenuItem value="Accessories">Accessories</MenuItem>
-                <MenuItem value="Stationery or Arts and Crafts">Stationery / Arts and Crafts</MenuItem>
-                <MenuItem value="Merchandise">Merchandise</MenuItem>
-                <MenuItem value="Supplies">Supplies</MenuItem>
                 <MenuItem value="Electronics">Electronics</MenuItem>
-                <MenuItem value="Beauty">Beauty</MenuItem>
-                <MenuItem value="Books">Books</MenuItem>
-                <MenuItem value="Other">Other</MenuItem>
               </Select>
             </FormControl>
 
@@ -200,7 +194,6 @@ const BuyPage = () => {
                 <MenuItem value="">All</MenuItem>
                 <MenuItem value="Brand New">Brand New</MenuItem>
                 <MenuItem value="Pre-Loved">Pre-Loved</MenuItem>
-                <MenuItem value="None">None</MenuItem>
               </Select>
             </FormControl>
             
@@ -215,58 +208,26 @@ const BuyPage = () => {
         </Menu>
       </Box>
 
+      {/* Product Grid */}
       <Grid container spacing={2}>
-        {Array.isArray(filteredProducts) && filteredProducts.length > 0 ? (
+        {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
-            <Grid item xs={2.4} key={product.code}>
-              <Card
-                onClick={() => handleCardClick(product.code)}
-                sx={{
-                  width: '100%',
-                  marginLeft: '30px',
-                  marginTop: '20px',
-                  backgroundColor: 'transparent',
-                  boxShadow: 'none',
-                  transition: '0.3s',
-                  '&:hover': {
-                    boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
-                  },
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', margin: '5px', color: 'gray', padding: '10px' }}>
-                  <Avatar />
-                  <Box sx={{ ml: 1 }}>
-                    <Typography variant="subtitle1" color="black" sx={{ lineHeight: 1, mb: 0, fontWeight: 500 }}>
-                      {product.sellerUsername}
-                    </Typography>
-                    <Typography variant="subtitle2" color="gray" sx={{ mt: 0, fontSize: '12px' }}>
-                      2 months ago
-                    </Typography>
-                  </Box>
-                </Box>
-
+            <Grid item xs={12} sm={6} md={4} lg={3} key={product.code}>
+              <Card>
                 <CardMedia
                   component="img"
-                  height="140"
-                  image={`http://localhost:8080/${product.imagePath}`}
+                  image={product.imagePath}
                   alt={product.name}
                 />
                 <CardContent>
-                  <Typography color="black" noWrap>
-                    {product.name}
-                  </Typography>
-                  <Typography variant="h6" noWrap sx={{ mt: 0, fontWeight: 'bold' }}>
-                    PHP {product.buyPrice}
-                  </Typography>
-                  <Typography variant="body1">{product.pdtDescription}</Typography>
+                  <Typography>{product.name}</Typography>
+                  <Typography>{product.price}</Typography>
                 </CardContent>
               </Card>
             </Grid>
           ))
         ) : (
-          <Typography variant="h6" sx={{ textAlign: 'center', marginTop: 4 }}>
-            No products to display.
-          </Typography>
+          <Typography>No Products Found</Typography>
         )}
       </Grid>
     </Box>
