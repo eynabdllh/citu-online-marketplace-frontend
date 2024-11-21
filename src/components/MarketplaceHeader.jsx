@@ -8,8 +8,10 @@ import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNone
 import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
+import AddProductForm from '../Pages/Sell/AddProductForm'; // Adjust the import path as needed
 
 const MarketplaceHeader = () => {
+  const [openModal, setOpenModal] = useState(false);
   const [activeButton, setActiveButton] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
@@ -38,8 +40,16 @@ const MarketplaceHeader = () => {
     navigate('/message');
   };
   
-  const handleAddNewProduct = () => {
+  /*const handleAddNewProduct = () => {
     navigate('/addnewproduct');
+  };*/
+
+  const handleOpenModal = () => {
+    setOpenModal(true);
+  };
+
+  const handleCloseModal = () => {
+    setOpenModal(false);
   };
 
   const baseButtonStyle = { width: '250px', color: 'white' };
@@ -151,7 +161,7 @@ const MarketplaceHeader = () => {
           <Button
             variant="contained"
             color="primary"
-            onClick={handleAddNewProduct}
+            onClick={handleOpenModal}
             sx={{backgroundColor: '#89343b', color: 'white',marginLeft: '15px',
                   '&:hover': {
                     backgroundColor: '#ffd700',
@@ -259,6 +269,7 @@ const MarketplaceHeader = () => {
         </Menu>
         </Toolbar>
       </AppBar>
+      <AddProductForm open={openModal} handleClose={handleCloseModal} />
 
       {/* Nav Bar */}
       <Box sx={{ display: 'flex', justifyContent: 'center', bgcolor: '#89343b', height: '50px' }}>

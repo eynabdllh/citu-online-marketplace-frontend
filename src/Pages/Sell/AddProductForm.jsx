@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { TextField, Button, Container, Typography, Box, MenuItem, Select, FormControl, InputLabel } from '@mui/material';
+import { TextField, Button, Container, Typography, Box, MenuItem, Select, FormControl, InputLabel, Modal } from '@mui/material';
 import { useNavigate } from 'react-router-dom'; 
 import '../../App.css';
 
-const AddProductForm = () => {
+const AddProductForm = ({ open, handleClose }) => { //changes
   const [productName, setProductName] = useState('');
   const [description, setDescription] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -71,35 +71,53 @@ const AddProductForm = () => {
         }
       });
       alert(response.data.message || 'Product added successfully!');
+      handleClose(); 
       navigate('/home');  
     } catch (error) {
       console.error('Error adding product:', error);
       alert('Failed to add product. Please check the console for details.');
     }
   };
-
+//changed
   return (
-    <Container component="main" maxWidth="sm">
-      <Box sx={{ marginTop: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography variant="h5" sx={{ fontSize: '30px', fontWeight: '800', color: '#89343b' }}>Add New Product</Typography>
-        <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
-          <TextField 
-            margin="normal" 
-            required 
-            fullWidth 
-            label="Product Name" 
-            value={productName} 
-            onChange={(e) => setProductName(e.target.value)} 
+    <Modal open={open} onClose={handleClose}>
+      <Box
+        sx={{
+          position: 'absolute',
+          top: '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          bgcolor: 'white',
+          p: 4,
+          borderRadius: 2,
+          boxShadow: 24,
+          width: '90%',
+          maxWidth: 500,
+          maxHeight: '90vh', // Restrict maximum height to 90% of viewport height
+          overflowY: 'auto', // Enable vertical scrolling
+        }}
+      >
+        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2, color: '#89343b', justifyContent:'center', display:'flex' }}>
+          Add New Product
+        </Typography>
+        <Box component="form" onSubmit={handleSubmit}>
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Product Name"
+            value={productName}
+            onChange={(e) => setProductName(e.target.value)}
           />
-          <TextField 
-            margin="normal" 
-            required 
-            fullWidth 
-            label="Description" 
-            multiline 
-            rows={4} 
-            value={description} 
-            onChange={(e) => setDescription(e.target.value)} 
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            label="Description"
+            multiline
+            rows={3}
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
           />
           <FormControl fullWidth margin="normal">
             <InputLabel>Category</InputLabel>
@@ -116,7 +134,6 @@ const AddProductForm = () => {
               <MenuItem value="Other">Other</MenuItem>
             </Select>
           </FormControl>
-
           <FormControl fullWidth margin="normal">
             <InputLabel>Status</InputLabel>
             <Select value={status} onChange={(e) => setStatus(e.target.value)} required>
@@ -124,7 +141,6 @@ const AddProductForm = () => {
               <MenuItem value="Sold">Sold</MenuItem>
             </Select>
           </FormControl>
-
           <FormControl fullWidth margin="normal">
             <InputLabel>Condition</InputLabel>
             <Select value={conditionType} onChange={(e) => setConditionType(e.target.value)} required>
@@ -133,24 +149,23 @@ const AddProductForm = () => {
               <MenuItem value="None">None</MenuItem>
             </Select>
           </FormControl>
-
-          <TextField 
-            margin="normal" 
-            required 
-            fullWidth 
-            type="number" 
-            label="Quantity in Stock" 
-            value={quantity} 
-            onChange={(e) => setQuantity(e.target.value)} 
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            type="number"
+            label="Quantity in Stock"
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
           />
-          <TextField 
-            margin="normal" 
-            required 
-            fullWidth 
-            type="number" 
-            label="Price" 
-            value={price} 
-            onChange={(e) => setPrice(e.target.value)} 
+          <TextField
+            margin="normal"
+            required
+            fullWidth
+            type="number"
+            label="Price"
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
           />
           <TextField
             margin="normal"
@@ -159,22 +174,21 @@ const AddProductForm = () => {
             value={sellerUsername}
             readOnly
           />
-
           <div>
             <label>Image:</label>
-            <input 
-              type="file" 
-              onChange={(e) => setImageFile(e.target.files[0])} 
-              required 
-            />
+            <input type="file" onChange={(e) => setImageFile(e.target.files[0])} required />
           </div>
-
-          <Button type="submit" variant="contained" color="primary" sx={{ marginTop: 3, width: '100%', bgcolor: '#89343b' }}>
+          <Button
+            type="submit"
+            variant="contained"
+            fullWidth
+            sx={{ mt: 3, bgcolor: '#89343b', '&:hover': { bgcolor: '#ffd700', color: '#89343b' } }}
+          >
             Add Product
           </Button>
         </Box>
       </Box>
-    </Container>
+    </Modal>
   );
 };
 
