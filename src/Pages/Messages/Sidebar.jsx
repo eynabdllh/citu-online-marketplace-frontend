@@ -1,5 +1,17 @@
 import React from "react";
-import { Box, List, ListItem, ListItemAvatar, Avatar, ListItemText, Typography, TextField, InputAdornment, IconButton, Menu, MenuItem } from "@mui/material";
+import { 
+  Box, 
+  List, 
+  ListItem, 
+  ListItemAvatar, 
+  Avatar, 
+  ListItemText, 
+  Typography, 
+  TextField, 
+  InputAdornment, 
+  IconButton, 
+  Menu, 
+  MenuItem } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 
@@ -68,13 +80,17 @@ const Sidebar = ({ users, selectedUser, setSelectedUser, viewSellerChats, toggle
             <Avatar>{user.firstName.charAt(0)}</Avatar>
           </ListItemAvatar>
           <ListItemText
-            primary={
-              <Typography fontWeight={messages.find((msg) => msg.sender === user.username)?.unread ? "bold" : "normal"}>
-                {user.firstName + " " + user.lastName}
-              </Typography>
-            }
-            secondary={messages.find((msg) => msg.sender === user.username)?.text || "No messages yet"}
-          />
+              primary={
+                <Typography fontWeight={messages.find((msg) => msg.sender === user.username || msg.recipient === user.username)?.unread ? "bold" : "normal"}>
+                  {user.firstName + " " + user.lastName}
+                </Typography>
+              }
+              secondary={
+                messages
+                  .filter((msg) => msg.sender === user.username || msg.recipient === user.username)
+                  .slice(-1)[0]?.text || "No messages yet"
+              }
+            />
         </ListItem>
       ))}
     </List>
