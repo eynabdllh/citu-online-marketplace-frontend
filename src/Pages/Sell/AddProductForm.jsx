@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { TextField, Button, Container, Typography, Box, MenuItem, Select, FormControl, InputLabel, Modal } from '@mui/material';
+import { TextField, Button, Typography, Box, MenuItem, Select, FormControl, InputLabel, Modal } from '@mui/material';
 import { useNavigate } from 'react-router-dom'; 
 import '../../App.css';
 
-const AddProductForm = ({ open, handleClose }) => { //changes
+const AddProductForm = ({ open, handleClose }) => { 
   const [productName, setProductName] = useState('');
   const [description, setDescription] = useState('');
   const [quantity, setQuantity] = useState('');
@@ -23,7 +23,7 @@ const AddProductForm = ({ open, handleClose }) => { //changes
       setSellerUsername(username); 
       axios.get(`http://localhost:8080/api/seller/getUsername/${username}`)
         .then(response => {
-          setSellerInfo(response.data);  // Save the seller information
+          setSellerInfo(response.data); 
         })
         .catch(error => {
           console.error('Error fetching seller information:', error);
@@ -89,7 +89,7 @@ const AddProductForm = ({ open, handleClose }) => { //changes
       alert('Failed to add product. Please check the console for details.');
     }
   };
-//changed
+
   return (
     <Modal open={open} onClose={handleClose}>
       <Box
@@ -104,8 +104,8 @@ const AddProductForm = ({ open, handleClose }) => { //changes
           boxShadow: 24,
           width: '90%',
           maxWidth: 500,
-          maxHeight: '90vh', // Restrict maximum height to 90% of viewport height
-          overflowY: 'auto', // Enable vertical scrolling
+          maxHeight: '90vh', 
+          overflowY: 'auto', 
         }}
       >
         <Typography variant="h5" sx={{ fontSize:'30px', fontWeight: 'bold', mb: 2, color: '#89343b', justifyContent:'center', display:'flex' }}>

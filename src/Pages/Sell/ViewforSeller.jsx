@@ -10,7 +10,7 @@ const ViewforSeller = () => {
   const { code } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false); // Controls the modal state
+  const [editing, setEditing] = useState(false); 
   const [message, setMessage] = useState(false);
   const navigate = useNavigate();
 
@@ -30,7 +30,7 @@ const ViewforSeller = () => {
   }, [code]);
 
   const handleUpdateSuccess = () => {
-    setEditing(false); // Close modal after successful update
+    setEditing(false); //closes modal
   };
 
   const handleDelete = async () => {
@@ -121,8 +121,8 @@ const ViewforSeller = () => {
             boxShadow: 24,
             width: '90%',
             maxWidth: 500,
-            maxHeight: '90vh', // Restrict maximum height to 90% of viewport height
-            overflowY: 'auto', // Enable vertical scrolling
+            maxHeight: '90vh', 
+            overflowY: 'auto', 
           }}
         >
           <UpdateProductForm product={product} onUpdateSuccess={handleUpdateSuccess} />
