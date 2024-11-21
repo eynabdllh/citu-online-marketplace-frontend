@@ -41,20 +41,20 @@ const BuyPage = () => {
   const searchParams = new URLSearchParams(location.search);
   const searchQuery = searchParams.get('search') || '';
   const categoryQuery = searchParams.get('category') || '';
-  
+
   const [allProducts, setAllProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState(searchQuery); // Initialize searchTerm with searchQuery
+  const [searchTerm, setSearchTerm] = useState(searchQuery);
   const [filterAnchorEl, setFilterAnchorEl] = useState(null);
+  const [filterPosition, setFilterPosition] = useState(null); 
   const [filters, setFilters] = useState({
-    category: categoryQuery, // Initialize category filter with categoryQuery
+    category: categoryQuery,
     status: '',
     conditionType: '',
   });
 
   const loggedInUser = sessionStorage.getItem('username');
-  console.log("Logged-in username:", loggedInUser);
 
   const handleCardClick = (code) => {
     navigate(`product/${code}`);
@@ -62,6 +62,10 @@ const BuyPage = () => {
 
   const handleFilterClick = (event) => {
     setFilterAnchorEl(event.currentTarget);
+    setFilterPosition({
+      top: event.currentTarget.getBoundingClientRect().bottom,
+      left: event.currentTarget.getBoundingClientRect().left,
+    });
   };
 
   const handleFilterClose = () => {
@@ -99,7 +103,6 @@ const BuyPage = () => {
     const fetchAllProducts = async () => {
       try {
         const response = await axios.get(`http://localhost:8080/api/product/getAllProducts/${loggedInUser}`);
-        console.log("All products fetched:", response.data);
         setAllProducts(response.data);
         setFilteredProducts(response.data);
       } catch (error) {
@@ -114,7 +117,6 @@ const BuyPage = () => {
 
   useEffect(() => {
     const fetchFilteredProducts = async () => {
-      console.log('Fetching filtered products with filters:', filters);
       setLoading(true);
       try {
         const response = await axios.get(
@@ -128,7 +130,6 @@ const BuyPage = () => {
             },
           }
         );
-        console.log("Filtered products from API:", response.data);
         setFilteredProducts(response.data);
       } catch (error) {
         console.error("Error fetching filtered products:", error);
@@ -140,23 +141,19 @@ const BuyPage = () => {
     if (filters.category || filters.status || filters.conditionType) {
       fetchFilteredProducts();
     } else {
-      setFilteredProducts(allProducts); // Reset to all products if no filters are set
+      setFilteredProducts(allProducts);
     }
   }, [filters, loggedInUser, allProducts]);
 
   useEffect(() => {
-    console.log("Search term changed:", searchTerm);
     if (searchTerm) {
-      console.log("Applying search:", searchTerm);
       const lowerCaseSearchTerm = searchTerm.toLowerCase();
       const searchedProducts = filteredProducts.filter((product) =>
         product.name.toLowerCase().includes(lowerCaseSearchTerm)
       );
-      console.log('Filtered products after search:', searchedProducts);
       setFilteredProducts(searchedProducts);
     } else {
-      console.log("Resetting filtered products after clearing search.");
-      setFilteredProducts(filteredProducts); // Reset filtered products when search is cleared
+      setFilteredProducts(filteredProducts);
     }
   }, [searchTerm, filteredProducts]);
 
@@ -165,7 +162,7 @@ const BuyPage = () => {
   return (
     <Box sx={{ padding: '16px' }}>
       <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', marginBottom: '32px', position: 'relative', zIndex: 1000, height: '40px' }}>
-        <Search sx={{ height: '100%' }}>
+        <Search sx={{ height: '100%', width: '30%' }}>
           <SearchIconWrapper>
             <SearchIcon />
           </SearchIconWrapper>
@@ -183,11 +180,7 @@ const BuyPage = () => {
         </FilterButton>
         <Menu
           anchorReference="anchorPosition"
-          anchorPosition={
-            filterAnchorEl
-              ? { top: filterAnchorEl.getBoundingClientRect().bottom, left: filterAnchorEl.getBoundingClientRect().left }
-              : undefined
-          }
+          anchorPosition={filterPosition}
           open={Boolean(filterAnchorEl)}
           onClose={handleFilterClose}
           sx={{
@@ -199,7 +192,7 @@ const BuyPage = () => {
             },
           }}
         >
-          <Box sx={{ padding: 2}}>
+          <Box sx={{ padding: 2 }}>
             <FormControl fullWidth sx={{ marginBottom: 2 }}>
               <InputLabel>Category</InputLabel>
               <Select
@@ -248,7 +241,7 @@ const BuyPage = () => {
               </Select>
             </FormControl>
 
-            <Button onClick={handleClearFilters} variant="outlined" color="primary" sx={{ width: '100%' }}>
+            <Button onClick={handleClearFilters} variant="outlined" color="#89343b" sx={{ width: '100%' }}>
               Clear Filters
             </Button>
           </Box>
@@ -265,8 +258,7 @@ const BuyPage = () => {
                   width: '100%',
                   margin: '20px auto',
                   boxShadow: 'none',
-                  backgroundColor: 'rgba(255, 255, 255, 0.4)',
-                  border: '1px solid black',
+                  backgroundColor: 'rgba(255, 255, 255, 0.5)',
                   transition: '0.3s',
                   '&:hover': {
                     boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
@@ -277,7 +269,7 @@ const BuyPage = () => {
                   <Avatar />
                   <Box sx={{ ml: 1 }}>
                     <Typography variant="subtitle1" color="black" sx={{ lineHeight: 1, mb: 0, fontWeight: 500 }}>
-                      {product.sellerUsername} {/* Seller's username */}
+                      {product.sellerUsername}
                     </Typography>
                     <Typography variant="subtitle2" color="gray" sx={{ mt: 0, fontSize: '12px' }}>
                       2 months ago
