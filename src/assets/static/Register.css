@@ -1,6 +1,7 @@
 .register-container {
     display: flex;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
   }
   
   .form-container {
@@ -10,10 +11,11 @@
     justify-content: center;
     align-items: center;
     padding: 20px;
+    height: 100%;
   }
   
   .logo {
-    width: 200px; /* Adjust as needed */
+    width: 200px; 
   }
   
   .form-group {
@@ -40,6 +42,7 @@
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    margin-bottom: 20%;
   }
   
   button:hover {
@@ -51,22 +54,23 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    height: 100%; 
   }
   
   .registration-image {
-    width: 100%; /* Adjust as needed */
-    height: auto;
+    width: auto;
+    height: 80%; 
   }
   
   h2 {
-    margin-bottom: 5px; /* Reduced margin between h2 and span */
-    font-size: 28px; /* Adjust size as needed */
+    margin-bottom: 5px; 
+    font-size: 28px; 
     color: #333;
 }
 
 span {
-    margin-bottom: 20px; /* Adjust this to control the spacing below the span */
-    font-size: 18px; /* Adjust size for visual consistency */
+    margin-bottom: 20px; 
+    font-size: 18px; 
     color: #666;
 }
 
@@ -82,7 +86,13 @@ span {
 }
 
 .login-text {
-  margin-left: 130px; /* Space between the button and the text */
-  font-size: 14px; /* Adjust font size as needed */
+  margin-left: 130px;
+  font-size: 14px; 
+  margin-bottom: 25%;
 }
 
+body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden; 
+}
