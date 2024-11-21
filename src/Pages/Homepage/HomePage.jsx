@@ -10,31 +10,32 @@ import {
 import SearchIcon from "@mui/icons-material/Search";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
- 
+
 function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
- 
+
   const loggedInUser = sessionStorage.getItem("username") || "User";
   const firstName = loggedInUser.split(" ")[0];
+
   const handleSearchChange = (e) => {
     setSearchQuery(e.target.value);
   };
- 
+
   const handleSearchSubmit = () => {
     navigate(`/buy?search=${searchQuery}`);
   };
- 
+
   const handleCategoryClick = (category) => {
     navigate(`/buy?category=${category}`);
   };
- 
+
   const handleCardClick = (code) => {
     navigate(`/product/${code}`);
   };
- 
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -50,7 +51,7 @@ function HomePage() {
     };
     fetchProducts();
   }, [loggedInUser]);
- 
+
   return (
     <>
       <Box
@@ -86,11 +87,17 @@ function HomePage() {
         <Typography
           variant="h2"
           align="center"
-          sx={{ fontWeight: "bold", mt: 2, zIndex: 2, marginBottom: 3, color: "white" }}
+          sx={{
+            fontWeight: "bold",
+            mt: 2,
+            zIndex: 2,
+            marginBottom: 3,
+            color: "white",
+          }}
         >
           Welcome, {firstName}!
         </Typography>
- 
+
         {/* Search Bar */}
         <Box sx={{ display: "flex", justifyContent: "center", mt: 3, zIndex: 2 }}>
           <TextField
@@ -99,17 +106,25 @@ function HomePage() {
             value={searchQuery}
             onChange={handleSearchChange}
             onKeyDown={(e) => e.key === "Enter" && handleSearchSubmit()}
-            sx={{ width: "700px", bgcolor: "white", borderRadius: "4px", border: "2px solid #ffd700" }}
+            sx={{
+              width: "700px",
+              bgcolor: "white",
+              borderRadius: "4px",
+              border: "2px solid #ffd700",
+            }}
             InputProps={{
               endAdornment: (
                 <InputAdornment position="end">
-                  <SearchIcon onClick={handleSearchSubmit} style={{ cursor: "pointer" }} />
+                  <SearchIcon
+                    onClick={handleSearchSubmit}
+                    style={{ cursor: "pointer" }}
+                  />
                 </InputAdornment>
               ),
             }}
           />
         </Box>
- 
+
         {/* Scrollable Category Buttons */}
         <Box
           sx={{
@@ -121,7 +136,7 @@ function HomePage() {
             paddingBottom: 2,
             scrollbarWidth: "none",
             "&::-webkit-scrollbar": {
-              display: "none", 
+              display: "none",
             },
             zIndex: 2,
           }}
@@ -154,7 +169,7 @@ function HomePage() {
           ))}
         </Box>
       </Box>
- 
+
       {/* Recently Listed Products */}
       <Box sx={{ mt: 4, marginBottom: 3, overflowX: "auto", whiteSpace: "nowrap", px: 2 }}>
         <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, marginLeft: 2 }}>
@@ -170,7 +185,7 @@ function HomePage() {
             paddingBottom: 2,
             scrollbarWidth: "none",
             "&::-webkit-scrollbar": {
-              display: "none", 
+              display: "none",
             },
           }}
         >
@@ -239,5 +254,5 @@ function HomePage() {
     </>
   );
 }
- 
+
 export default HomePage;
