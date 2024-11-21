@@ -20,7 +20,7 @@ const Sidebar = ({ users, selectedUser, setSelectedUser, viewSellerChats, toggle
     {/* Header */}
     <Box display="flex" justifyContent="space-between" alignItems="center" padding="16px" borderBottom="1px solid #ddd">
       <Typography variant="h6" fontWeight="bold" color="#444">
-        {viewSellerChats ? "Chats with Sellers" : "Chats with Buyers"}
+        {viewSellerChats ? "Chat with Sellers" : "Chat with Buyers"}
       </Typography>
       <IconButton onClick={handleMenuClick}>
         <MoreVertIcon />
@@ -58,7 +58,7 @@ const Sidebar = ({ users, selectedUser, setSelectedUser, viewSellerChats, toggle
         }}
       >
         <Typography variant="body1" fontWeight="bold">
-          {viewSellerChats ? "See Chats with Buyers" : "See Chats with Sellers"}
+          {viewSellerChats ? "See Chat with Buyers" : "See Chat with Sellers"}
         </Typography>
         <Typography variant="caption" color="#999">
           {messages.filter((msg) => msg.unread).length} Unread Messages

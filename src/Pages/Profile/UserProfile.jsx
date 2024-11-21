@@ -87,6 +87,28 @@ const UserProfile = () => {
                                 alt="Profile Picture"
                                 sx={{ width: 100, height: 100, position: 'absolute', top: -10 }}
                             />
+                             <Button 
+                                component={Link} 
+                                to="/account" 
+                                color="white"
+                                variant="outlined" 
+                                sx={{
+                                    width: "130px",            
+                                    height: "20px",           
+                                    padding: "10px 5px",      
+                                    lineHeight: 1,            
+                                    fontSize: "14px",         
+                                    position: "absolute",
+                                    top: -40,
+                                    left: 980,
+                                    transition: "all 0.3s ease", 
+                                    "&:hover": {
+                                        backgroundColor: "rgba(255, 255, 255, 0.2)", 
+                                    },
+                                }}
+                            >
+                                Edit Profile
+                            </Button>
                         </Box>
                     </Grid>
                     <Grid item xs sx={{ textAlign: 'left', marginLeft: 3 }}>

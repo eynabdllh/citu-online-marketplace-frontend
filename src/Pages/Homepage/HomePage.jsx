@@ -52,6 +52,8 @@ function HomePage() {
     fetchProducts();
   }, [loggedInUser]);
 
+  const sortedProducts = products.reverse();
+
   return (
     <>
       <Box
@@ -189,8 +191,8 @@ function HomePage() {
             },
           }}
         >
-          {Array.isArray(products) && products.length > 0 ? (
-            products.map((product) => (
+          {Array.isArray(sortedProducts) && sortedProducts.length > 0 ? (
+            sortedProducts.map((product) => (
               <Box
                 key={product.code}
                 sx={{
