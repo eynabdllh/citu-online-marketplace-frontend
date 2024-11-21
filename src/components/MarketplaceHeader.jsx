@@ -68,11 +68,8 @@ const MarketplaceHeader = () => {
       case location.pathname === '/message':
         setActiveButton('Message');
         break;
-      case location.pathname === '/feedback':
-        setActiveButton('Feedback');
-        break;
-      case location.pathname === '/bookmark':
-        setActiveButton('Saved Items');
+      case location.pathname === '/profile':
+        setActiveButton('Profile');
         break;
       default:
         setActiveButton('');
@@ -116,11 +113,8 @@ const MarketplaceHeader = () => {
       case 'Message':
         navigate('/message');
         break;
-      case 'Feedback':
-        navigate('/feedback');
-        break;
-      case 'Saved Items':
-        navigate('/bookmark');
+      case 'Profile':
+        navigate('/profile');
         break;
       default:
         navigate('/');
@@ -267,8 +261,8 @@ const MarketplaceHeader = () => {
       </AppBar>
 
       {/* Nav Bar */}
-      <Box sx={{ display: 'flex', justifyContent: 'space-around', bgcolor: '#89343b', height: '50px' }}>
-        {['Home', 'Buy', 'Message', 'Feedback'].map((label) => (
+      <Box sx={{ display: 'flex', justifyContent: 'center', bgcolor: '#89343b', height: '50px' }}>
+        {['Home', 'Buy', 'Message', 'Profile'].map((label) => (
           <Button
             key={label}
             sx={activeButton === label ? activeButtonStyle : baseButtonStyle}
