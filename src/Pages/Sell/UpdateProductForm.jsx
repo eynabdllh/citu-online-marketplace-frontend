@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { TextField, Button, Container, Typography, Box, FormControl, InputLabel, MenuItem, Select } from '@mui/material';
+import { TextField, Button, Container, Typography, Box, FormControl, InputLabel, MenuItem, Select, Modal} from '@mui/material';
 import { useNavigate } from 'react-router-dom'; 
 import '../../App.css';
 
@@ -69,7 +69,9 @@ const UpdateProductForm = ({ product, onUpdateSuccess }) => {
   return (
     <Container component="main" maxWidth="sm">
       <Box sx={{ marginTop: 1, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Typography variant="h5" sx={{ fontSize: '30px', fontWeight: '800', color: '#89343b' }}>Update Product</Typography>
+      <Typography variant="h5" sx={{ fontSize:'30px', fontWeight: 'bold', mb: 2, color: '#89343b', justifyContent:'center', display:'flex' }}>
+          Update Product
+        </Typography>
         <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1 }}>
           <TextField
             margin="normal"

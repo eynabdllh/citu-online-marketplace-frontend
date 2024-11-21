@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom'; 
-import { Box, Typography, Card, CardMedia, CardContent, Button, Grid } from '@mui/material';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Box, Typography, Card, CardMedia, CardContent, Button, Grid, Modal } from '@mui/material';
 import axios from 'axios';
-import UpdateProductForm from '../Sell/UpdateProductForm'; 
+import UpdateProductForm from '../Sell/UpdateProductForm';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import '../../App.css';
 
@@ -10,9 +10,9 @@ const ViewforSeller = () => {
   const { code } = useParams();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [editing, setEditing] = useState(false);
+  const [editing, setEditing] = useState(false); // Controls the modal state
   const [message, setMessage] = useState(false);
-  const navigate = useNavigate(); 
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -30,7 +30,7 @@ const ViewforSeller = () => {
   }, [code]);
 
   const handleUpdateSuccess = () => {
-    setEditing(false);
+    setEditing(false); // Close modal after successful update
   };
 
   const handleDelete = async () => {
@@ -39,7 +39,7 @@ const ViewforSeller = () => {
       try {
         await axios.delete(`http://localhost:8080/api/product/deleteProduct/${code}`);
         alert('Product deleted successfully');
-        navigate('/home'); 
+        navigate('/home');
       } catch (error) {
         console.error('Error deleting product:', error);
         alert('Failed to delete the product');
@@ -52,64 +52,82 @@ const ViewforSeller = () => {
   }
 
   if (!product) {
-    return <Typography variant="h6">Sell Your Products Here!.</Typography>;
+    return <Typography variant="h6">Sell Your Products Here!</Typography>;
   }
 
   return (
-    <Box sx={{ padding: '16px',  justifyContent: 'center', display: 'flex', height:'530px' }}>
-      {editing ? (
-        <UpdateProductForm product={product} onUpdateSuccess={handleUpdateSuccess} />
-      ) : (
-        <Card>
-          <Grid container>
-            <Grid item xs={7}>
-              <CardMedia
-                component="img"
-                alt={product.name}
-                image={`http://localhost:8080/${product.imagePath}`}
-                onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/300x400'; }}
-                sx={{
-                  width: '300px',    
-                  height: '550px',   
-                  objectFit: 'cover', 
-                }}
-              />
-            </Grid>
-            <Grid item xs={5}>
-              <CardContent sx={{ marginLeft: 1, padding: '10px'}}>
-                <Typography variant="h5" gutterBottom >{product.name}</Typography>
-                <Typography variant="body1" sx={{ fontWeight: 'bold' }}>PHP {product.buyPrice.toFixed(2)}</Typography>
-                <Typography variant="body2" color="textSecondary" sx={{ marginBottom: '8px' }}>
-                  5.0 ★★★★★ | 10K+ Sold
-                </Typography>
-                <Button variant="contained" sx={{ bgcolor: '#89343b' }} onClick={() => setMessage(true)}>
-                    Message
-                  </Button>
-                <Button variant="contained" sx={{ bgcolor: '#89343b', marginLeft: '5px' }}>
-                  {<FavoriteBorderIcon />}
-                </Button>
-                <Typography variant="body2" color="textSecondary" sx={{ marginTop: '8px'}}>
-                  {product.pdtDescription}
-                </Typography>
-                <Typography variant="h7" color="black" display="block" sx={{ fontSize:'16px' }}>
-                  <strong>Status:</strong> {product.status}
-                </Typography>
-                <Typography variant="h7" color="black" display="block" sx={{ fontSize:'16px' }}>
-                  <strong>Condition:</strong> {product.conditionType}
-                </Typography>
-                <Box sx={{ display: 'flex', gap: '20px', marginTop: '16px' }}>
-                  <Button variant="contained" sx={{ bgcolor: '#89343b' }} onClick={() => setEditing(true)}>
-                    Update
-                  </Button>
-                  <Button variant="outlined" color="error" onClick={handleDelete}>
-                    Delete
-                  </Button>
-                </Box>
-              </CardContent>
-            </Grid>
+    <Box sx={{ padding: '16px', justifyContent: 'center', display: 'flex', height: '530px' }}>
+      <Card>
+        <Grid container>
+          <Grid item xs={7}>
+            <CardMedia
+              component="img"
+              alt={product.name}
+              image={`http://localhost:8080/${product.imagePath}`}
+              onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/300x400'; }}
+              sx={{
+                width: '300px',
+                height: '550px',
+                objectFit: 'cover',
+              }}
+            />
           </Grid>
-        </Card>
-      )}
+          <Grid item xs={5}>
+            <CardContent sx={{ marginLeft: 1, padding: '10px' }}>
+              <Typography variant="h5" gutterBottom>{product.name}</Typography>
+              <Typography variant="body1" sx={{ fontWeight: 'bold' }}>PHP {product.buyPrice.toFixed(2)}</Typography>
+              <Typography variant="body2" color="textSecondary" sx={{ marginBottom: '8px' }}>
+                5.0 ★★★★★ | 10K+ Sold
+              </Typography>
+              <Button variant="contained" sx={{ bgcolor: '#89343b' }} onClick={() => setMessage(true)}>
+                Message
+              </Button>
+              <Button variant="contained" sx={{ bgcolor: '#89343b', marginLeft: '5px' }}>
+                {<FavoriteBorderIcon />}
+              </Button>
+              <Typography variant="body2" color="textSecondary" sx={{ marginTop: '8px' }}>
+                {product.pdtDescription}
+              </Typography>
+              <Typography variant="h7" color="black" display="block" sx={{ fontSize: '16px' }}>
+                <strong>Status:</strong> {product.status}
+              </Typography>
+              <Typography variant="h7" color="black" display="block" sx={{ fontSize: '16px' }}>
+                <strong>Condition:</strong> {product.conditionType}
+              </Typography>
+              <Box sx={{ display: 'flex', gap: '20px', marginTop: '16px' }}>
+                <Button variant="contained" sx={{ bgcolor: '#89343b' }} onClick={() => setEditing(true)}>
+                  Update
+                </Button>
+                <Button variant="outlined" color="error" onClick={handleDelete}>
+                  Delete
+                </Button>
+              </Box>
+            </CardContent>
+          </Grid>
+        </Grid>
+      </Card>
+
+      {/* Update Product Modal */}
+      <Modal open={editing} onClose={() => setEditing(false)}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            bgcolor: 'white',
+            p: 4,
+            borderRadius: 2,
+            boxShadow: 24,
+            width: '90%',
+            maxWidth: 500,
+            maxHeight: '90vh', // Restrict maximum height to 90% of viewport height
+            overflowY: 'auto', // Enable vertical scrolling
+          }}
+        >
+          <UpdateProductForm product={product} onUpdateSuccess={handleUpdateSuccess} />
+        </Box>
+      </Modal>
     </Box>
   );
 };

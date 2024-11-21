@@ -71,6 +71,17 @@ const AddProductForm = ({ open, handleClose }) => { //changes
         }
       });
       alert(response.data.message || 'Product added successfully!');
+
+      // Clear the fields
+      setProductName('');
+      setDescription('');
+      setQuantity('');
+      setPrice('');
+      setImageFile(null);
+      setCategory('');
+      setStatus('');
+      setConditionType('');
+
       handleClose(); 
       navigate('/home');  
     } catch (error) {
@@ -97,7 +108,7 @@ const AddProductForm = ({ open, handleClose }) => { //changes
           overflowY: 'auto', // Enable vertical scrolling
         }}
       >
-        <Typography variant="h5" sx={{ fontWeight: 'bold', mb: 2, color: '#89343b', justifyContent:'center', display:'flex' }}>
+        <Typography variant="h5" sx={{ fontSize:'30px', fontWeight: 'bold', mb: 2, color: '#89343b', justifyContent:'center', display:'flex' }}>
           Add New Product
         </Typography>
         <Box component="form" onSubmit={handleSubmit}>
