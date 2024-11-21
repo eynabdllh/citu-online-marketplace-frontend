@@ -250,58 +250,78 @@ const BuyPage = () => {
           </Menu>
       </Box>
  
-      <Grid container spacing={2}>
-        {filteredProducts.length > 0 ? (
-          filteredProducts.map((product) => (
-            <Grid item xs={2.4} key={product.code}>
-              <Card
-                onClick={() => handleCardClick(product.code)}
-                sx={{
-                  width: '100%',
-                  marginLeft: '30px',
-                  marginTop: '20px',
-                  backgroundColor: 'transparent',
-                  boxShadow: 'none',
-                  transition: '0.3s',
-                  '&:hover': {
-                    boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
-                  },
-                }}
-              >
-                <Box sx={{ display: 'flex', alignItems: 'center', margin: '5px', color: 'gray', padding: '10px' }}>
-                  <Avatar />
-                  <Box sx={{ ml: 1 }}>
-                    <Typography variant="subtitle1" color="black" sx={{ lineHeight: 1, mb: 0, fontWeight: 500 }}>
-                      {product.sellerUsername} {/*username*/}
-                    </Typography>
-                    <Typography variant="subtitle2" color="gray" sx={{ mt: 0, fontSize: '12px' }}>
-                      2 months ago
-                    </Typography>
-                  </Box>
-                </Box>
- 
-                <CardMedia
-                  component="img"
-                  height="140"
-                  image={`http://localhost:8080/${product.imagePath}`}
-                  alt={product.name}
-                />
-                <CardContent>
-                  <Typography color="black" noWrap>
-                    {product.name}
-                  </Typography>
-                  <Typography variant="h6" noWrap sx={{ mt: 0, color: 'black' }}>
-                    {product.buyPrice}
-                  </Typography>
-                  <Typography variant="body1">{product.pdtDescription}</Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-          ))
-        ) : (
-          <Typography variant="h6">No products found</Typography>
-        )}
+      <Grid container spacing={2} sx={{ display: 'flex', justifyContent: 'flex-start' }}>
+  {filteredProducts.length > 0 ? (
+    filteredProducts.map((product) => (
+      <Grid item xs={12} sm={6} md={4} lg={3} key={product.code}>
+        <Card
+          onClick={() => handleCardClick(product.code)}
+          sx={{
+            width: '100%',
+            margin: '20px auto',
+            boxShadow: 'none',
+            backgroundColor: 'rgba(255, 255, 255, 0.4)',
+            border: '1px solid black',
+            transition: '0.3s',
+            '&:hover': {
+              boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
+            },
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center', margin: '5px', color: 'gray', padding: '10px' }}>
+            <Avatar />
+            <Box sx={{ ml: 1 }}>
+              <Typography variant="subtitle1" color="black" sx={{ lineHeight: 1, mb: 0, fontWeight: 500 }}>
+                {product.sellerUsername} {/* Seller's username */}
+              </Typography>
+              <Typography variant="subtitle2" color="gray" sx={{ mt: 0, fontSize: '12px' }}>
+                2 months ago
+              </Typography>
+            </Box>
+          </Box>
+
+          <CardMedia
+            background-size="cover"
+            component="img"
+            height="140"
+            image={`http://localhost:8080/${product.imagePath}`}
+            alt={product.name}
+          />
+
+          <CardContent>
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Box sx={{ flex: 1, mr: 2 }}>
+                <Typography color="black" noWrap sx={{ fontSize: '20px' }}>
+                  {product.name}
+                </Typography>
+
+                <Typography
+                  variant="body1"
+                  color="textSecondary"
+                  sx={{
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    maxWidth: '180px',
+                    fontSize: '15px',
+                  }}
+                >
+                  {product.pdtDescription}
+                </Typography>
+              </Box>
+
+              <Typography variant="h6" sx={{ color: 'black', whiteSpace: 'nowrap' }}>
+                <strong>₱{product.buyPrice}</strong>
+              </Typography>
+            </Box>
+          </CardContent>
+        </Card>
       </Grid>
+    ))
+  ) : (
+    <Typography variant="h6">No products found</Typography>
+  )}
+</Grid>
     </Box>
   );
 };
