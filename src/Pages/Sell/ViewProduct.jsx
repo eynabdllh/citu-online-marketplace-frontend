@@ -53,7 +53,7 @@ const ViewProduct = () => {
   }
 
   const handleChatRedirect = () => {
-    navigate(`/message/${sellerUsername}`);
+    navigate(`/message`); //navigate(`/message/${sellerUsername}`);
   };
 
   const handleLikeToggle = () => {
@@ -100,7 +100,7 @@ const ViewProduct = () => {
                     fontWeight: 'bold',
                     cursor: 'pointer',
                   }}
-                  onClick={() => navigate(`/profile/${sellerUsername}`)}
+                  onClick={() => navigate(`/profile`)} //onClick={() => navigate(`/profile/${sellerUsername}`)}
                 >
                  {sellerUsername}
                 </Typography>
