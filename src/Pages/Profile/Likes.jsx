@@ -16,7 +16,8 @@ const Likes = () => {
   };
 
   const handleCardClick = (code) => {
-    navigate(`product/${code}`);
+    console.log('Navigating to product:', code);
+    navigate(`/product/${code}`);
   };
 
   useEffect(() => {
@@ -26,7 +27,7 @@ const Likes = () => {
       try {
         const response = await axios.get(`http://localhost:8080/api/product/getAllProducts/${loggedInUser}`);
         const allProducts = response.data;
-  
+        
         const liked = allProducts.filter((product) => likedProductIds.includes(product.code));
         setLikedProducts(liked);
       } catch (error) {
@@ -123,6 +124,7 @@ const Likes = () => {
         {likedProducts.map((product) => (
           <Grid item xs={2.4} key={product.code}>
             <Card
+              onClick={() => handleCardClick(product.code)}
               sx={{
                 width: '100%',
                 marginLeft: '30px',
@@ -134,7 +136,6 @@ const Likes = () => {
                   boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
                 },
               }}
-              onClick={() => handleCardClick(product.code)}
             >
               <Box sx={{ display: 'flex', alignItems: 'center', margin: '5px', color: 'gray', padding: '10px' }}>
                 <Avatar src={`http://localhost:8080/${product.sellerProfileImage}`} />
