@@ -52,6 +52,7 @@ const ViewforSeller = () => {
     setEditing(true); 
   };
 
+  //Deletes Products
   const handleDelete = async () => {
     const confirmDelete = window.confirm('Are you sure you want to delete this product?');
     if (confirmDelete) {
@@ -115,7 +116,7 @@ const ViewforSeller = () => {
                     <StarIcon
                       key={index}
                       sx={{
-                        color: index < product.sellerRating ? '#FFD700' : '#FFD700', //color: index < product.sellerRating ? '#FFD700' : '#ccc',
+                        color: index < product.sellerRating ? '#FFD700' : '#FFD700', 
                         fontSize: '16px',
                       }}
                     />
