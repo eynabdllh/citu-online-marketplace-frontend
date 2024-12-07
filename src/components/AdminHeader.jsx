@@ -5,6 +5,7 @@ import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { notifications } from '../Pages/Admin/AdminNotifications';
+import axios from 'axios';
 
 const AdminHeader = () => {
   const navigate = useNavigate();
@@ -13,6 +14,7 @@ const AdminHeader = () => {
   const [activeButton, setActiveButton] = useState('Dashboard');
   const firstName = sessionStorage.getItem('firstName');
   const [notificationAnchor, setNotificationAnchor] = useState(null);
+  const [profilePhoto, setProfilePhoto] = useState(''); 
 
   const handleClick = (event) => {
     setAnchor(event.currentTarget);
@@ -91,6 +93,26 @@ const AdminHeader = () => {
     }
   }, [location.pathname]);
 
+  useEffect(() => {
+    const fetchProfileData = async () => {
+      const username = sessionStorage.getItem('username');
+      try {
+        const response = await axios.get(`http://localhost:8080/api/admin/getAdminRecord/${username}`);
+        if (response.status === 200) {
+          const { profilePhoto } = response.data;
+
+          if (profilePhoto) {
+            setProfilePhoto(`http://localhost:8080/profile-images/${profilePhoto}`);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchProfileData();
+  }, []);
+
   return (
     <Box>
       <AppBar position="static" sx={{ backgroundColor: 'transparent', color: 'black', boxShadow: 1 }}>
@@ -135,7 +157,7 @@ const AdminHeader = () => {
               color="black" 
               aria-label="profile"
             >
-              <Avatar sx={{ width: 32, height: 32 }} />
+              <Avatar src={profilePhoto} sx={{ width: 32, height: 32 }} />
               <Typography variant="subtitle1" sx={{ ml: 1 }}>
                 {firstName}
               </Typography>
