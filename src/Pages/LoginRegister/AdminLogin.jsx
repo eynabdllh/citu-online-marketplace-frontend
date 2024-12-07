@@ -6,7 +6,7 @@ import '../../assets/static/Login.css';
 import logo from '../../assets/img/logocit-1.png';
 import cit from '../../assets/img/cit-1.jpg';
 
-const Login = () => {
+const AdminLogin = () => {
     const [credentials, setCredentials] = useState({ username: '', password: '' });
     const [errorMessage, setErrorMessage] = useState('');
     const { login } = useAuth(); // Use login function from AuthContext
@@ -22,7 +22,7 @@ const Login = () => {
   
         console.log('Logging in with credentials:', credentials);
         try {
-            const response = await axios.post('http://localhost:8080/api/seller/login', credentials);
+            const response = await axios.post('http://localhost:8080/api/admin/login', credentials);
             console.log('Login Successful', response.data);
             const userData = response.data;
 
@@ -41,7 +41,7 @@ const Login = () => {
             <div className="form-container">
                 <img src={logo} alt="Logo" className="logo" />
                 <h2>Welcome to CIT-U Marketplace</h2>
-                <span>Student Access Module</span>
+                <span>Admin Access Module</span>
                 <form onSubmit={handleLogin}>
                     {errorMessage && 
                     <div className="error-message">{errorMessage}</div>
@@ -66,7 +66,6 @@ const Login = () => {
                     </div>
                     <div className="button-container">
                         <button type="submit">Login</button>
-                        <p className="signup-text">Don't have an account? <Link to="/register">Sign up for free</Link></p>
                     </div>
                 </form>
             </div>
@@ -77,4 +76,4 @@ const Login = () => {
     );
 };
 
-export default Login;
+export default AdminLogin;

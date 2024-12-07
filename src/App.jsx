@@ -9,6 +9,7 @@ import HomePage from './Pages/Homepage/HomePage';
 import BuyPage from './Pages/Buy/BuyPage';
 import Register from './Pages/LoginRegister/Register';
 import Login from './Pages/LoginRegister/Login';
+import AdminLogin from './Pages/LoginRegister/AdminLogin';
 import UserAccount from './Pages/Profile/UserAccount';
 import UserProfile from './Pages/Profile/UserProfile';
 import Likes from './Pages/Profile/Likes';
@@ -25,10 +26,11 @@ const App = () => {
   return (
     <AuthProvider> 
       <div>
-        {location.pathname !== '/' && location.pathname !== '/register' && <MarketplaceHeader />}
+        {location.pathname !== '/' && location.pathname !== '/register' && location.pathname !== '/admin' && <MarketplaceHeader />}
         
         <Routes>
           <Route path="/" element={<Login />} /> 
+          <Route path="/admin" element={<AdminLogin />} /> 
           <Route path="/home" element={<HomePage />} />
           <Route path="/register" element={<Register />} />
           <Route path="/account" element={<UserAccount />} />
