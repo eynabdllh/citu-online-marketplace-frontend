@@ -39,20 +39,18 @@ function HomePage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get(
-          `http://localhost:8080/api/product/getAllProducts/${loggedInUser}`
-        );
-        setProducts(response.data);
+        const response = await axios.get('http://localhost:8080/api/product/getAllProducts');
+        setProducts(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
-        console.error("Error fetching products:", error);
-      } finally {
-        setLoading(false);
+        console.error('Error fetching products:', error);
+        setProducts([]);
       }
     };
-    fetchProducts();
-  }, [loggedInUser]);
 
-  const sortedProducts = products.reverse();
+    fetchProducts();
+  }, []);
+
+  const sortedProducts = Array.isArray(products) ? [...products].reverse() : [];
 
   return (
     <>

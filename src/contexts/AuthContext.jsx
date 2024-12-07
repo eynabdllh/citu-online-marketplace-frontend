@@ -13,6 +13,7 @@ export const AuthProvider = ({ children }) => {
     sessionStorage.setItem('address', userData.address);
     sessionStorage.setItem('contactNo', userData.contactNo);
     sessionStorage.setItem('email', userData.email);
+    sessionStorage.setItem('role', userData.role);
   };
 
   const logout = () => {

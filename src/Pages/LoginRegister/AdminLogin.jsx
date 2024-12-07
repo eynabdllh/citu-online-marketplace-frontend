@@ -26,10 +26,13 @@ const AdminLogin = () => {
             console.log('Login Successful', response.data);
             const userData = response.data;
 
+            // Add role to userData
+            userData.role = 'ADMIN';
+            
             // Call login from AuthContext with the user data
             login(userData);
             setErrorMessage('')
-            navigate('/home');
+            navigate('/admin/dashboard');
         } catch (error) {
             setErrorMessage('Invalid username or password');
             console.error('Error logging in: ', error);

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { AppBar, Toolbar, IconButton, Typography, Button, Box, Menu, MenuItem, Avatar } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Typography, Button, Box, Menu, MenuItem, Avatar, Badge } from '@mui/material';
 import Person2OutlinedIcon from '@mui/icons-material/Person2Outlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
@@ -8,7 +8,7 @@ import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNone
 import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
-import AddProductForm from '../Pages/Sell/AddProductForm'; // Adjust the import path as needed
+import AddProductForm from '../Pages/Sell/AddProductForm'
 
 const MarketplaceHeader = () => {
   const [openModal, setOpenModal] = useState(false);
@@ -19,6 +19,11 @@ const MarketplaceHeader = () => {
   const open = Boolean(anchor);
   const firstName = sessionStorage.getItem('firstName');
   const [profilePhoto, setProfilePhoto] = useState(''); 
+  const [notificationAnchor, setNotificationAnchor] = useState(null);
+  const [notifications, setNotifications] = useState([
+    { id: 1, message: 'New message from seller', time: '2 minutes ago' },
+    { id: 2, message: 'Your item was liked', time: '1 hour ago' },
+  ]);
 
   const handleClick = (event) => {
     setAnchor(event.currentTarget);
@@ -50,6 +55,14 @@ const MarketplaceHeader = () => {
 
   const handleCloseModal = () => {
     setOpenModal(false);
+  };
+
+  const handleNotificationClick = (event) => {
+    setNotificationAnchor(event.currentTarget);
+  };
+
+  const handleNotificationClose = () => {
+    setNotificationAnchor(null);
   };
 
   const baseButtonStyle = { width: '250px', color: 'white' };
@@ -94,7 +107,6 @@ const MarketplaceHeader = () => {
             if (response.status === 200) {
                 const { profilePhoto } = response.data;
 
-                // Construct image URL using the server path
                 if (profilePhoto) {
                     setProfilePhoto(`http://localhost:8080/profile-images/${profilePhoto}`);
                 }
@@ -152,9 +164,31 @@ const MarketplaceHeader = () => {
           <IconButton edge="end" color="black"  onClick={handleLikesClick} sx={{marginLeft: "25px"}}>
               <FavoriteBorderOutlinedIcon sx={{ fontSize: "30px" }}/>
           </IconButton>
-          <IconButton edge="end" color="black" sx={{marginLeft: "10px"}}>
-              <NotificationsNoneOutlinedIcon sx={{ fontSize: "30px"}}/>
-          </IconButton>
+          <IconButton
+              onClick={handleNotificationClick}
+              edge="end"
+              color="black"
+              sx={{
+                marginLeft: "10px",
+                marginTop: "20px"
+              }}
+            >
+              <Badge 
+                badgeContent={notifications.length} 
+                color="error"
+                sx={{
+                  '& .MuiBadge-badge': {
+                    fontSize: '12px',
+                    height: '20px',
+                    minWidth: '20px',
+                    marginTop: '5px',   
+                    marginRight: '3px'
+                  }
+                }}
+              >
+                <NotificationsNoneOutlinedIcon sx={{ fontSize: "30px" }}/>
+              </Badge>
+            </IconButton>
           <IconButton edge="end" color="black" onClick={handleMessageClick} sx={{marginLeft: "10px"}}>
               <MailOutlineOutlinedIcon sx={{ fontSize: "30px"}}/>
           </IconButton>
@@ -266,6 +300,68 @@ const MarketplaceHeader = () => {
               <LogoutOutlinedIcon style={{ marginLeft: '-4px', marginRight: '8px' }} />
                 Logout
             </MenuItem>
+        </Menu>
+        {/* Notification Menu */}
+        <Menu
+          anchorEl={notificationAnchor}
+          open={Boolean(notificationAnchor)}
+          onClose={handleNotificationClose}
+          PaperProps={{
+            sx: {
+              mt: 0,
+              width: 320,
+              maxHeight: 400,
+              backgroundColor: '#f0f0f0',
+              boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)'
+            }
+          }}
+          transformOrigin={{ horizontal: 'right', vertical: 'top' }}
+          anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
+        >
+          <MenuItem
+            sx={{
+              color: 'gray',
+              pointerEvents: 'none',
+              fontWeight: 'bold',
+              fontSize: '0.875rem',
+              py: 1,
+              borderBottom: '1px solid #eee'
+            }}
+          >
+            Notifications
+          </MenuItem>
+          {notifications.map((notification) => (
+            <MenuItem
+              key={notification.id}
+              onClick={handleNotificationClose}
+              sx={{
+                py: 1.5,
+                px: 2,
+                borderBottom: '1px solid #f5f5f5',
+                '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
+              }}
+            >
+              <Box>
+                <Typography variant="body2" sx={{ mb: 0.5 }}>
+                  {notification.message}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {notification.time}
+                </Typography>
+              </Box>
+            </MenuItem>
+          ))}
+          <MenuItem
+            sx={{
+              justifyContent: 'center',
+              color: '#89343b',
+              py: 1,
+              fontWeight: 'medium',
+              '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
+            }}
+          >
+            View All Notifications
+          </MenuItem>
         </Menu>
         </Toolbar>
       </AppBar>
