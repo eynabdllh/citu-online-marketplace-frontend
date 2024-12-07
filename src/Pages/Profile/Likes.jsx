@@ -5,32 +5,51 @@ import SearchIcon from "@mui/icons-material/Search";
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import axios from 'axios';
 
-const SearchBar = () => {
+const Likes = () => {
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
+  const [likedProducts, setLikedProducts] = useState([]);
+  const loggedInUser = sessionStorage.getItem('username');
 
   const handleInputChange = (event) => {
     setQuery(event.target.value);
   };
 
   const handleCardClick = (code) => {
-    navigate(`product/${code}`);
+    console.log('Navigating to product:', code);
+    navigate(`/product/${code}`);
   };
 
   useEffect(() => {
-    const fetchProducts = async () => {
+    const handleLikesUpdated = async () => {
+      const likedProductIds = JSON.parse(localStorage.getItem('likedProducts')) || [];
+      
       try {
-        const response = await axios.get('http://localhost:8080/api/product/getAllProducts');
-        //setProducts(response.data);
+        const response = await axios.get(`http://localhost:8080/api/product/getAllProducts/${loggedInUser}`);
+        const allProducts = response.data;
+        
+        const liked = allProducts.filter((product) => likedProductIds.includes(product.code));
+        setLikedProducts(liked);
       } catch (error) {
         console.error('Error fetching products:', error);
-      } finally {
-        //setLoading(false);
       }
     };
-
-    fetchProducts();
-  }, []);
+  
+    // Add event listener for likes update
+    window.addEventListener('likesUpdated', handleLikesUpdated);
+  
+    // Fetch liked products initially
+    handleLikesUpdated();
+  
+    return () => {
+      // Remove event listener on cleanup
+      window.removeEventListener('likesUpdated', handleLikesUpdated);
+    };
+  }, [loggedInUser]);
+  
+  
+  
+  
 
   return (
     <Box sx={{ display: "flex", flexDirection: "column", width: "100%", marginTop: "10px" }}>
@@ -102,47 +121,60 @@ const SearchBar = () => {
       </Typography>
 
       <Grid container spacing={2}>
-        <Grid item xs={2.4}>
-          <Card
-            sx={{
-              width: '100%',
-              marginLeft: '30px',
-              marginTop: '20px',
-              backgroundColor: 'transparent', 
-              boxShadow: 'none', 
-              transition: '0.3s', 
-              '&:hover': {
-                boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
-              },
-            }}
-          >
-            <Box sx={{ display: 'flex', alignItems: 'center', margin: '5px', color: 'gray', padding: '10px'}}
-              >
-              <Avatar />
-              <Box sx={{ ml: 1}}> 
-                <Typography variant="subtitle1" color="black" sx={{ lineHeight: 1, mb: 0, fontWeight: 500 }}>karenleankay</Typography>
-                <Typography variant="subtitle2" color="gray" sx={{ mt: 0, fontSize: "12px"}}>2 months ago</Typography>
-              </Box>
-            </Box>
-            <CardMedia
-              component="img"
-              height="140"
-              onError={(e) => {
-                e.target.onerror = null;
-                e.target.src = 'https://via.placeholder.com/140';
+        {likedProducts.map((product) => (
+          <Grid item xs={2.4} key={product.code}>
+            <Card
+              onClick={() => handleCardClick(product.code)}
+              sx={{
+                width: '100%',
+                marginLeft: '30px',
+                marginTop: '20px',
+                backgroundColor: 'transparent',
+                boxShadow: 'none',
+                transition: '0.3s',
+                '&:hover': {
+                  boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.2)',
+                },
               }}
-            />
-            <CardContent>
-            <Typography color="black" noWrap>Garden Floral Appliques Champagne Maxi Dress</Typography>
-              <Typography variant="h6" noWrap sx={{ mt: 0, fontWeight: "bold"}}>PHP 2,999</Typography>
-              <Typography variant="body1">Condition</Typography>
-              <FavoriteIcon sx={{ color: 'red' }}/>
-            </CardContent>
-          </Card>
-        </Grid>
+            >
+              <Box sx={{ display: 'flex', alignItems: 'center', margin: '5px', color: 'gray', padding: '10px' }}>
+                <Avatar src={`http://localhost:8080/${product.sellerProfileImage}`} />
+                <Box sx={{ ml: 1 }}>
+                  <Typography variant="subtitle1" color="black" sx={{ lineHeight: 1, mb: 0, fontWeight: 500 }}>
+                    {product.sellerUsername}
+                  </Typography>
+                  <Typography variant="subtitle2" color="gray" sx={{ mt: 0, fontSize: '12px' }}>
+                    2 months ago
+                  </Typography>
+                </Box>
+              </Box>
+              <CardMedia
+                component="img"
+                height="140"
+                image={`http://localhost:8080/${product.imagePath}`}
+                alt={product.name}
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = 'https://via.placeholder.com/140';
+                }}
+              />
+              <CardContent>
+                <Typography color="black" noWrap>
+                  {product.name}
+                </Typography>
+                <Typography variant="h6" noWrap sx={{ mt: 0, fontWeight: 'bold' }}>
+                  PHP {product.buyPrice.toFixed(2)}
+                </Typography>
+                <Typography variant="body1">{product.conditionType}</Typography>
+                <FavoriteIcon sx={{ color: 'red' }} />
+              </CardContent>
+            </Card>
+          </Grid>
+        ))}
       </Grid>
+
     </Box>
   );
 };
 
-export default SearchBar;
+export default Likes;

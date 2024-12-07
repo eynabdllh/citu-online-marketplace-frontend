@@ -44,6 +44,14 @@ const ViewProduct = () => {
     fetchProductDetails();
   }, [code]); 
 
+  useEffect(() => {
+    const likedProducts = JSON.parse(localStorage.getItem('likedProducts')) || [];
+    if (likedProducts.includes(product?.code)) {
+      setLiked(true);
+    }
+  }, [product?.code]);
+  
+
   if (loading) {
     return <Typography variant="h6">Loading product details...</Typography>;
   }
@@ -53,13 +61,27 @@ const ViewProduct = () => {
   }
 
   const handleChatRedirect = () => {
-    navigate(`/message/${sellerUsername}`);
+    navigate(`/message`); //navigate(`/message/${sellerUsername}`);
   };
 
   const handleLikeToggle = () => {
-    setLiked(!liked);
-  };
+    const likedProducts = JSON.parse(localStorage.getItem('likedProducts')) || [];
+  
+    if (liked) {
+      const updatedLikes = likedProducts.filter((id) => id !== product.code);
+      localStorage.setItem('likedProducts', JSON.stringify(updatedLikes));
+      console.log('Updated Likes (removed):', updatedLikes); // Debug log
+    } else {
+      likedProducts.push(product.code);
+      localStorage.setItem('likedProducts', JSON.stringify(likedProducts));
+      console.log('Updated Likes (added):', likedProducts); // Debug log
+    }
 
+    window.dispatchEvent(new Event('likesUpdated'));
+    setLiked(!liked);
+};
+
+  
   return (
     <Box sx={{ padding: '20px', justifyContent: 'center', display: 'flex', flexDirection: 'column' }}>
       <Card sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, borderRadius: '8px', boxShadow: 3, width: '90%', height:'75vh', margin: '0 auto' }}>
@@ -100,7 +122,7 @@ const ViewProduct = () => {
                     fontWeight: 'bold',
                     cursor: 'pointer',
                   }}
-                  onClick={() => navigate(`/profile/${sellerUsername}`)}
+                  onClick={() => navigate(`/profile`)} //onClick={() => navigate(`/profile/${sellerUsername}`)}
                 >
                  {sellerUsername}
                 </Typography>

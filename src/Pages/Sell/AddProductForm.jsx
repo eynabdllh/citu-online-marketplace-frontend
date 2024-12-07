@@ -149,7 +149,6 @@ const AddProductForm = ({ open, handleClose }) => {
             <InputLabel>Status</InputLabel>
             <Select value={status} onChange={(e) => setStatus(e.target.value)} required>
               <MenuItem value="Available">Available</MenuItem>
-              <MenuItem value="Sold">Sold</MenuItem>
             </Select>
           </FormControl>
           <FormControl fullWidth margin="normal">
