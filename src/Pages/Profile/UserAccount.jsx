@@ -200,7 +200,7 @@ const UserAccount = (props) => {
 
                     if (profilePhoto) {
                         setPreviewImage(`http://localhost:8080/profile-images/${profilePhoto}`);
-                }
+                    }
                 }
             } catch (error) {
                 console.error('Error fetching user data:', error);
@@ -346,7 +346,7 @@ const UserAccount = (props) => {
                         )}
                     </Box>
                     
-                    <Button
+                <Button
                     variant="outlined"
                     onClick={editMode ? handleSave : toggleEditMode}
                     sx={{ mt: 3, color: 'black', borderColor: 'rgba(0, 0, 0, 0.23)', borderRadius: '20px', textTransform: 'none' }}
