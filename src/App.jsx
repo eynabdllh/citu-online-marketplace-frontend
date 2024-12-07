@@ -16,6 +16,7 @@ import { AuthProvider } from './contexts/AuthContext';
 import ViewforSeller from './Pages/Sell/ViewforSeller';
 import Chat from './Pages/Messages/Chat';
 import NotFound from './Pages/NotFound/NotFound';
+import ProductSellers from './Pages/Admin/ProductSellers';
 import './App.css';
 
 const App = () => {
@@ -42,6 +43,7 @@ const App = () => {
           <Route path="/update/:code" element={<UpdateProductForm />} />
           <Route path="/message" element={<Chat />} />
           <Route path="*" element={<NotFound />} />
+          <Route path="/admin/productsellers" element={<ProductSellers />} />
         </Routes>
       </div>
     </AuthProvider>
