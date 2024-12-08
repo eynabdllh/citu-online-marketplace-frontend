@@ -92,7 +92,7 @@ const AdminHeader = () => {
       case 'Product Management':
         navigate('/admin/productsellers');
         break;
-      case 'Product Listing Approval':
+      case 'Product Approval':
         navigate('/admin/approvals');
         break;
       default:
@@ -146,7 +146,7 @@ const AdminHeader = () => {
         setActiveButton('Product Management');
         break;
       case location.pathname === '/admin/approvals':
-        setActiveButton('Product Listing Approval');
+        setActiveButton('Product Approval');
         break;
       default:
         setActiveButton('');
@@ -179,10 +179,11 @@ const AdminHeader = () => {
     <Box>
       <AppBar position="static" sx={{ backgroundColor: 'transparent', color: 'black', boxShadow: 1 }}>
         <Toolbar>
-          <IconButton edge="start" color="inherit">
+          <IconButton edge="start" color="inherit" onClick={() => navigate('/admin/dashboard')}>
             <img
               src='/images/logoCIT.png'
               alt="Logo"
+              
               style={{ width: '270px', height: '60px' }}
             />
           </IconButton>
