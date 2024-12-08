@@ -1,32 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Box,
-  TextField,
-  Checkbox,
-  TableSortLabel,
-  Menu,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Select,
-  Chip,
-  Snackbar,
-  Alert,
-  Breadcrumbs,
-  Link,
-  Typography,
-  Button,
-  IconButton,
-  TablePagination,
-  Grid,
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
+  Paper, Box, TextField, Checkbox, TableSortLabel, Menu, MenuItem, FormControl,
+  InputLabel, Select, Chip, Snackbar, Alert, Breadcrumbs, Link, Typography, 
+  Button, IconButton, TablePagination, Grid,
 } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import {
@@ -38,7 +15,7 @@ import {
   Add as AddIcon,
 } from '@mui/icons-material';
 import * as XLSX from 'xlsx';
-import AddProductModal from './AddProductModal';
+import AddNewProductModal from './AddNewProductModal';
 import UpdateProductModal from './UpdateProductModal';
 
 const ProductSellers = () => {
@@ -229,20 +206,31 @@ const ProductSellers = () => {
     });
   };
 
-  const handleProductAction = (action, product) => {
+  const handleProductAction = async (action, product) => {
     switch (action) {
       case 'edit':
         setSelectedProduct(product);
         setUpdateModalOpen(true);
         break;
       case 'delete':
-        const remainingProducts = products.filter(p => p.product.code !== product.product.code);
-        setProducts(remainingProducts);
-        setToast({
-          open: true,
-          message: `Product ${product.product.name} has been deleted`,
-          severity: 'success'
-        });
+        try {
+          await axios.delete(`http://localhost:8080/api/admin/deleteproducts/${product.product.code}`);
+          const updatedProducts = products.filter(p => p.product.code !== product.product.code);
+          setProducts(updatedProducts);
+          setFilteredProducts(updatedProducts);
+          setToast({
+            open: true,
+            message: `Product ${product.product.name} has been deleted`,
+            severity: 'success'
+          });
+        } catch (error) {
+          console.error('Failed to delete product:', error);
+          setToast({
+            open: true,
+            message: error.response?.data?.message || 'Failed to delete product',
+            severity: 'error'
+          });
+        }
         break;
       default:
         break;
@@ -307,17 +295,19 @@ const ProductSellers = () => {
 
   const handleDeleteProducts = async (productsToDelete) => {
     try {
-      const productIds = Array.isArray(productsToDelete) 
-        ? productsToDelete.map(p => p.product.id)
-        : [productsToDelete.product.id];
+      const productCodes = Array.isArray(productsToDelete) 
+        ? productsToDelete.map(p => p.product.code)
+        : [productsToDelete.product.code];
 
-      // Assuming your API endpoint accepts an array of IDs
-      await axios.delete('http://localhost:8080/api/admin/products', {
-        data: { ids: productIds }
-      });
+      // Delete each product one by one
+      await Promise.all(
+        productCodes.map(code => 
+          axios.delete(`http://localhost:8080/api/admin/deleteproducts/${code}`)
+        )
+      );
 
       const updatedProducts = products.filter(p => 
-        !productIds.includes(p.product.id)
+        !productCodes.includes(p.product.code)
       );
       
       setProducts(updatedProducts);
@@ -325,7 +315,7 @@ const ProductSellers = () => {
       setSelectedProducts([]);
       setToast({
         open: true,
-        message: `${productIds.length > 1 ? 'Products' : 'Product'} deleted successfully`,
+        message: `${productCodes.length > 1 ? 'Products' : 'Product'} deleted successfully`,
         severity: 'success'
       });
     } catch (error) {
@@ -749,19 +739,9 @@ const ProductSellers = () => {
         product={selectedProduct?.product}
       />
 
-      <AddProductModal
+      <AddNewProductModal
         open={addModalOpen}
         onClose={() => setAddModalOpen(false)}
-        onAdd={(newProduct) => {
-          const updatedProducts = [...products, newProduct];
-          setProducts(updatedProducts);
-          setFilteredProducts(updatedProducts);
-          setToast({
-            open: true,
-            message: 'Product added successfully',
-            severity: 'success'
-          });
-        }}
       />
 
       <Snackbar

@@ -234,7 +234,7 @@ const AddProductForm = ({ open, handleClose }) => {
         open={snackbar.open} 
         autoHideDuration={3000} 
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
         <Alert 
           onClose={handleCloseSnackbar} 
