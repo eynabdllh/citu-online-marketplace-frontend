@@ -39,7 +39,7 @@ import {
 } from '@mui/icons-material';
 import * as XLSX from 'xlsx';
 import AddProductModal from './AddProductModal';
-import EditProductModal from './EditProductModal';
+import UpdateProductModal from './UpdateProductModal';
 
 const ProductSellers = () => {
   const [products, setProducts] = useState([]);
@@ -54,7 +54,7 @@ const ProductSellers = () => {
   const [actionAnchorEl, setActionAnchorEl] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [addModalOpen, setAddModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [filters, setFilters] = useState({
     category: '',
     stockRange: { min: '', max: '' },
@@ -196,19 +196,23 @@ const ProductSellers = () => {
 
   const handleSelectAll = (event) => {
     if (event.target.checked) {
-      const allIds = filteredProducts.map(item => item.product.id);
-      setSelectedProducts(allIds);
+      const allCodes = filteredProducts
+        .filter(item => item?.product?.code)
+        .map(item => item.product.code);
+      setSelectedProducts(allCodes);
     } else {
       setSelectedProducts([]);
     }
   };
 
   const handleSelectOne = (event, product) => {
-    const productId = product.product.id;
+    if (!product?.product?.code) return;
+    
+    const productCode = product.product.code;
     setSelectedProducts(prev => 
       event.target.checked
-        ? [...prev, productId]
-        : prev.filter(id => id !== productId)
+        ? [...prev, productCode]
+        : prev.filter(code => code !== productCode)
     );
   };
 
@@ -229,7 +233,7 @@ const ProductSellers = () => {
     switch (action) {
       case 'edit':
         setSelectedProduct(product);
-        setEditModalOpen(true);
+        setUpdateModalOpen(true);
         break;
       case 'delete':
         const remainingProducts = products.filter(p => p.product.code !== product.product.code);
@@ -246,15 +250,46 @@ const ProductSellers = () => {
     setActionAnchorEl(null);
   };
 
-  const handleAddProduct = (newProduct) => {
-    const updatedProducts = [...products, newProduct];
-    setProducts(updatedProducts);
-    setFilteredProducts(updatedProducts);
-    setToast({
-      open: true,
-      message: 'Product added successfully',
-      severity: 'success'
-    });
+  const handleAddProduct = async (formData) => {
+    try {
+      const response = await axios.post(
+        'http://localhost:8080/api/admin/postproduct',
+        formData,
+        {
+          headers: {
+            'Content-Type': undefined,
+            'Accept': 'application/json'
+          },
+        }
+      );
+
+      if (response.status === 200 || response.status === 201) {
+        // Refresh the products list after adding
+        const productsResponse = await axios.get('http://localhost:8080/api/admin/products-with-sellers');
+        const newProducts = productsResponse.data;
+        
+        // Make sure we have valid data before updating state
+        if (Array.isArray(newProducts) && newProducts.every(item => item?.product?.code)) {
+          setProducts(newProducts);
+          setFilteredProducts(newProducts);
+          
+          setToast({
+            open: true,
+            message: 'Product added successfully',
+            severity: 'success'
+          });
+          
+          setAddModalOpen(false);
+        }
+      }
+    } catch (error) {
+      console.error('Error adding product:', error);
+      setToast({
+        open: true,
+        message: error.response?.data?.message || 'Failed to add product',
+        severity: 'error'
+      });
+    }
   };
 
   const handleEditProduct = (updatedProduct) => {
@@ -631,47 +666,49 @@ const ProductSellers = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredProducts.map((item, index) => (
-              <TableRow key={index}>
-                <TableCell padding="checkbox">
-                  <Checkbox
-                    checked={selectedProducts.includes(item.product.id)}
-                    onChange={(e) => {
-                      const productId = item.product.id;
-                      setSelectedProducts(prev => 
-                        e.target.checked 
-                          ? [...prev, productId]
-                          : prev.filter(id => id !== productId)
-                      );
-                    }}
-                  />
-                </TableCell>
-                <TableCell sx={{ py: 1 }}>{item.product.code}</TableCell>
-                <TableCell sx={{ py: 1 }}>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                    <img 
-                      src={`http://localhost:8080/${item.product.imagePath}`}
-                      alt={item.product.name}
-                      style={{ width: 50, height: 50, objectFit: 'cover' }}
+            {filteredProducts
+              .filter(item => item?.product)
+              .map((item, index) => (
+                <TableRow key={index}>
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={selectedProducts.includes(item.product.code)}
+                      onChange={(e) => {
+                        const productCode = item.product.code;
+                        setSelectedProducts(prev => 
+                          e.target.checked 
+                            ? [...prev, productCode]
+                            : prev.filter(code => code !== productCode)
+                        );
+                      }}
                     />
-                    {item.product.name}
-                  </Box>
-                </TableCell>
-                <TableCell sx={{ py: 1 }}>{item.product.pdtDescription}</TableCell>
-                <TableCell sx={{ py: 1 }}>{item.product.qtyInStock}</TableCell>
-                <TableCell sx={{ py: 1 }}>₱{item.product.buyPrice}</TableCell>
-                <TableCell sx={{ py: 1 }}>{item.product.category}</TableCell>
-                <TableCell sx={{ py: 1 }}>{item.sellerUsername}</TableCell>
-                <TableCell>
-                  <IconButton onClick={(e) => {
-                    setSelectedProduct(item);
-                    setActionAnchorEl(e.currentTarget);
-                  }}>
-                    <MoreVertIcon />
-                  </IconButton>
-                </TableCell>
-              </TableRow>
-            ))}
+                  </TableCell>
+                  <TableCell sx={{ py: 1 }}>{item.product.code}</TableCell>
+                  <TableCell sx={{ py: 1 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <img 
+                        src={`http://localhost:8080/${item.product.imagePath}`}
+                        alt={item.product.name}
+                        style={{ width: 50, height: 50, objectFit: 'cover' }}
+                      />
+                      {item.product.name}
+                    </Box>
+                  </TableCell>
+                  <TableCell sx={{ py: 1 }}>{item.product.pdtDescription}</TableCell>
+                  <TableCell sx={{ py: 1 }}>{item.product.qtyInStock}</TableCell>
+                  <TableCell sx={{ py: 1 }}>₱{item.product.buyPrice}</TableCell>
+                  <TableCell sx={{ py: 1 }}>{item.product.category}</TableCell>
+                  <TableCell sx={{ py: 1 }}>{item.sellerUsername}</TableCell>
+                  <TableCell>
+                    <IconButton onClick={(e) => {
+                      setSelectedProduct(item);
+                      setActionAnchorEl(e.currentTarget);
+                    }}>
+                      <MoreVertIcon />
+                    </IconButton>
+                  </TableCell>
+                </TableRow>
+              ))}
           </TableBody>
         </Table>
       </TableContainer>
@@ -706,22 +743,10 @@ const ProductSellers = () => {
         </MenuItem>
       </Menu>
 
-      <EditProductModal
-        open={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        product={selectedProduct}
-        onSave={(updatedProduct) => {
-          const updatedProducts = products.map(product =>
-            product.product.id === updatedProduct.product.id ? updatedProduct : product
-          );
-          setProducts(updatedProducts);
-          setFilteredProducts(updatedProducts);
-          setToast({
-            open: true,
-            message: 'Product updated successfully',
-            severity: 'success'
-          });
-        }}
+      <UpdateProductModal
+        open={updateModalOpen}
+        onClose={() => setUpdateModalOpen(false)}
+        product={selectedProduct?.product}
       />
 
       <AddProductModal
