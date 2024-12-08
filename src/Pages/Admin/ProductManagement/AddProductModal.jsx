@@ -79,17 +79,25 @@ const AddProductModal = ({ open, onClose, onAdd }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (validateForm()) {
-      onAdd({
-        product: {
-          ...productData,
-          qtyInStock: Number(productData.qtyInStock),
-          buyPrice: Number(productData.buyPrice)
-        },
-        sellerUsername: 'currentUser'
-      });
-      onClose();
+      try {
+        const formData = new FormData();
+        formData.append('code', Math.floor(Math.random() * 1000000));
+        formData.append('name', productData.name);
+        formData.append('pdtDescription', productData.pdtDescription);
+        formData.append('qtyInStock', productData.qtyInStock);
+        formData.append('buyPrice', productData.buyPrice);
+        formData.append('category', productData.category);
+        formData.append('image', selectedFile);
+        formData.append('sellerUsername', localStorage.getItem('username'));
+        formData.append('adminId', adminId);
+
+        onAdd(formData);
+        onClose();
+      } catch (error) {
+        console.error('Error preparing product data:', error);
+      }
     }
   };
 

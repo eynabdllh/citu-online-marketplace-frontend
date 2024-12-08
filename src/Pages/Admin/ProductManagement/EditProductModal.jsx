@@ -22,7 +22,8 @@ const EditProductModal = ({ open, onClose, product, onSave }) => {
     qtyInStock: '',
     buyPrice: '',
     category: '',
-    imagePath: ''
+    imagePath: '',
+    availability: 'Available'
   });
   const [selectedFile, setSelectedFile] = useState(null);
   const [errors, setErrors] = useState({});
@@ -71,6 +72,10 @@ const EditProductModal = ({ open, onClose, product, onSave }) => {
 
     if (!editData.category) {
       newErrors.category = 'Category is required';
+    }
+
+    if (!editData.availability) {
+      newErrors.availability = 'Availability status is required';
     }
 
     setErrors(newErrors);
@@ -167,6 +172,20 @@ const EditProductModal = ({ open, onClose, product, onSave }) => {
                 <MenuItem value="Accessories">Accessories</MenuItem>
                 <MenuItem value="Clothing">Clothing</MenuItem>
                 <MenuItem value="Books">Books</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          <Grid item xs={6}>
+            <FormControl fullWidth error={!!errors.availability}>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={editData.availability || ''}
+                label="Availability"
+                onChange={(e) => setEditData({...editData, availability: e.target.value})}
+              >
+                <MenuItem value="Available">Available</MenuItem>
+                <MenuItem value="Sold Out">Sold Out</MenuItem>
               </Select>
             </FormControl>
           </Grid>
