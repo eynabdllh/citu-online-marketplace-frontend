@@ -239,6 +239,8 @@ const MarketplaceHeader = () => {
           <IconButton edge="end" color="black" onClick={handleMessageClick} sx={{marginLeft: "10px"}}>
               <MailOutlineOutlinedIcon sx={{ fontSize: "30px"}}/>
           </IconButton>
+
+          <AddProductForm open={openModal} handleClose={handleCloseModal} />
           <Button
             variant="contained"
             color="primary"
@@ -457,7 +459,7 @@ const MarketplaceHeader = () => {
         </Menu>
         </Toolbar>
       </AppBar>
-      <AddProductForm open={openModal} handleClose={handleCloseModal} />
+      {/*<AddProductForm open={openModal} handleClose={handleCloseModal} />
 
       {/* Nav Bar */}
       <Box sx={{ display: 'flex', justifyContent: 'center', bgcolor: '#89343b', height: '50px' }}>
