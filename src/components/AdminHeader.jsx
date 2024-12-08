@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { AppBar, Toolbar, IconButton, Typography, Button, Box, Menu, MenuItem, Avatar, Badge } from '@mui/material';
+import { AppBar, Toolbar, IconButton, Typography, Button, Box, Menu, MenuItem, Avatar, Badge, Snackbar, Alert, Divider } from '@mui/material';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
-import { notifications } from '../Pages/Admin/AdminNotifications';
 import axios from 'axios';
 
 const AdminHeader = () => {
@@ -15,6 +14,58 @@ const AdminHeader = () => {
   const firstName = sessionStorage.getItem('firstName');
   const [notificationAnchor, setNotificationAnchor] = useState(null);
   const [profilePhoto, setProfilePhoto] = useState(''); 
+  const [notifications, setNotifications] = useState([
+    { 
+      id: 1, 
+      title: 'Product Approval Request',
+      content: 'New product "iPhone 15 Pro" needs your approval',
+      time: '2 minutes ago', 
+      read: false 
+    },
+    { 
+      id: 2, 
+      title: 'User Report',
+      content: 'A user reported an issue with order #12345',
+      time: '30 minutes ago', 
+      read: false 
+    },
+    { 
+      id: 3, 
+      title: 'System Update',
+      content: 'System maintenance and updates have been completed successfully',
+      time: '1 hour ago', 
+      read: false 
+    },
+    { 
+      id: 1, 
+      title: 'Product Approval Request',
+      content: 'New product "iPhone 15 Pro" needs your approval',
+      time: '1 hour ago', 
+      read: false 
+    },
+    { 
+      id: 2, 
+      title: 'User Report',
+      content: 'A user reported an issue with order #12345',
+      time: '2 hours ago', 
+      read: false 
+    },
+    { 
+      id: 3, 
+      title: 'System Update',
+      content: 'System maintenance and updates have been completed successfully',
+      time: '3 hours ago', 
+      read: false 
+    },
+    { 
+      id: 1, 
+      title: 'Product Approval Request',
+      content: 'New product "iPhone 15 Pro" needs your approval',
+      time: '3 hours ago', 
+      read: true 
+    },
+  ]);
+  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
   const handleClick = (event) => {
     setAnchor(event.currentTarget);
@@ -55,6 +106,15 @@ const AdminHeader = () => {
 
   const handleNotificationClose = () => {
     setNotificationAnchor(null);
+  };
+
+  const handleMarkAllAsRead = () => {
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setToast({
+      open: true,
+      message: 'All notifications marked as read',
+      severity: 'success'
+    });
   };
 
   const baseButtonStyle = {
@@ -113,6 +173,8 @@ const AdminHeader = () => {
     fetchProfileData();
   }, []);
 
+  const unreadCount = notifications.filter(notification => !notification.read).length;
+
   return (
     <Box>
       <AppBar position="static" sx={{ backgroundColor: 'transparent', color: 'black', boxShadow: 1 }}>
@@ -130,16 +192,19 @@ const AdminHeader = () => {
               onClick={handleNotificationClick}
               edge="end"
               color="black"
-              sx={{
+              sx={{ 
+                color: notificationAnchor ? '#89343b' : 'inherit',
                 marginLeft: "10px",
-                marginTop: "20px"
+                marginTop: "20px",
+                '&:hover': { color: '#89343b' }
               }}
             >
               <Badge 
-                badgeContent={notifications.length} 
+                badgeContent={unreadCount > 0 ? unreadCount : null}
                 color="error"
                 sx={{
                   '& .MuiBadge-badge': {
+                    color: 'white',
                     fontSize: '12px',
                     height: '20px',
                     minWidth: '20px',
@@ -223,50 +288,98 @@ const AdminHeader = () => {
             open={Boolean(notificationAnchor)}
             onClose={handleNotificationClose}
             PaperProps={{
-                sx: {
+              sx: {
                 mt: 0,
-                width: 320,
-                maxHeight: 400,
-                backgroundColor: '#f0f0f0',
-                boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)'
-                }
+                width: 360,
+                maxHeight: 480,
+                boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.15)',
+                '&::-webkit-scrollbar': {
+                  width: '8px',
+                },
+                '&::-webkit-scrollbar-thumb': {
+                  backgroundColor: 'rgba(0,0,0,0.2)',
+                  borderRadius: '4px',
+                },
+              }
             }}
             transformOrigin={{ horizontal: 'right', vertical: 'top' }}
             anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
-            >
-            <MenuItem
-              sx={{
-                color: 'gray',
-                pointerEvents: 'none',
-                fontWeight: 'bold',
-                fontSize: '0.875rem',
-                py: 1,
-                borderBottom: '1px solid #eee'
-              }}
-            >
-              Notifications
-            </MenuItem>
-            {notifications.map((notification) => (
-              <MenuItem
-                key={notification.id}
-                onClick={handleNotificationClose}
-                sx={{
-                  py: 1.5,
-                  px: 2,
-                  borderBottom: '1px solid #f5f5f5',
-                  '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
+          >
+            <Box sx={{ p: 2, pb: 1, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                Notifications
+              </Typography>
+              <Button
+                size="small"
+                onClick={handleMarkAllAsRead}
+                sx={{ 
+                  color: '#89343b',
+                  textTransform: 'none',
+                  '&:hover': { bgcolor: 'rgba(137, 52, 59, 0.04)' }
                 }}
               >
-                <Box>
-                  <Typography variant="body2" sx={{ mb: 0.5 }}>
-                    {notification.message}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {notification.time}
+                Mark all as read
+              </Button>
+            </Box>
+            <Divider />
+            
+            <Box sx={{ maxHeight: 360, overflow: 'auto' }}>
+              {notifications.length > 0 ? (
+                notifications.map((notification) => (
+                  <MenuItem
+                    key={notification.id}
+                    onClick={() => {
+                      handleNotificationClose();
+                      navigate('/admin/notifications');
+                    }}
+                    sx={{
+                      py: 1.5,
+                      px: 2,
+                      borderLeft: notification.read ? 'none' : '4px solid #89343b',
+                      bgcolor: notification.read ? 'inherit' : 'rgba(137, 52, 59, 0.03)',
+                      '&:hover': { bgcolor: 'rgba(0, 0, 0, 0.04)' }
+                    }}
+                  >
+                    <Box sx={{ width: '100%' }}>
+                      <Typography
+                        variant="subtitle2"
+                        sx={{
+                          fontWeight: notification.read ? 500 : 600,
+                          color: notification.read ? 'text.secondary' : 'text.primary',
+                          mb: 0.5
+                        }}
+                      >
+                        {notification.title}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: notification.read ? 'text.secondary' : 'text.primary',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          mb: 0.5
+                        }}
+                      >
+                        {notification.content}
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        {notification.time}
+                      </Typography>
+                    </Box>
+                  </MenuItem>
+                ))
+              ) : (
+                <Box sx={{ p: 3, textAlign: 'center' }}>
+                  <Typography variant="body2" color="text.secondary">
+                    No notifications
                   </Typography>
                 </Box>
-              </MenuItem>
-            ))}
+              )}
+            </Box>
+            
+            <Divider />
             <MenuItem
               onClick={() => {
                 handleNotificationClose();
@@ -274,10 +387,10 @@ const AdminHeader = () => {
               }}
               sx={{
                 justifyContent: 'center',
-                color: 'primary.main',
-                py: 1,
-                fontWeight: 'medium',
-                '&:hover': { bgcolor: 'rgba(0,0,0,0.04)' }
+                color: '#89343b',
+                py: 1.5,
+                fontWeight: 500,
+                '&:hover': { bgcolor: 'rgba(137, 52, 59, 0.04)' }
               }}
             >
               View All Notifications
@@ -316,6 +429,20 @@ const AdminHeader = () => {
           </React.Fragment>
         ))}
       </Box>
+
+      <Snackbar 
+        open={toast.open} 
+        autoHideDuration={3000} 
+        onClose={() => setToast({ ...toast, open: false })}
+      >
+        <Alert 
+          onClose={() => setToast({ ...toast, open: false })} 
+          severity={toast.severity}
+          sx={{ width: '100%' }}
+        >
+          {toast.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
