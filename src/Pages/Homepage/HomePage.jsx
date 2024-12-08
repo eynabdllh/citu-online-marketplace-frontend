@@ -39,7 +39,7 @@ function HomePage() {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:8080/api/product/getAllProducts');
+        const response = await axios.get(`http://localhost:8080/api/product/getAllProducts/${loggedInUser}`);
         setProducts(Array.isArray(response.data) ? response.data : []);
       } catch (error) {
         console.error('Error fetching products:', error);
