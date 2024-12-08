@@ -422,7 +422,7 @@ const UserManagement = () => {
     <Box sx={{ padding: 3 }}>
       {/* Breadcrumbs */}
       <Breadcrumbs sx={{ mb: 2 }}>
-        <Link color="inherit" href="/dashboard">
+        <Link color="inherit" href="/admin/dashboard">
           Dashboard
         </Link>
         <Typography color="textPrimary">User Management</Typography>
