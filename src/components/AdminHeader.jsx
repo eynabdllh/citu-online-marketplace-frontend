@@ -408,7 +408,7 @@ const AdminHeader = () => {
         alignItems: 'center',
         position: 'relative'
       }}>
-        {['Dashboard', 'User Management', 'Product Management', 'Product Listing Approval'].map((label, index, array) => (
+        {['Dashboard', 'User Management', 'Product Management', 'Product Approval'].map((label, index, array) => (
           <React.Fragment key={label}>
             <Button
               onClick={() => handleButtonClick(label)}
