@@ -50,7 +50,11 @@ function HomePage() {
     fetchProducts();
   }, []);
 
-  const sortedProducts = Array.isArray(products) ? [...products].reverse() : [];
+  const sortedProducts = Array.isArray(products) 
+    ? [...products]
+      .reverse()
+      .slice(0, 12)
+    : [];
 
   return (
     <>
@@ -171,81 +175,95 @@ function HomePage() {
       </Box>
 
       {/* Recently Listed Products */}
-      <Box sx={{ mt: 4, marginBottom: 3, overflowX: "auto", whiteSpace: "nowrap", px: 2 }}>
-        <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, marginLeft: 2 }}>
-          Listed Recently
+      <Box sx={{ mt: 4, mb: 3, px: 2 }}>
+        <Typography variant="h5" sx={{ fontWeight: "bold", mb: 2, ml: 2 }}>
+          Recently Listed
         </Typography>
         <Box
           sx={{
             display: "flex",
             gap: 2,
-            overflowX: "scroll",
-            whiteSpace: "nowrap",
-            marginLeft: 2,
-            paddingBottom: 2,
-            scrollbarWidth: "none",
+            overflowX: "auto",
+            ml: 2,
+            pb: 2,
             "&::-webkit-scrollbar": {
-              display: "none",
+              height: "8px",
             },
+            "&::-webkit-scrollbar-track": {
+              background: "#f1f1f1",
+              borderRadius: "4px",
+            },
+            "&::-webkit-scrollbar-thumb": {
+              background: "#89343b",
+              borderRadius: "4px",
+              "&:hover": {
+                background: "#6d2931",
+              },
+            },
+            scrollbarWidth: "thin",
+            scrollbarColor: "#89343b #f1f1f1",
           }}
         >
           {Array.isArray(sortedProducts) && sortedProducts.length > 0 ? (
-            sortedProducts.map((product) => (
-              <Box
-                key={product.code}
-                sx={{
-                  position: "relative",
-                  minWidth: "200px",
-                  height: "300px",
-                  overflow: "hidden",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  transition: "0.3s",
-                  "&:hover .overlay": {
-                    opacity: 1,
-                  },
-                }}
-                onClick={() => handleCardClick(product.code)}
-              >
-                {/* Product Image */}
-                <CardMedia
-                  component="img"
-                  image={`http://localhost:8080/${product.imagePath}`}
-                  alt={product.name}
-                  sx={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                  }}
-                />
-                {/* Hover Overlay */}
+            sortedProducts
+              .slice(0, 12)
+              .map((product) => (
                 <Box
-                  className="overlay"
+                  key={product.code}
                   sx={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    bgcolor: "rgba(0, 0, 0, 0.6)",
-                    color: "white",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    opacity: 0,
-                    transition: "opacity 0.3s ease-in-out",
+                    flex: "0 0 auto",
+                    width: "200px",
+                    height: "300px",
+                    position: "relative",
+                    overflow: "hidden",
+                    borderRadius: "8px",
+                    cursor: "pointer",
+                    transition: "0.3s",
+                    "&:hover .overlay": {
+                      opacity: 1,
+                    },
                   }}
+                  onClick={() => handleCardClick(product.code)}
                 >
-                  <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
-                    {product.name}
-                  </Typography>
-                  <Typography variant="h6">PHP {product.buyPrice}</Typography>
+                  {/* Product Image */}
+                  <CardMedia
+                    component="img"
+                    image={`http://localhost:8080/${product.imagePath}`}
+                    alt={product.name}
+                    sx={{
+                      width: "100%",
+                      height: "100%",
+                      objectFit: "cover",
+                    }}
+                  />
+                  {/* Hover Overlay */}
+                  <Box
+                    className="overlay"
+                    sx={{
+                      position: "absolute",
+                      top: 0,
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      bgcolor: "rgba(0, 0, 0, 0.6)",
+                      color: "white",
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      opacity: 0,
+                      transition: "opacity 0.3s ease-in-out",
+                    }}
+                  >
+                    <Typography variant="subtitle1" sx={{ fontWeight: "bold" }}>
+                      {product.name}
+                    </Typography>
+                    <Typography variant="h6">PHP {product.buyPrice}</Typography>
+                  </Box>
                 </Box>
-              </Box>
-            ))
+              ))
           ) : (
-            <Typography variant="h6" sx={{ textAlign: "center", marginTop: 4, marginLeft: 10 }}>
+            <Typography variant="h6" sx={{ textAlign: "center", mt: 4, ml: 10 }}>
               No products to display.
             </Typography>
           )}
