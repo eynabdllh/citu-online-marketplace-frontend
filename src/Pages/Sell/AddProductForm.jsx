@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { TextField, Button, Typography, Box, MenuItem, Select, FormControl, InputLabel, Modal } from '@mui/material';
+import { TextField, Button, Typography, Box, MenuItem, Select, FormControl, InputLabel, Modal, Snackbar, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom'; 
 import '../../App.css';
 
@@ -16,6 +16,11 @@ const AddProductForm = ({ open, handleClose }) => {
   const [sellerUsername, setSellerUsername] = useState('');
   const [sellerInfo, setSellerInfo] = useState(null); 
   const navigate = useNavigate();
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: '',
+    severity: 'success'
+  });
 
   useEffect(() => {
     const username = sessionStorage.getItem('username');
@@ -34,16 +39,28 @@ const AddProductForm = ({ open, handleClose }) => {
     }
   }, [navigate]);
 
+  const handleCloseSnackbar = () => {
+    setSnackbar({ ...snackbar, open: false });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!productName || !description || !quantity || !price || !category || !status || !conditionType || !imageFile) {
-      alert('All fields must be filled in');
+      setSnackbar({
+        open: true,
+        message: 'All fields must be filled in',
+        severity: 'error'
+      });
       return;
     }
 
     if (isNaN(price) || isNaN(quantity)) {
-      alert('Price and Quantity must be valid numbers');
+      setSnackbar({
+        open: true,
+        message: 'Price and Quantity must be valid numbers',
+        severity: 'error'
+      });
       return;
     }
 
@@ -60,7 +77,11 @@ const AddProductForm = ({ open, handleClose }) => {
     if (imageFile) {
       formData.append('image', imageFile);
     } else {
-      alert('No image selected.');
+      setSnackbar({
+        open: true,
+        message: 'No image selected',
+        severity: 'error'
+      });
       return;
     }
 
@@ -70,7 +91,12 @@ const AddProductForm = ({ open, handleClose }) => {
           'Content-Type': 'multipart/form-data',  
         }
       });
-      alert(response.data.message || 'Product added successfully!');
+
+      setSnackbar({
+        open: true,
+        message: 'Product added successfully!',
+        severity: 'success'
+      });
 
       // Clear the fields
       setProductName('');
@@ -86,119 +112,145 @@ const AddProductForm = ({ open, handleClose }) => {
       navigate('/home');  
     } catch (error) {
       console.error('Error adding product:', error);
-      alert('Failed to add product. Please check the console for details.');
+      setSnackbar({
+        open: true,
+        message: error.response?.data?.message || 'Failed to add product',
+        severity: 'error'
+      });
     }
   };
 
   return (
-    <Modal open={open} onClose={handleClose}>
-      <Box
-        sx={{
-          position: 'absolute',
-          top: '50%',
-          left: '50%',
-          transform: 'translate(-50%, -50%)',
-          bgcolor: 'white',
-          p: 4,
-          borderRadius: 2,
-          boxShadow: 24,
-          width: '90%',
-          maxWidth: 500,
-          maxHeight: '90vh', 
-          overflowY: 'auto', 
-        }}
-      >
-        <Typography variant="h5" sx={{ fontSize:'30px', fontWeight: 'bold', mb: 2, color: '#89343b', justifyContent:'center', display:'flex' }}>
-          Add New Product
-        </Typography>
-        <Box component="form" onSubmit={handleSubmit}>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            label="Product Name"
-            value={productName}
-            onChange={(e) => setProductName(e.target.value)}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            label="Description"
-            multiline
-            rows={3}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-          />
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Category</InputLabel>
-            <Select value={category} onChange={(e) => setCategory(e.target.value)} required>
-              <MenuItem value="Food">Food</MenuItem>
-              <MenuItem value="Clothes">Clothes</MenuItem>
-              <MenuItem value="Accessories">Accessories</MenuItem>
-              <MenuItem value="Stationery or Arts and Crafts">Stationery / Arts and Crafts</MenuItem>
-              <MenuItem value="Merchandise">Merchandise</MenuItem>
-              <MenuItem value="Supplies">Supplies</MenuItem>
-              <MenuItem value="Electronics">Electronics</MenuItem>
-              <MenuItem value="Beauty">Beauty</MenuItem>
-              <MenuItem value="Books">Books</MenuItem>
-              <MenuItem value="Other">Other</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Status</InputLabel>
-            <Select value={status} onChange={(e) => setStatus(e.target.value)} required>
-              <MenuItem value="Available">Available</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl fullWidth margin="normal">
-            <InputLabel>Condition</InputLabel>
-            <Select value={conditionType} onChange={(e) => setConditionType(e.target.value)} required>
-              <MenuItem value="Brand New">Brand New</MenuItem>
-              <MenuItem value="Pre-Loved">Pre-Loved</MenuItem>
-              <MenuItem value="None">None</MenuItem>
-            </Select>
-          </FormControl>
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            type="number"
-            label="Quantity in Stock"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-          />
-          <TextField
-            margin="normal"
-            required
-            fullWidth
-            type="number"
-            label="Price"
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-          />
-          <TextField
-            margin="normal"
-            fullWidth
-            label="Seller Username"
-            value={sellerUsername}
-            readOnly
-          />
-          <div>
-            <label>Image:</label>
-            <input type="file" onChange={(e) => setImageFile(e.target.files[0])} required />
-          </div>
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            sx={{ mt: 3, bgcolor: '#89343b', '&:hover': { bgcolor: '#ffd700', color: '#89343b' } }}
-          >
-            Add Product
-          </Button>
+    <>
+      <Modal open={open} onClose={handleClose}>
+        <Box
+          sx={{
+            position: 'absolute',
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            bgcolor: 'white',
+            p: 4,
+            borderRadius: 2,
+            boxShadow: 24,
+            width: '90%',
+            maxWidth: 500,
+            maxHeight: '90vh', 
+            overflowY: 'auto', 
+          }}
+        >
+          <Typography variant="h5" sx={{ fontSize:'30px', fontWeight: 'bold', mb: 2, color: '#89343b', justifyContent:'center', display:'flex' }}>
+            Add New Product
+          </Typography>
+          <Box component="form" onSubmit={handleSubmit}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              label="Product Name"
+              value={productName}
+              onChange={(e) => setProductName(e.target.value)}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              label="Description"
+              multiline
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Category</InputLabel>
+              <Select value={category} onChange={(e) => setCategory(e.target.value)} required>
+                <MenuItem value="Food">Food</MenuItem>
+                <MenuItem value="Clothes">Clothes</MenuItem>
+                <MenuItem value="Accessories">Accessories</MenuItem>
+                <MenuItem value="Stationery or Arts and Crafts">Stationery / Arts and Crafts</MenuItem>
+                <MenuItem value="Merchandise">Merchandise</MenuItem>
+                <MenuItem value="Supplies">Supplies</MenuItem>
+                <MenuItem value="Electronics">Electronics</MenuItem>
+                <MenuItem value="Beauty">Beauty</MenuItem>
+                <MenuItem value="Books">Books</MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Status</InputLabel>
+              <Select value={status} onChange={(e) => setStatus(e.target.value)} required>
+                <MenuItem value="Available">Available</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl fullWidth margin="normal">
+              <InputLabel>Condition</InputLabel>
+              <Select value={conditionType} onChange={(e) => setConditionType(e.target.value)} required>
+                <MenuItem value="Brand New">Brand New</MenuItem>
+                <MenuItem value="Pre-Loved">Pre-Loved</MenuItem>
+                <MenuItem value="None">None</MenuItem>
+              </Select>
+            </FormControl>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              type="number"
+              label="Quantity in Stock"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              type="number"
+              label="Price"
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+            <TextField
+              margin="normal"
+              fullWidth
+              label="Seller Username"
+              value={sellerUsername}
+              readOnly
+            />
+            <div>
+              <label>Image:</label>
+              <input type="file" onChange={(e) => setImageFile(e.target.files[0])} required />
+            </div>
+            <Button
+              type="submit"
+              variant="contained"
+              fullWidth
+              sx={{ mt: 3, bgcolor: '#89343b', '&:hover': { bgcolor: '#ffd700', color: '#89343b' } }}
+            >
+              Add Product
+            </Button>
+          </Box>
         </Box>
-      </Box>
-    </Modal>
+      </Modal>
+      <Snackbar 
+        open={snackbar.open} 
+        autoHideDuration={3000} 
+        onClose={handleCloseSnackbar}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert 
+          onClose={handleCloseSnackbar} 
+          severity={snackbar.severity}
+          sx={{
+            backgroundColor: snackbar.severity === 'success' ? '#89343b' : undefined,
+            color: snackbar.severity === 'success' ? 'white' : undefined,
+            '& .MuiAlert-icon': {
+              color: snackbar.severity === 'success' ? 'white' : undefined
+            }
+          }}
+        >
+          {snackbar.message}
+        </Alert>
+      </Snackbar>
+    </>
   );
 };
 
