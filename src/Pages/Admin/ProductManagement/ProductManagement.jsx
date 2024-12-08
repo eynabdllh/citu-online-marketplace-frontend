@@ -39,7 +39,7 @@ import {
 } from '@mui/icons-material';
 import * as XLSX from 'xlsx';
 import AddProductModal from './AddProductModal';
-import EditProductModal from './EditProductModal';
+import UpdateProductModal from './UpdateProductModal';
 
 const ProductSellers = () => {
   const [products, setProducts] = useState([]);
@@ -54,7 +54,7 @@ const ProductSellers = () => {
   const [actionAnchorEl, setActionAnchorEl] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [addModalOpen, setAddModalOpen] = useState(false);
-  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [filters, setFilters] = useState({
     category: '',
     stockRange: { min: '', max: '' },
@@ -233,7 +233,7 @@ const ProductSellers = () => {
     switch (action) {
       case 'edit':
         setSelectedProduct(product);
-        setEditModalOpen(true);
+        setUpdateModalOpen(true);
         break;
       case 'delete':
         const remainingProducts = products.filter(p => p.product.code !== product.product.code);
@@ -743,22 +743,10 @@ const ProductSellers = () => {
         </MenuItem>
       </Menu>
 
-      <EditProductModal
-        open={editModalOpen}
-        onClose={() => setEditModalOpen(false)}
-        product={selectedProduct}
-        onSave={(updatedProduct) => {
-          const updatedProducts = products.map(product =>
-            product.product.id === updatedProduct.product.id ? updatedProduct : product
-          );
-          setProducts(updatedProducts);
-          setFilteredProducts(updatedProducts);
-          setToast({
-            open: true,
-            message: 'Product updated successfully',
-            severity: 'success'
-          });
-        }}
+      <UpdateProductModal
+        open={updateModalOpen}
+        onClose={() => setUpdateModalOpen(false)}
+        product={selectedProduct?.product}
       />
 
       <AddProductModal
