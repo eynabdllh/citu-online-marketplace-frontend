@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Dialog,
+ Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -29,6 +29,8 @@ const AddProductModal = ({ open, onClose, onAdd }) => {
   const [selectedFile, setSelectedFile] = useState(null);
 
   const [errors, setErrors] = useState({});
+
+  const adminId = localStorage.getItem('adminId');
 
   const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -156,10 +158,16 @@ const AddProductModal = ({ open, onClose, onAdd }) => {
                 label="Category"
                 onChange={(e) => setProductData({...productData, category: e.target.value})}
               >
-                <MenuItem value="Electronics">Electronics</MenuItem>
+                <MenuItem value="Food">Food</MenuItem>
+                <MenuItem value="Clothes">Clothes</MenuItem>
                 <MenuItem value="Accessories">Accessories</MenuItem>
-                <MenuItem value="Clothing">Clothing</MenuItem>
+                <MenuItem value="Stationery or Arts and Crafts">Stationery / Arts and Crafts</MenuItem>
+                <MenuItem value="Merchandise">Merchandise</MenuItem>
+                <MenuItem value="Supplies">Supplies</MenuItem>
+                <MenuItem value="Electronics">Electronics</MenuItem>
+                <MenuItem value="Beauty">Beauty</MenuItem>
                 <MenuItem value="Books">Books</MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
               </Select>
               {errors.category && (
                 <FormHelperText>{errors.category}</FormHelperText>
