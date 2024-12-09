@@ -16,7 +16,7 @@ import {
 } from '@mui/icons-material';
 import * as XLSX from 'xlsx';
 import UpdateProductModal from './UpdateProductModal';
-import ProductViewModal from './ViewProductAdmin';
+import ViewProductAdmin from './ViewProductAdmin';
 
 const ProductSellers = () => {
   const [products, setProducts] = useState([]);
@@ -743,7 +743,7 @@ const ProductSellers = () => {
         product={selectedProduct?.product}
       />
 
-      <ProductViewModal
+      <ViewProductAdmin
         open={viewModalOpen}
         onClose={() => setViewModalOpen(false)}
         product={selectedProduct}
