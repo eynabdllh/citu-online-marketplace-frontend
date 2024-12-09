@@ -10,6 +10,7 @@ import {
 } from "@mui/material";
 import Rating from "@mui/material/Rating";
 import StarIcon from "@mui/icons-material/Star";
+import { toast } from "react-hot-toast";
 
 const labels = {
   1: "Terrible",
@@ -23,7 +24,7 @@ function getLabelText(value) {
   return `${value} Star${value !== 1 ? "s" : ""}, ${labels[value]}`;
 }
 
-const ReviewModal = ({ open, onClose, product }) => {
+const ReviewModal = ({ open, onClose, product, onSubmit }) => {
   const [productQuality, setProductQuality] = useState(0); 
   const [sellerService, setSellerService] = useState(0); 
   const [feedback, setFeedback] = useState("");
@@ -66,10 +67,17 @@ const ReviewModal = ({ open, onClose, product }) => {
   );
   
   const handleSubmit = () => {
-    alert(
-      `Review submitted for ${product?.name}:\nProduct Quality: ${productQuality}\nSeller Service: ${sellerService}\nFeedback: ${feedback}\nAnonymous: ${anonymous}`
-    );
-    onClose();
+    if (!productQuality || !sellerService) {
+      toast.error('Please rate both product quality and seller service');
+      return;
+    }
+    
+    onSubmit({ 
+      productQuality, 
+      sellerService, 
+      feedback, // optional
+      anonymous 
+    });
   };
 
   return (

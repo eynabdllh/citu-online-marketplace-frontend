@@ -1,19 +1,20 @@
 import React from "react";
 import { Box, Typography, CardMedia, Button } from "@mui/material";
 
-const ProductDetails = ({ product, markAsSold, viewSellerChats, openReviewModal, loggedInUsername }) => {
-    if (!product) {
-        return (
-            <Typography variant="body2" color="text.secondary" padding="16px">
-                No product details available.
-            </Typography>
-        );
-    }
+const ProductDetails = ({ product, markAsSold, viewSellerChats, openReviewModal, loggedInUsername, hasReviewed }) => {
+    const isMarkedAsSoldToCurrentUser = 
+        product?.status === "Sold" && 
+        product?.markedAsSoldTo === loggedInUsername;
 
-    const isMarkedAsSoldToCurrentUser =
-        product?.status === "Sold" && product?.markedAsSoldTo === loggedInUsername;
-
-    const shouldShowSoldText = product?.status === "Sold" && product?.markedAsSoldTo !== loggedInUsername;
+    const StatusDisplay = () => (
+        <Typography 
+            variant="body2" 
+            color={product?.status === "Sold" ? "error.main" : "success.main"}
+            sx={{ ml: 1 }}
+        >
+            • {product?.status}
+        </Typography>
+    );
 
     return (
         <Box display="flex" alignItems="center" justifyContent="space-between" padding="16px" bgcolor="white">
@@ -28,30 +29,37 @@ const ProductDetails = ({ product, markAsSold, viewSellerChats, openReviewModal,
                     <Typography variant="body1" fontWeight="bold">
                         {product?.name || "No Product"}
                     </Typography>
-                    <Typography variant="body2" color="gray">
-                        ₱{product?.price?.toFixed(2) || "0.00"} - {product?.status || "Unknown"}
-                    </Typography>
+                    <Box display="flex" alignItems="center">
+                        <Typography variant="body2" color="gray">
+                            ₱{product?.price?.toFixed(2) || "0.00"}
+                        </Typography>
+                        <StatusDisplay />
+                    </Box>
                 </Box>
             </Box>
             {viewSellerChats ? (
-                // Chat with Seller interface
                 isMarkedAsSoldToCurrentUser ? (
-                    <Button variant="contained" color="primary" onClick={() => openReviewModal(product)}>
-                        Leave a Review
-                    </Button>
-                ) : shouldShowSoldText ? (
-                    <Typography variant="body2" color="error.main">
-                        Sold
-                    </Typography>
-                ) : (
-                    <Typography variant="body2" color="success.main">
-                        Available
-                    </Typography>
-                )
+                    hasReviewed ? (
+                        <Typography variant="body2" color="success.main">
+                            Reviewed
+                        </Typography>
+                    ) : (
+                        <Button 
+                            variant="contained" 
+                            color="primary" 
+                            onClick={() => openReviewModal(product)}
+                        >
+                            Leave a Review
+                        </Button>
+                    )
+                ) : null
             ) : (
-                // Chat with Buyer interface
                 product?.status === "Available" && (
-                    <Button variant="contained" color="success" onClick={() => markAsSold(product)}>
+                    <Button 
+                        variant="contained" 
+                        color="success" 
+                        onClick={() => markAsSold(product)}
+                    >
                         Mark as Sold
                     </Button>
                 )

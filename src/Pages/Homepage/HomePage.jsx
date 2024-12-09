@@ -29,7 +29,8 @@ function HomePage() {
   };
 
   const handleCategoryClick = (category) => {
-    navigate(`/buy?category=${category}`);
+    const mappedCategory = category === "Stationery" ? "Stationery or Arts and Crafts" : category;
+    navigate(`/buy?category=${mappedCategory}`);
   };
 
   const handleCardClick = (code) => {
@@ -181,27 +182,41 @@ function HomePage() {
         </Typography>
         <Box
           sx={{
-            display: "flex",
+            display: 'flex',
             gap: 2,
-            overflowX: "auto",
+            overflowX: 'auto',
             ml: 2,
             pb: 2,
-            "&::-webkit-scrollbar": {
-              height: "8px",
+            '&::-webkit-scrollbar': {
+                height: '8px',
             },
-            "&::-webkit-scrollbar-track": {
-              background: "#f1f1f1",
-              borderRadius: "4px",
+            '&::-webkit-scrollbar-track': {
+                background: '#f1f1f1',
+                borderRadius: '4px',
             },
-            "&::-webkit-scrollbar-thumb": {
-              background: "#89343b",
-              borderRadius: "4px",
-              "&:hover": {
-                background: "#6d2931",
-              },
+            '&::-webkit-scrollbar-thumb': {
+                background: '#89343b',
+                borderRadius: '4px',
+                '&:hover': {
+                    background: '#6d2931',
+                },
             },
-            scrollbarWidth: "thin",
-            scrollbarColor: "#89343b #f1f1f1",
+            scrollbarWidth: 'thin',
+            scrollbarColor: '#89343b #f1f1f1',
+            overflowY: 'hidden',
+            '&': {
+                scrollBehavior: 'smooth',
+            },
+            '&:hover': {
+                cursor: 'grab',
+            }
+          }}
+          onWheel={(e) => {
+            const container = e.currentTarget;
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                container.scrollLeft += e.deltaY;
+            }
           }}
         >
           {Array.isArray(sortedProducts) && sortedProducts.length > 0 ? (

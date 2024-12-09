@@ -9,6 +9,8 @@ import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
 import AddProductForm from '../Pages/Sell/AddProductForm'
+import { mockMessagesBuyers, mockMessagesSellers } from '../Pages/Messages/Chat';
+import toast from 'react-hot-toast';
 
 const MarketplaceHeader = () => {
   const [openModal, setOpenModal] = useState(false);
@@ -64,6 +66,19 @@ const MarketplaceHeader = () => {
       read: true 
     }
   ]);
+  const [unreadMessageCount, setUnreadMessageCount] = useState(0);
+  const loggedInUsername = sessionStorage.getItem('username');
+
+  useEffect(() => {
+    const calculateUnreadMessages = () => {
+      const unreadBuyerCount = mockMessagesBuyers.filter(msg => msg.unread).length;
+      const unreadSellerCount = mockMessagesSellers.filter(msg => msg.unread).length;
+      
+      setUnreadMessageCount(unreadBuyerCount + unreadSellerCount);
+    };
+
+    calculateUnreadMessages();
+  }, [loggedInUsername]);
 
   const handleClick = (event) => {
     setAnchor(event.currentTarget);
@@ -106,7 +121,13 @@ const MarketplaceHeader = () => {
   };
 
   const handleMarkAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    if (notifications.some(n => !n.read)) {
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      toast.success('All notifications marked as read');
+    } else {
+      toast.error('No unread notifications');
+    }
+    setNotificationAnchor(null);
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -215,7 +236,7 @@ const MarketplaceHeader = () => {
               edge="end"
               color="black"
               sx={{
-                marginLeft: "10px",
+                marginLeft: "2px",
                 marginTop: "20px"
               }}
             >
@@ -225,6 +246,7 @@ const MarketplaceHeader = () => {
                 sx={{
                   '& .MuiBadge-badge': {
                     color: 'white',
+                    border: '1px solid transparent',
                     fontSize: '12px',
                     height: '20px',
                     minWidth: '20px',
@@ -236,8 +258,22 @@ const MarketplaceHeader = () => {
                 <NotificationsNoneOutlinedIcon sx={{ fontSize: "30px" }}/>
               </Badge>
             </IconButton>
-          <IconButton edge="end" color="black" onClick={handleMessageClick} sx={{marginLeft: "10px"}}>
-              <MailOutlineOutlinedIcon sx={{ fontSize: "30px"}}/>
+          <IconButton edge="end" color="black" onClick={handleMessageClick} sx={{marginLeft: "10px", marginTop: "20px", marginRight: "3px"}}>
+            <Badge badgeContent={unreadMessageCount} 
+            color="error"
+            sx={{
+              '& .MuiBadge-badge': {
+                color: 'white',
+                border: '1px solid transparent',
+                fontSize: '12px',
+                height: '20px',
+                minWidth: '20px',
+                marginTop: '5px',   
+                marginRight: '3px'
+              }
+            }}>
+              <MailOutlineOutlinedIcon sx={{ fontSize: "30px" }} />
+            </Badge>
           </IconButton>
 
           <AddProductForm open={openModal} handleClose={handleCloseModal} />

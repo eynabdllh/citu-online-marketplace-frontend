@@ -3,6 +3,7 @@ import axios from 'axios';
 import { TextField, Button, Typography, Box, MenuItem, Select, FormControl, InputLabel, Modal, Snackbar, Alert } from '@mui/material';
 import { useNavigate } from 'react-router-dom'; 
 import '../../App.css';
+import { toast } from "react-hot-toast";
 
 const AddProductForm = ({ open, handleClose }) => { 
   const [productName, setProductName] = useState('');
@@ -11,7 +12,6 @@ const AddProductForm = ({ open, handleClose }) => {
   const [price, setPrice] = useState('');
   const [imageFile, setImageFile] = useState(null);
   const [category, setCategory] = useState('');
-  const [status, setStatus] = useState('');
   const [conditionType, setConditionType] = useState('');
   const [sellerUsername, setSellerUsername] = useState('');
   const [sellerInfo, setSellerInfo] = useState(null); 
@@ -46,22 +46,20 @@ const AddProductForm = ({ open, handleClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!productName || !description || !quantity || !price || !category || !status || !conditionType || !imageFile) {
-      setSnackbar({
-        open: true,
-        message: 'All fields must be filled in',
-        severity: 'error'
-      });
-      return;
+    // Validate negative numbers
+    if (Number(price) <= 0) {
+        toast.error('Price must be greater than 0');
+        return;
     }
 
-    if (isNaN(price) || isNaN(quantity)) {
-      setSnackbar({
-        open: true,
-        message: 'Price and Quantity must be valid numbers',
-        severity: 'error'
-      });
-      return;
+    if (Number(quantity) <= 0) {
+        toast.error('Quantity must be greater than 0');
+        return;
+    }
+
+    if (!productName || !description || !quantity || !price || !category || !conditionType || !imageFile) {
+        toast.error('All fields must be filled in');
+        return;
     }
 
     const formData = new FormData();
@@ -70,7 +68,7 @@ const AddProductForm = ({ open, handleClose }) => {
     formData.append('qtyInStock', quantity);
     formData.append('buyPrice', price);
     formData.append('category', category);
-    formData.append('status', status);
+    formData.append('status', 'Available');
     formData.append('conditionType', conditionType);
     formData.append('seller_username', sellerUsername); 
 
@@ -86,37 +84,27 @@ const AddProductForm = ({ open, handleClose }) => {
     }
 
     try {
-      const response = await axios.post('http://localhost:8080/api/product/postproduct', formData, {
+      await axios.post('/api/product/postproduct', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',  
         }
       });
 
-      setSnackbar({
-        open: true,
-        message: 'Product added successfully!',
-        severity: 'success'
-      });
-
-      // Clear the fields
+      // Reset all form fields
       setProductName('');
       setDescription('');
       setQuantity('');
       setPrice('');
-      setImageFile(null);
       setCategory('');
-      setStatus('');
       setConditionType('');
+      setImageFile(null);
 
+      toast.success('Product added successfully!');
       handleClose(); 
-      navigate('/home');  
+      navigate('/buy');  
     } catch (error) {
       console.error('Error adding product:', error);
-      setSnackbar({
-        open: true,
-        message: error.response?.data?.message || 'Failed to add product',
-        severity: 'error'
-      });
+      toast.error(error.response?.data?.message || 'Failed to add product');
     }
   };
 
@@ -150,6 +138,7 @@ const AddProductForm = ({ open, handleClose }) => {
               label="Product Name"
               value={productName}
               onChange={(e) => setProductName(e.target.value)}
+              InputLabelProps={{ shrink: true }}
             />
             <TextField
               margin="normal"
@@ -160,10 +149,17 @@ const AddProductForm = ({ open, handleClose }) => {
               rows={3}
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              InputLabelProps={{ shrink: true }}
             />
             <FormControl fullWidth margin="normal">
-              <InputLabel>Category</InputLabel>
-              <Select value={category} onChange={(e) => setCategory(e.target.value)} required>
+              <InputLabel shrink>Category</InputLabel>
+              <Select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                required
+                displayEmpty
+              >
+                <MenuItem value="" disabled>Select a category</MenuItem>
                 <MenuItem value="Food">Food</MenuItem>
                 <MenuItem value="Clothes">Clothes</MenuItem>
                 <MenuItem value="Accessories">Accessories</MenuItem>
@@ -177,14 +173,14 @@ const AddProductForm = ({ open, handleClose }) => {
               </Select>
             </FormControl>
             <FormControl fullWidth margin="normal">
-              <InputLabel>Status</InputLabel>
-              <Select value={status} onChange={(e) => setStatus(e.target.value)} required>
-                <MenuItem value="Available">Available</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl fullWidth margin="normal">
-              <InputLabel>Condition</InputLabel>
-              <Select value={conditionType} onChange={(e) => setConditionType(e.target.value)} required>
+              <InputLabel shrink>Condition</InputLabel>
+              <Select
+                value={conditionType}
+                onChange={(e) => setConditionType(e.target.value)}
+                required
+                displayEmpty
+              >
+                <MenuItem value="" disabled>Select condition</MenuItem>
                 <MenuItem value="Brand New">Brand New</MenuItem>
                 <MenuItem value="Pre-Loved">Pre-Loved</MenuItem>
                 <MenuItem value="None">None</MenuItem>
@@ -198,6 +194,8 @@ const AddProductForm = ({ open, handleClose }) => {
               label="Quantity in Stock"
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              inputProps={{ min: "1" }}
             />
             <TextField
               margin="normal"
@@ -207,18 +205,55 @@ const AddProductForm = ({ open, handleClose }) => {
               label="Price"
               value={price}
               onChange={(e) => setPrice(e.target.value)}
+              InputLabelProps={{ shrink: true }}
+              inputProps={{ min: "1" }}
             />
             <TextField
               margin="normal"
               fullWidth
               label="Seller Username"
               value={sellerUsername}
-              readOnly
+              InputProps={{
+                readOnly: true,
+              }}
+              InputLabelProps={{ shrink: true }}
+              sx={{ bgcolor: '#f5f5f5' }}
             />
-            <div>
-              <label>Image:</label>
-              <input type="file" onChange={(e) => setImageFile(e.target.files[0])} required />
-            </div>
+            <FormControl fullWidth margin="normal">
+              <InputLabel shrink htmlFor="image-upload">Product Image</InputLabel>
+              <Box
+                sx={{
+                  mt: 1,
+                  p: 2,
+                  border: '1px dashed #ccc',
+                  borderRadius: '4px',
+                  textAlign: 'center',
+                  cursor: 'pointer'
+                }}
+                onClick={() => document.getElementById('image-upload').click()}
+              >
+                {imageFile ? (
+                  <div>
+                    <div>Selected: {imageFile.name}</div>
+                    <img 
+                      src={URL.createObjectURL(imageFile)} 
+                      alt="Preview" 
+                      style={{ maxWidth: '200px', maxHeight: '200px', marginTop: '8px' }}
+                    />
+                  </div>
+                ) : (
+                  <div>Click to upload image</div>
+                )}
+                <input
+                  id="image-upload"
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setImageFile(e.target.files[0])}
+                  style={{ display: 'none' }}
+                  required
+                />
+              </Box>
+            </FormControl>
             <Button
               type="submit"
               variant="contained"
@@ -234,7 +269,7 @@ const AddProductForm = ({ open, handleClose }) => {
         open={snackbar.open} 
         autoHideDuration={3000} 
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
         <Alert 
           onClose={handleCloseSnackbar} 

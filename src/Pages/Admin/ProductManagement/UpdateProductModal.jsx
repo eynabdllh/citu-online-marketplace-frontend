@@ -23,7 +23,7 @@ const UpdateProductModal = ({ open, onClose, product }) => {
     qtyInStock: '',
     buyPrice: '',
     category: '',
-    availability: ''
+    status: ''
   });
   const [errors, setErrors] = useState({});
   const [notification, setNotification] = useState({ open: false, message: '', type: 'success' });
@@ -36,7 +36,7 @@ const UpdateProductModal = ({ open, onClose, product }) => {
         qtyInStock: product.qtyInStock || '',
         buyPrice: product.buyPrice || '',
         category: product.category || '',
-        availability: product.availability || 'available'
+        status: product.status || 'Available'
       });
     }
   }, [product]);
@@ -51,7 +51,7 @@ const UpdateProductModal = ({ open, onClose, product }) => {
     if (!editData.buyPrice) newErrors.buyPrice = 'Price is required';
     if (Number(editData.buyPrice) <= 0) newErrors.buyPrice = 'Price must be greater than 0';
     if (!editData.category) newErrors.category = 'Category is required';
-    if (!editData.availability) newErrors.availability = 'Status is required';
+    if (!editData.status) newErrors.status = 'Status is required';
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -60,11 +60,14 @@ const UpdateProductModal = ({ open, onClose, product }) => {
   const handleSubmit = async () => {
     if (validateForm()) {
       try {
-        const response = await axios.put(`http://localhost:8080/api/admin/editproducts/${product.code}`, {
-          ...editData,
-          qtyInStock: Number(editData.qtyInStock),
-          buyPrice: Number(editData.buyPrice)
-        });
+        const response = await axios.put(
+          `http://localhost:8080/api/admin/editproducts/${product.code}`,
+          {
+            ...editData,
+            qtyInStock: Number(editData.qtyInStock),
+            buyPrice: Number(editData.buyPrice)
+          }
+        );
 
         if (response.status === 200) {
           setNotification({
@@ -165,15 +168,15 @@ const UpdateProductModal = ({ open, onClose, product }) => {
             </Grid>
 
             <Grid item xs={6}>
-              <FormControl fullWidth required error={!!errors.availability}>
+              <FormControl fullWidth required error={!!errors.status}>
                 <InputLabel>Status</InputLabel>
                 <Select
-                  value={editData.availability}
+                  value={editData.status}
                   label="Status"
-                  onChange={(e) => setEditData({...editData, availability: e.target.value})}
+                  onChange={(e) => setEditData({...editData, status: e.target.value})}
                 >
-                  <MenuItem value="available">Available</MenuItem>
-                  <MenuItem value="sold_out">Sold Out</MenuItem>
+                  <MenuItem value="Available">Available</MenuItem>
+                  <MenuItem value="Sold Out">Sold Out</MenuItem>
                 </Select>
               </FormControl>
             </Grid>
@@ -212,6 +215,7 @@ const UpdateProductModal = ({ open, onClose, product }) => {
         open={notification.open}
         autoHideDuration={6000}
         onClose={() => setNotification({ ...notification, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
         <Alert 
           onClose={() => setNotification({ ...notification, open: false })}
