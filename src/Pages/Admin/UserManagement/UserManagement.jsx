@@ -1,49 +1,46 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Paper,
-  Typography,
-  TextField,
   Button,
+  TextField,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  TablePagination,
+  Paper,
+  Checkbox,
+  TableSortLabel,
   IconButton,
   Menu,
   MenuItem,
+  Avatar,
+  Grid,
   FormControl,
   InputLabel,
   Select,
-  Chip,
-  Snackbar,
-  Alert,
-  Checkbox,
-  TableSortLabel,
-  Avatar,
-  Grid,
   Card,
+  Typography,
+  TablePagination,
+  Snackbar,
+  Alert
 } from '@mui/material';
 import {
   Search as SearchIcon,
-  FilterList as FilterListIcon,
+  Add as AddIcon,
   MoreVert as MoreVertIcon,
-  FileDownload as FileDownloadIcon,
-  Block as BlockIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Add as AddIcon,
+  Block as BlockIcon,
   CheckCircle,
-  Cancel,
   AccessTime,
+  Cancel
 } from '@mui/icons-material';
-import * as XLSX from 'xlsx';
-import AddUserModal from './AddUserModal';
-import UpdateUserModal from './UpdateUserModal';
 import axios from 'axios';
+import UpdateUserModal from './UpdateUserModal';
+import AddUserModal from './AddUserModal';
+import AddAdminModal from './AddAdminModal';
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
@@ -67,6 +64,8 @@ const UserManagement = () => {
   const [addUserModalOpen, setAddUserModalOpen] = useState(false);
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [selectedUserForUpdate, setSelectedUserForUpdate] = useState(null);
+  const [addMenuAnchorEl, setAddMenuAnchorEl] = useState(null);
+  const [addAdminModalOpen, setAddAdminModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -132,35 +131,66 @@ const UserManagement = () => {
   };
 
   // Handle user actions
-  const handleUserAction = (action, user) => {
+  const handleUserAction = async (action, user) => {
     switch (action) {
       case 'edit':
         setSelectedUserForUpdate(user);
         setUpdateModalOpen(true);
         break;
-      case 'block':
-        const newStatus = user.status === 'Blocked' ? 'Active' : 'Blocked';
-        const updatedUsers = users.map(u => 
-          u.id === user.id ? { ...u, status: newStatus } : u
-        );
-        setUsers(updatedUsers);
-        setFilteredUsers(updatedUsers);
-        setToast({
-          open: true,
-          message: `User ${user.username} has been ${newStatus.toLowerCase()}`,
-          severity: 'success'
-        });
-        break;
+      
       case 'delete':
-        const remainingUsers = users.filter(u => u.id !== user.id);
-        setUsers(remainingUsers);
-        setFilteredUsers(remainingUsers);
-        setToast({
-          open: true,
-          message: `User ${user.username} has been deleted`,
-          severity: 'success'
-        });
+        try {
+          const role = user.role === 'Admin' ? 'admin' : 'seller';
+          const apiUrl = `http://localhost:8080/api/admin/deleteUser/${role}/${user.username}`;
+          
+          console.log('Deleting user:', apiUrl); // Debug log
+          
+          const response = await axios.delete(apiUrl);
+          
+          if (response.status === 200) {
+            // Refresh the data after successful deletion
+            const [adminsResponse, sellersResponse] = await Promise.all([
+              axios.get('http://localhost:8080/api/admin/getAllAdmins'),
+              axios.get('http://localhost:8080/api/admin/sellers')
+            ]);
+
+            const adminsWithRole = adminsResponse.data.map(admin => ({
+              ...admin,
+              role: 'Admin'
+            }));
+
+            const sellersWithRole = sellersResponse.data.map(seller => ({
+              ...seller,
+              role: 'User'
+            }));
+
+            const combinedUsers = [...adminsWithRole, ...sellersWithRole].filter((user, index, self) =>
+              index === self.findIndex((t) => t.username === user.username)
+            );
+            
+            setUsers(combinedUsers);
+            setFilteredUsers(combinedUsers);
+            
+            setToast({
+              open: true,
+              message: `User ${user.username} has been deleted successfully`,
+              severity: 'success'
+            });
+          }
+        } catch (error) {
+          console.error('Error deleting user:', error);
+          setToast({
+            open: true,
+            message: error.response?.data?.message || 'Failed to delete user. Please try again.',
+            severity: 'error'
+          });
+        }
         break;
+
+      case 'block':
+        // We'll implement this with actual API call later
+        break;
+      
       default:
         setToast({
           open: true,
@@ -238,16 +268,56 @@ const UserManagement = () => {
   };
 
   // handlebulk delete
-  const handleBulkDelete = () => {
-    const remainingUsers = users.filter(user => !selectedUsers.includes(user.id));
-    setUsers(remainingUsers);
-    setFilteredUsers(remainingUsers);
-    setSelectedUsers([]);
-    setToast({
-      open: true,
-      message: `${selectedUsers.length} users have been deleted`,
-      severity: 'success'
-    });
+  const handleBulkDelete = async () => {
+    try {
+      // Delete each selected user
+      await Promise.all(
+        selectedUsers.map(async (userId) => {
+          const user = users.find(u => u.id === userId);
+          if (user) {
+            const role = user.role === 'Admin' ? 'admin' : 'seller';
+            await axios.delete(`http://localhost:8080/api/admin/deleteUser/${role}/${user.username}`);
+          }
+        })
+      );
+
+      // Refresh the data after successful deletions
+      const [adminsResponse, sellersResponse] = await Promise.all([
+        axios.get('http://localhost:8080/api/admin/getAllAdmins'),
+        axios.get('http://localhost:8080/api/admin/sellers')
+      ]);
+
+      const adminsWithRole = adminsResponse.data.map(admin => ({
+        ...admin,
+        role: 'Admin'
+      }));
+
+      const sellersWithRole = sellersResponse.data.map(seller => ({
+        ...seller,
+        role: 'User'
+      }));
+
+      const combinedUsers = [...adminsWithRole, ...sellersWithRole].filter((user, index, self) =>
+        index === self.findIndex((t) => t.username === user.username)
+      );
+      
+      setUsers(combinedUsers);
+      setFilteredUsers(combinedUsers);
+      setSelectedUsers([]);
+      
+      setToast({
+        open: true,
+        message: 'Selected users have been deleted successfully',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error in bulk delete:', error);
+      setToast({
+        open: true,
+        message: error.response?.data?.message || 'Failed to delete selected users. Please try again.',
+        severity: 'error'
+      });
+    }
   };
 
   // Sorting function
@@ -290,21 +360,65 @@ const UserManagement = () => {
     });
   };
 
-  const handleSaveUser = (updatedUser) => {
-    console.log('Saving updated user:', updatedUser);
-    
-    const updatedUsers = users.map(user => 
-      user.username === updatedUser.username ? updatedUser : user
-    );
-    
-    setUsers(updatedUsers);
-    setFilteredUsers(updatedUsers);
-    
-    setToast({
-      open: true,
-      message: 'User updated successfully',
-      severity: 'success'
-    });
+  const handleSaveUser = async (updatedUser) => {
+    try {
+      // Refresh the data immediately after successful update
+      const [adminsResponse, sellersResponse] = await Promise.all([
+        axios.get('http://localhost:8080/api/admin/getAllAdmins'),
+        axios.get('http://localhost:8080/api/admin/sellers')
+      ]);
+
+      const adminsWithRole = adminsResponse.data.map(admin => ({
+        ...admin,
+        role: 'Admin'
+      }));
+
+      const sellersWithRole = sellersResponse.data.map(seller => ({
+        ...seller,
+        role: 'User'
+      }));
+
+      // Remove any duplicates and update state
+      const combinedUsers = [...adminsWithRole, ...sellersWithRole].filter((user, index, self) =>
+        index === self.findIndex((t) => t.username === user.username)
+      );
+      
+      setUsers(combinedUsers);
+      setFilteredUsers(combinedUsers);
+      setUpdateModalOpen(false); // Close the modal after successful update
+      setSelectedUserForUpdate(null); // Clear the selected user
+      
+      setToast({
+        open: true,
+        message: 'User updated successfully',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+      setToast({
+        open: true,
+        message: error.response?.data?.message || 'Error refreshing user data. Please try again.',
+        severity: 'error'
+      });
+    }
+  };
+
+  // Add menu handler
+  const handleAddClick = (event) => {
+    setAddMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleAddMenuClose = () => {
+    setAddMenuAnchorEl(null);
+  };
+
+  const handleAddOptionClick = (type) => {
+    handleAddMenuClose();
+    if (type === 'user') {
+      setAddUserModalOpen(true);
+    } else if (type === 'admin') {
+      setAddAdminModalOpen(true);
+    }
   };
 
   return (
@@ -472,7 +586,7 @@ const UserManagement = () => {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => setAddUserModalOpen(true)}
+              onClick={handleAddClick}
               sx={{ 
                 bgcolor: '#89343b',
                 '&:hover': { bgcolor: '#6d2931' },
@@ -744,18 +858,7 @@ const UserManagement = () => {
           setSelectedUserForUpdate(null);
         }}
         user={selectedUserForUpdate}
-        onSave={(updatedUser) => {
-          const updatedUsers = users.map(u => 
-            u.id === updatedUser.id ? updatedUser : u
-          );
-          setUsers(updatedUsers);
-          setFilteredUsers(updatedUsers);
-          setToast({
-            open: true,
-            message: 'User updated successfully',
-            severity: 'success'
-          });
-        }}
+        onSave={handleSaveUser}
       />
 
       {/*Toast */}
@@ -781,17 +884,44 @@ const UserManagement = () => {
         </Alert>
       </Snackbar>
 
-      {/* Add User Modal */}
+      {/* Add the menu */}
+      <Menu
+        anchorEl={addMenuAnchorEl}
+        open={Boolean(addMenuAnchorEl)}
+        onClose={handleAddMenuClose}
+      >
+        <MenuItem onClick={() => handleAddOptionClick('user')}>Add User</MenuItem>
+        <MenuItem onClick={() => handleAddOptionClick('admin')}>Add Admin</MenuItem>
+      </Menu>
+
+      {/* Add both modals */}
       <AddUserModal
         open={addUserModalOpen}
         onClose={() => setAddUserModalOpen(false)}
         onAdd={(newUser) => {
+          // Handle adding new user
           const updatedUsers = [...users, { ...newUser, id: users.length + 1 }];
           setUsers(updatedUsers);
           setFilteredUsers(updatedUsers);
           setToast({
             open: true,
             message: 'User added successfully',
+            severity: 'success'
+          });
+        }}
+      />
+
+      <AddAdminModal
+        open={addAdminModalOpen}
+        onClose={() => setAddAdminModalOpen(false)}
+        onAdd={(newAdmin) => {
+          // Handle adding new admin
+          const updatedUsers = [...users, { ...newAdmin, id: users.length + 1 }];
+          setUsers(updatedUsers);
+          setFilteredUsers(updatedUsers);
+          setToast({
+            open: true,
+            message: 'Admin added successfully',
             severity: 'success'
           });
         }}
