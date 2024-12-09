@@ -16,6 +16,7 @@ import {
 } from '@mui/icons-material';
 import * as XLSX from 'xlsx';
 import UpdateProductModal from './UpdateProductModal';
+import ProductViewModal from './ViewProductAdmin';
 
 const ProductSellers = () => {
   const [products, setProducts] = useState([]);
@@ -41,6 +42,7 @@ const ProductSellers = () => {
     message: '',
     severity: 'success'
   });
+  const [viewModalOpen, setViewModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -342,6 +344,11 @@ const ProductSellers = () => {
         severity: 'error'
       });
     }
+  };
+
+  const handleRowClick = (product) => {
+    setSelectedProduct(product);
+    setViewModalOpen(true);
   };
 
   const FilterMenu = () => {
@@ -662,7 +669,7 @@ const ProductSellers = () => {
             {paginatedProducts
               .filter(item => item?.product)
               .map((item, index) => (
-                <TableRow key={index}>
+                <TableRow key={index} onClick={() => handleRowClick(item.product)}>
                   <TableCell padding="checkbox">
                     <Checkbox
                       checked={selectedProducts.includes(item.product.code)}
@@ -734,6 +741,12 @@ const ProductSellers = () => {
         open={updateModalOpen}
         onClose={() => setUpdateModalOpen(false)}
         product={selectedProduct?.product}
+      />
+
+      <ProductViewModal
+        open={viewModalOpen}
+        onClose={() => setViewModalOpen(false)}
+        product={selectedProduct}
       />
 
       <Snackbar
