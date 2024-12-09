@@ -298,17 +298,27 @@ const ProductSellers = () => {
     }
   };
 
-  const handleEditProduct = (updatedProduct) => {
-    const updatedProducts = products.map(product =>
-      product.product.id === updatedProduct.product.id ? updatedProduct : product
-    );
-    setProducts(updatedProducts);
-    setFilteredProducts(updatedProducts);
-    setToast({
-      open: true,
-      message: 'Product updated successfully',
-      severity: 'success'
-    });
+  const handleEditProduct = async (updatedProducts) => {
+    try {
+      // Update state with the fresh data
+      setProducts(updatedProducts);
+      setFilteredProducts(updatedProducts);
+      setUpdateModalOpen(false);
+      setSelectedProduct(null);
+      
+      setToast({
+        open: true,
+        message: 'Product updated successfully',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error updating product data:', error);
+      setToast({
+        open: true,
+        message: error.response?.data?.message || 'Error updating product data. Please try again.',
+        severity: 'error'
+      });
+    }
   };
 
   const handleDeleteProducts = async (productsToDelete) => {
@@ -346,8 +356,12 @@ const ProductSellers = () => {
     }
   };
 
-  const handleRowClick = (product) => {
-    setSelectedProduct(product);
+  const handleRowClick = (event, item) => {
+    // Check if click originated from the actions or checkbox column
+    if (event.target.closest('.actions-column') || event.target.closest('.select-column')) {
+      return;
+    }
+    setSelectedProduct(item);
     setViewModalOpen(true);
   };
 
@@ -486,13 +500,6 @@ const ProductSellers = () => {
 
   return (
     <Box sx={{ padding: 3 }}>
-      <Breadcrumbs sx={{ mb: 2 }}>
-        <Link color="inherit" href="/admin/dashboard">
-          Dashboard
-        </Link>
-        <Typography color="textPrimary">Product Management</Typography>
-      </Breadcrumbs>
-
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" sx={{ color: '#89343b' }}>
           Product Management
@@ -607,7 +614,7 @@ const ProductSellers = () => {
                 }
               } 
             }}>
-              <TableCell padding="checkbox">
+              <TableCell padding="checkbox" className="select-column">
                 <Checkbox
                   indeterminate={selectedProducts.length > 0 && selectedProducts.length < filteredProducts.length}
                   checked={selectedProducts.length === filteredProducts.length && filteredProducts.length > 0}
@@ -666,42 +673,53 @@ const ProductSellers = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {paginatedProducts
-              .filter(item => item?.product)
-              .map((item, index) => (
-                <TableRow key={index} onClick={() => handleRowClick(item.product)}>
-                  <TableCell padding="checkbox">
-                    <Checkbox
-                      checked={selectedProducts.includes(item.product.code)}
-                      onChange={(e) => handleSelectOne(e, item)}
+            {paginatedProducts.map((item, index) => (
+              <TableRow 
+                key={index}
+                onClick={(e) => handleRowClick(e, item)}
+                sx={{ 
+                  cursor: 'pointer',
+                  '&:hover': { 
+                    backgroundColor: '#fafafa',
+                    transition: 'background-color 0.2s ease'
+                  }
+                }}
+              >
+                <TableCell padding="checkbox" className="select-column">
+                  <Checkbox
+                    checked={selectedProducts.includes(item.product.code)}
+                    onChange={(e) => handleSelectOne(e, item)}
+                  />
+                </TableCell>
+                <TableCell sx={{ py: 1 }}>{item.product.code}</TableCell>
+                <TableCell sx={{ py: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                    <img 
+                      src={`http://localhost:8080/${item.product.imagePath}`}
+                      alt={item.product.name}
+                      style={{ width: 50, height: 50, objectFit: 'cover' }}
                     />
-                  </TableCell>
-                  <TableCell sx={{ py: 1 }}>{item.product.code}</TableCell>
-                  <TableCell sx={{ py: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                      <img 
-                        src={`http://localhost:8080/${item.product.imagePath}`}
-                        alt={item.product.name}
-                        style={{ width: 50, height: 50, objectFit: 'cover' }}
-                      />
-                      {item.product.name}
-                    </Box>
-                  </TableCell>
-                  <TableCell sx={{ py: 1 }}>{item.product.pdtDescription}</TableCell>
-                  <TableCell sx={{ py: 1 }}>{item.product.qtyInStock}</TableCell>
-                  <TableCell sx={{ py: 1 }}>₱{item.product.buyPrice}</TableCell>
-                  <TableCell sx={{ py: 1 }}>{item.product.category}</TableCell>
-                  <TableCell sx={{ py: 1 }}>{item.sellerUsername}</TableCell>
-                  <TableCell>
-                    <IconButton onClick={(e) => {
+                    {item.product.name}
+                  </Box>
+                </TableCell>
+                <TableCell sx={{ py: 1 }}>{item.product.pdtDescription}</TableCell>
+                <TableCell sx={{ py: 1 }}>{item.product.qtyInStock}</TableCell>
+                <TableCell sx={{ py: 1 }}>₱{item.product.buyPrice}</TableCell>
+                <TableCell sx={{ py: 1 }}>{item.product.category}</TableCell>
+                <TableCell sx={{ py: 1 }}>{item.sellerUsername}</TableCell>
+                <TableCell className="actions-column">
+                  <IconButton 
+                    onClick={(e) => {
+                      e.stopPropagation(); // Prevent row click
                       setSelectedProduct(item);
                       setActionAnchorEl(e.currentTarget);
-                    }}>
-                      <MoreVertIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    }}
+                  >
+                    <MoreVertIcon />
+                  </IconButton>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </TableContainer>
@@ -717,6 +735,18 @@ const ProductSellers = () => {
           setPage(0);
         }}
         rowsPerPageOptions={[10, 25, 50]}
+        sx={{
+          backgroundColor: '#f4f4f4',
+          borderTop: '2px solid #ddd',
+          '& .MuiTablePagination-selectIcon': { color: '#555' },
+          '& .MuiTablePagination-caption': { color: '#555' },
+          '& .MuiTablePagination-toolbar': {
+            justifyContent: 'flex-end',
+          },
+          '& .MuiTablePagination-actions': {
+            marginLeft: 0,
+          },
+        }}
       />
 
       <FilterMenu />
@@ -741,6 +771,7 @@ const ProductSellers = () => {
         open={updateModalOpen}
         onClose={() => setUpdateModalOpen(false)}
         product={selectedProduct?.product}
+        onSave={handleEditProduct}
       />
 
       <ViewProductAdmin

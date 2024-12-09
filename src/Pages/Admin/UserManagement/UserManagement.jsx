@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -22,10 +22,10 @@ import {
   Snackbar,
   Alert,
   Checkbox,
-  Breadcrumbs,
-  Link,
   TableSortLabel,
   Avatar,
+  Grid,
+  Card,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -36,94 +36,19 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Add as AddIcon,
+  CheckCircle,
+  Cancel,
+  AccessTime,
 } from '@mui/icons-material';
 import * as XLSX from 'xlsx';
-import EditUserModal from './EditUserModal';
 import AddUserModal from './AddUserModal';
-
-const mockUsers = [
-  {
-    id: 1,
-    username: 'juan_dela_cruz',
-    firstName: 'Juan',
-    lastName: 'Dela Cruz',
-    email: 'juandelacruz@gmail.com',
-    status: 'Active',
-    role: 'User',
-    lastLogin: '2024-03-20 14:30',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=juan'
-  },
-  {
-    id: 2,
-    username: 'maria_santos',
-    firstName: 'Maria',
-    lastName: 'Santos',
-    email: 'mariasantos@gmail.com',
-    status: 'Inactive',
-    role: 'Admin',
-    lastLogin: '2024-03-19 09:15',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=maria'
-  },
-  {
-    id: 3,
-    username: 'pedro_reyes',
-    firstName: 'Pedro',
-    lastName: 'Reyes',
-    email: 'pedroreyes@gmail.com',
-    status: 'Blocked',
-    role: 'User',
-    lastLogin: '2024-03-18 16:45',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=pedro'
-  },
-  {
-    id: 4,
-    username: 'rosa_cruz',
-    firstName: 'Rosa',
-    lastName: 'Cruz',
-    email: 'rosacruz@gmail.com',
-    status: 'Active',
-    role: 'Admin',
-    lastLogin: '2024-03-20 11:20',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=rosa'
-  },
-  {
-    id: 5,
-    username: 'carlo_garcia',
-    firstName: 'Carlo',
-    lastName: 'Garcia',
-    email: 'carlogarcia@gmail.com',
-    status: 'Active',
-    role: 'User',
-    lastLogin: '2024-03-20 13:10',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=carlo'
-  },
-  {
-    id: 6,
-    username: 'elena_ramos',
-    firstName: 'Elena',
-    lastName: 'Ramos',
-    email: 'elenaramos@gmail.com',
-    status: 'Active',
-    role: 'User',
-    lastLogin: '2024-03-17 10:30',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=elena'
-  },
-  {
-    id: 7,
-    username: 'miguel_bautista',
-    firstName: 'Miguel',
-    lastName: 'Bautista',
-    email: 'miguelbautista@gmail.com',
-    status: 'Inactive',
-    role: 'User',
-    lastLogin: '2024-03-16 15:45',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=miguel'
-  }
-];
+import UpdateUserModal from './UpdateUserModal';
+import axios from 'axios';
+import AddAdminModal from './AddAdminModal';
 
 const UserManagement = () => {
-  const [users, setUsers] = useState(mockUsers);
-  const [filteredUsers, setFilteredUsers] = useState(mockUsers);
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
@@ -141,60 +66,135 @@ const UserManagement = () => {
   const [orderBy, setOrderBy] = useState('username');
   const [order, setOrder] = useState('asc');
   const [addUserModalOpen, setAddUserModalOpen] = useState(false);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [selectedUserForUpdate, setSelectedUserForUpdate] = useState(null);
+  const [addMenuAnchorEl, setAddMenuAnchorEl] = useState(null);
+  const [addAdminModalOpen, setAddAdminModalOpen] = useState(false);
 
-  // Handle search
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const [adminsResponse, sellersResponse] = await Promise.all([
+          axios.get('http://localhost:8080/api/admin/getAllAdmins'),
+          axios.get('http://localhost:8080/api/admin/sellers')
+        ]);
+
+        const adminsWithRole = adminsResponse.data.map(admin => ({
+          ...admin,
+          role: 'Admin'
+        }));
+
+        const sellersWithRole = sellersResponse.data.map(seller => ({
+          ...seller,
+          role: 'User'
+        }));
+
+        const combinedUsers = [...adminsWithRole, ...sellersWithRole].filter((user, index, self) =>
+          index === self.findIndex((t) => t.username === user.username)
+        );
+        
+        setUsers(combinedUsers);
+        setFilteredUsers(combinedUsers);
+        
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        setToast({
+          open: true,
+          message: 'Error fetching users. Please try again later.',
+          severity: 'error'
+        });
+      }
+    };
+
+    fetchUsers();
+  }, []);
+
+  //  search function
   const handleSearch = (event) => {
     const query = event.target.value.toLowerCase();
     setSearchQuery(query);
     
-    const filtered = users.filter(user => 
-      user.username.toLowerCase().includes(query) ||
-      user.email.toLowerCase().includes(query) ||
-      `${user.firstName} ${user.lastName}`.toLowerCase().includes(query)
-    );
-    
+    let filtered = [...users].filter(user => {
+      const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+      const words = fullName.split(' ');
+      
+      return user.username.toLowerCase().startsWith(query) ||
+             user.email.toLowerCase().startsWith(query) ||
+             words.some(word => word.startsWith(query));
+    });
+
+    if (filters.status) {
+      filtered = filtered.filter(user => user.status === filters.status);
+    }
+    if (filters.role) {
+      filtered = filtered.filter(user => user.role === filters.role);
+    }
+
     setFilteredUsers(filtered);
     setPage(0);
   };
 
-  // Export to Excel
-  const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filteredUsers);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
-    XLSX.writeFile(workbook, "users.xlsx");
-  };
-
   // Handle user actions
-  const handleUserAction = (action, user) => {
+  const handleUserAction = async (action, user) => {
     switch (action) {
       case 'edit':
-        setSelectedUserForEdit(user);
-        setEditModalOpen(true);
+        setSelectedUserForUpdate(user);
+        setUpdateModalOpen(true);
         break;
-      case 'block':
-        const newStatus = user.status === 'Blocked' ? 'Active' : 'Blocked';
-        const updatedUsers = users.map(u => 
-          u.id === user.id ? { ...u, status: newStatus } : u
-        );
-        setUsers(updatedUsers);
-        setFilteredUsers(updatedUsers);
-        setToast({
-          open: true,
-          message: `User ${user.username} has been ${newStatus.toLowerCase()}`,
-          severity: 'success'
-        });
-        break;
+      
       case 'delete':
-        const remainingUsers = users.filter(u => u.id !== user.id);
-        setUsers(remainingUsers);
-        setFilteredUsers(remainingUsers);
-        setToast({
-          open: true,
-          message: `User ${user.username} has been deleted`,
-          severity: 'success'
-        });
+        try {
+          const role = user.role === 'Admin' ? 'admin' : 'seller';
+          const apiUrl = `http://localhost:8080/api/admin/deleteUser/${role}/${user.username}`;
+          
+          console.log('Deleting user:', apiUrl); // Debug log
+          
+          const response = await axios.delete(apiUrl);
+          
+          if (response.status === 200) {
+            // Refresh the data after successful deletion
+            const [adminsResponse, sellersResponse] = await Promise.all([
+              axios.get('http://localhost:8080/api/admin/getAllAdmins'),
+              axios.get('http://localhost:8080/api/admin/sellers')
+            ]);
+
+            const adminsWithRole = adminsResponse.data.map(admin => ({
+              ...admin,
+              role: 'Admin'
+            }));
+
+            const sellersWithRole = sellersResponse.data.map(seller => ({
+              ...seller,
+              role: 'User'
+            }));
+
+            const combinedUsers = [...adminsWithRole, ...sellersWithRole].filter((user, index, self) =>
+              index === self.findIndex((t) => t.username === user.username)
+            );
+            
+            setUsers(combinedUsers);
+            setFilteredUsers(combinedUsers);
+            
+            setToast({
+              open: true,
+              message: `User ${user.username} has been deleted successfully`,
+              severity: 'success'
+            });
+          }
+        } catch (error) {
+          console.error('Error deleting user:', error);
+          setToast({
+            open: true,
+            message: error.response?.data?.message || 'Failed to delete user. Please try again.',
+            severity: 'error'
+          });
+        }
         break;
+
+      case 'block':
+        // We'll implement this with actual API call later
+        break;
+      
       default:
         setToast({
           open: true,
@@ -206,7 +206,7 @@ const UserManagement = () => {
     setActionAnchorEl(null);
   };
 
-  // Status chip styles
+  // Status chip
   const getStatusChipProps = (status) => {
     const props = {
       label: status === 'Block' ? 'Blocked' : status,
@@ -272,16 +272,56 @@ const UserManagement = () => {
   };
 
   // handlebulk delete
-  const handleBulkDelete = () => {
-    const remainingUsers = users.filter(user => !selectedUsers.includes(user.id));
-    setUsers(remainingUsers);
-    setFilteredUsers(remainingUsers);
-    setSelectedUsers([]);
-    setToast({
-      open: true,
-      message: `${selectedUsers.length} users have been deleted`,
-      severity: 'success'
-    });
+  const handleBulkDelete = async () => {
+    try {
+      // Delete each selected user
+      await Promise.all(
+        selectedUsers.map(async (userId) => {
+          const user = users.find(u => u.id === userId);
+          if (user) {
+            const role = user.role === 'Admin' ? 'admin' : 'seller';
+            await axios.delete(`http://localhost:8080/api/admin/deleteUser/${role}/${user.username}`);
+          }
+        })
+      );
+
+      // Refresh the data after successful deletions
+      const [adminsResponse, sellersResponse] = await Promise.all([
+        axios.get('http://localhost:8080/api/admin/getAllAdmins'),
+        axios.get('http://localhost:8080/api/admin/sellers')
+      ]);
+
+      const adminsWithRole = adminsResponse.data.map(admin => ({
+        ...admin,
+        role: 'Admin'
+      }));
+
+      const sellersWithRole = sellersResponse.data.map(seller => ({
+        ...seller,
+        role: 'User'
+      }));
+
+      const combinedUsers = [...adminsWithRole, ...sellersWithRole].filter((user, index, self) =>
+        index === self.findIndex((t) => t.username === user.username)
+      );
+      
+      setUsers(combinedUsers);
+      setFilteredUsers(combinedUsers);
+      setSelectedUsers([]);
+      
+      setToast({
+        open: true,
+        message: 'Selected users have been deleted successfully',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error in bulk delete:', error);
+      setToast({
+        open: true,
+        message: error.response?.data?.message || 'Failed to delete selected users. Please try again.',
+        severity: 'error'
+      });
+    }
   };
 
   // Sorting function
@@ -296,34 +336,15 @@ const UserManagement = () => {
         const nameB = `${b.firstName} ${b.lastName}`;
         return (isAsc ? -1 : 1) * nameA.localeCompare(nameB);
       }
-      return (isAsc ? -1 : 1) * (a[property] < b[property] ? -1 : 1);
+      // Handle numeric sorting for ID
+      if (property === 'id') {
+        return (isAsc ? -1 : 1) * (a[property] - b[property]);
+      }
+      // Default string sorting for other fields
+      return (isAsc ? -1 : 1) * (a[property]?.toString().localeCompare(b[property]?.toString()) || 0);
     });
 
     setFilteredUsers(sortedUsers);
-  };
-
-  // filter function
-  const applyFilters = () => {
-    let filtered = [...users];
-    
-    if (searchQuery) {
-      filtered = filtered.filter(user => 
-        user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    if (filters.status) {
-      filtered = filtered.filter(user => user.status === filters.status);
-    }
-
-    if (filters.role) {
-      filtered = filtered.filter(user => user.role === filters.role);
-    }
-
-    setFilteredUsers(filtered);
-    setFilterAnchorEl(null);
   };
 
   // handles bulk block
@@ -343,140 +364,307 @@ const UserManagement = () => {
     });
   };
 
-  // filter menu
-  const FilterMenu = () => (
-    <Menu
-      anchorEl={filterAnchorEl}
-      open={Boolean(filterAnchorEl)}
-      onClose={() => setFilterAnchorEl(null)}
-      PaperProps={{
-        sx: { width: 250, mt: 1 }
-      }}
-    >
-      <MenuItem sx={{ flexDirection: 'column', alignItems: 'stretch' }}>
-        <FormControl fullWidth size="small" sx={{ mb: 1 }}>
-          <InputLabel>Status</InputLabel>
-          <Select
-            value={filters.status}
-            label="Status"
-            onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-          >
-            <MenuItem value="">All</MenuItem>
-            <MenuItem value="Active">Active</MenuItem>
-            <MenuItem value="Inactive">Inactive</MenuItem>
-            <MenuItem value="Blocked">Blocked</MenuItem>
-          </Select>
-        </FormControl>
-        <FormControl fullWidth size="small">
-          <InputLabel>Role</InputLabel>
-          <Select
-            value={filters.role}
-            label="Role"
-            onChange={(e) => setFilters(prev => ({ ...prev, role: e.target.value }))}
-          >
-            <MenuItem value="">All</MenuItem>
-            <MenuItem value="Admin">Admin</MenuItem>
-            <MenuItem value="User">User</MenuItem>
-          </Select>
-        </FormControl>
-      </MenuItem>
-      <MenuItem sx={{ gap: 1 }}>
-        <Button 
-          fullWidth 
-          variant="outlined"
-          onClick={() => {
-            setFilters({ status: '', role: '' });
-            setFilteredUsers(users);
-            setFilterAnchorEl(null);
-          }}
-          sx={{ 
-            borderColor: '#89343b',
-            color: '#89343b',
-            '&:hover': {
-              borderColor: '#6d2931',
-              backgroundColor: 'rgba(137, 52, 59, 0.04)'
-            }
-          }}
-        >
-          Reset
-        </Button>
-        <Button 
-          fullWidth 
-          variant="contained"
-          onClick={() => {
-            applyFilters();
-            setFilterAnchorEl(null);
-          }}
-          sx={{ 
-            bgcolor: '#89343b',
-            '&:hover': { bgcolor: '#6d2931' }
-          }}
-        >
-          Apply
-        </Button>
-      </MenuItem>
-    </Menu>
-  );
+  const handleSaveUser = async (updatedUser) => {
+    try {
+      // Refresh the data immediately after successful update
+      const [adminsResponse, sellersResponse] = await Promise.all([
+        axios.get('http://localhost:8080/api/admin/getAllAdmins'),
+        axios.get('http://localhost:8080/api/admin/sellers')
+      ]);
+
+      const adminsWithRole = adminsResponse.data.map(admin => ({
+        ...admin,
+        role: 'Admin'
+      }));
+
+      const sellersWithRole = sellersResponse.data.map(seller => ({
+        ...seller,
+        role: 'User'
+      }));
+
+      // Remove any duplicates and update state
+      const combinedUsers = [...adminsWithRole, ...sellersWithRole].filter((user, index, self) =>
+        index === self.findIndex((t) => t.username === user.username)
+      );
+      
+      setUsers(combinedUsers);
+      setFilteredUsers(combinedUsers);
+      setUpdateModalOpen(false); // Close the modal after successful update
+      setSelectedUserForUpdate(null); // Clear the selected user
+      
+      setToast({
+        open: true,
+        message: 'User updated successfully',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+      setToast({
+        open: true,
+        message: error.response?.data?.message || 'Error refreshing user data. Please try again.',
+        severity: 'error'
+      });
+    }
+  };
+
+  // Add menu handler
+  const handleAddClick = (event) => {
+    setAddMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleAddMenuClose = () => {
+    setAddMenuAnchorEl(null);
+  };
+
+  const handleAddOptionClick = (type) => {
+    handleAddMenuClose();
+    if (type === 'user') {
+      setAddUserModalOpen(true);
+    } else if (type === 'admin') {
+      setAddAdminModalOpen(true);
+    }
+  };
+
+  const handleAddUser = (newUser) => {
+    // For sellers (no id needed as username is PK)
+    const updatedUsers = [...users, newUser];
+    setUsers(updatedUsers);
+    setFilteredUsers(updatedUsers);
+    setToast({
+      open: true,
+      message: 'User added successfully',
+      severity: 'success'
+    });
+  };
+
+  const handleAddAdmin = (newAdmin) => {
+    // For admins (include id)
+    const updatedUsers = [...users, { ...newAdmin, id: users.length + 1 }];
+    setUsers(updatedUsers);
+    setFilteredUsers(updatedUsers);
+    setToast({
+      open: true,
+      message: 'Admin added successfully',
+      severity: 'success'
+    });
+  };
 
   return (
     <Box sx={{ padding: 3 }}>
-      {/* Breadcrumbs */}
-      <Breadcrumbs sx={{ mb: 2 }}>
-        <Link color="inherit" href="/admin/dashboard">
-          Dashboard
-        </Link>
-        <Typography color="textPrimary">User Management</Typography>
-      </Breadcrumbs>
-
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" sx={{ color: '#89343b' }}>
           User Management
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          {selectedUsers.length > 0 && (
-            <>
-              <Button
-                variant="contained"
-                color="error"
-                startIcon={<DeleteIcon />}
-                onClick={handleBulkDelete}
-                sx={{ 
-                  '& .MuiButton-startIcon': {
-                    margin: 0,
-                    marginRight: '8px',
-                    display: 'flex',
-                    alignItems: 'center'
+      </Box>
+
+      {/* Filter Section */}
+      <Box sx={{ mb: 3 }}>
+        <Grid container spacing={2} alignItems="center">
+          {/* Search Input */}
+          <Grid item xs={12} sm={4} md={4}>
+            <TextField
+              placeholder="Search users..."
+              size="small"
+              value={searchQuery}
+              onChange={handleSearch}
+              sx={{
+                width: '100%',
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'white',
+                  '& fieldset': { borderColor: 'transparent' },
+                  '&:hover fieldset': { borderColor: 'transparent' },
+                  '&.Mui-focused fieldset': { borderColor: 'transparent' },
+                },
+              }}
+              InputProps={{
+                startAdornment: <SearchIcon sx={{ color: 'action.active', mr: 1 }} />,
+              }}
+            />
+          </Grid>
+
+          {/* Status Dropdown */}
+          <Grid item xs={12} sm={2} md={2}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={filters.status}
+                onChange={(e) => {
+                  const newStatus = e.target.value;
+                  setFilters(prev => ({ ...prev, status: newStatus }));
+                  
+                  let filtered = [...users];
+                  if (searchQuery) {
+                    filtered = filtered.filter(user =>
+                      user.username.toLowerCase().startsWith(searchQuery) ||
+                      user.firstName.toLowerCase().startsWith(searchQuery) ||
+                      user.lastName.toLowerCase().startsWith(searchQuery) ||
+                      user.email.toLowerCase().startsWith(searchQuery)
+                    );
                   }
+                  // status filter
+                  if (newStatus) {
+                    filtered = filtered.filter(user => user.status === newStatus);
+                  }
+                  // role filter
+                  if (filters.role) {
+                    filtered = filtered.filter(user => user.role === filters.role);
+                  }
+                  
+                  setFilteredUsers(filtered);
+                  setPage(0);
+                }}
+                label="Status"
+                sx={{
+                  backgroundColor: '#ffd700',
+                  boxShadow: 'none',
+                  border: 'none',
+                  '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                  '&:hover': {
+                    backgroundColor: '#ffcd00',
+                    boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.1)',
+                  },
+                  '&.Mui-focused': {
+                    backgroundColor: '#e0e0e0',
+                    boxShadow: 'none',
+                  },
+                  '& .MuiSelect-icon': { color: '#8A252C' },
                 }}
               >
-                Delete Selected ({selectedUsers.length})
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<BlockIcon />}
-                onClick={handleBulkBlock}
-                sx={{ 
-                  bgcolor: '#f57c00',
-                  '&:hover': { bgcolor: '#d84315' },
-                  '& .MuiButton-startIcon': {
-                    margin: 0,
-                    marginRight: '8px',
-                    display: 'flex',
-                    alignItems: 'center'
+                <MenuItem value="">All</MenuItem>
+                <MenuItem value="Active">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <CheckCircle sx={{ mr: 1, color: '#28a745' }} />
+                    <Typography variant="body2" sx={{ color: '#333' }}>Active</Typography>
+                  </Box>
+                </MenuItem>
+                <MenuItem value="Inactive">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <AccessTime sx={{ mr: 1, color: '#ff9800' }} />
+                    <Typography variant="body2" sx={{ color: '#333' }}>Inactive</Typography>
+                  </Box>
+                </MenuItem>
+                <MenuItem value="Blocked">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Cancel sx={{ mr: 1, color: '#dc3545' }} />
+                    <Typography variant="body2" sx={{ color: '#333' }}>Blocked</Typography>
+                  </Box>
+                </MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* Role Dropdown */}
+          <Grid item xs={12} sm={2} md={2}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Role</InputLabel>
+              <Select
+                value={filters.role}
+                onChange={(e) => {
+                  const newRole = e.target.value;
+                  setFilters(prev => ({ ...prev, role: newRole }));
+                  
+                  let filtered = [...users];
+       
+                  if (searchQuery) {
+                    filtered = filtered.filter(user =>
+                      user.username.toLowerCase().startsWith(searchQuery) ||
+                      user.firstName.toLowerCase().startsWith(searchQuery) ||
+                      user.lastName.toLowerCase().startsWith(searchQuery) ||
+                      user.email.toLowerCase().startsWith(searchQuery)
+                    );
                   }
+               
+                  if (filters.status) {
+                    filtered = filtered.filter(user => user.status === filters.status);
+                  }
+             
+                  if (newRole) {
+                    filtered = filtered.filter(user => user.role === newRole);
+                  }
+                  
+                  setFilteredUsers(filtered);
+                  setPage(0);
+                }}
+                label="Role"
+                sx={{
+                  backgroundColor: '#ffd700',
+                  boxShadow: 'none',
+                  border: 'none',
+                  '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                  '&:hover': {
+                    backgroundColor: '#ffcd00',
+                    boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.1)',
+                  },
+                  '&.Mui-focused': {
+                    backgroundColor: '#e0e0e0',
+                    boxShadow: 'none',
+                  },
+                  '& .MuiSelect-icon': { color: '#8A252C' },
                 }}
               >
-                Block Selected ({selectedUsers.length})
-              </Button>
-            </>
-          )}
+                <MenuItem value="">All</MenuItem>
+                <MenuItem value="Admin">Admin</MenuItem>
+                <MenuItem value="User">User</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* Add User Button */}
+          <Grid item xs={12} sm={2} md={2} sx={{ display: 'flex', justifyContent: "right", marginLeft: "auto" }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={handleAddClick}
+              sx={{ 
+                bgcolor: '#89343b',
+                '&:hover': { bgcolor: '#6d2931' },
+                '& .MuiButton-startIcon': {
+                  margin: 0,
+                  marginRight: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: 'white'
+                }
+              }}
+            >
+              Add User
+            </Button>
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* Summary Cards */}
+      <Box sx={{ display: 'flex', gap: 2, my: 2 }}>
+        <Card sx={{ p: 2, flex: 1, bgcolor: '#ffefc3' }}>
+          <Typography variant="subtitle1">Active</Typography>
+          <Typography variant="h4">
+            {users.filter(user => user.status === 'Active').length}
+          </Typography>
+        </Card>
+        <Card sx={{ p: 2, flex: 1, bgcolor: '#c8e6c9' }}>
+          <Typography variant="subtitle1">Inactive</Typography>
+          <Typography variant="h4">
+            {users.filter(user => user.status === 'Inactive').length}
+          </Typography>
+        </Card>
+        <Card sx={{ p: 2, flex: 1, bgcolor: '#ffcdd2' }}>
+          <Typography variant="subtitle1">Blocked</Typography>
+          <Typography variant="h4">
+            {users.filter(user => user.status === 'Blocked').length}
+          </Typography>
+        </Card>
+      </Box>
+
+      {/* Select action buttons */}
+      {selectedUsers.length > 0 && (
+        <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2, gap: 1 }}>
           <Button
             variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setAddUserModalOpen(true)}
+            startIcon={<DeleteIcon sx={{ color: 'white' }} />}
+            onClick={handleBulkDelete}
             sx={{ 
-              bgcolor: '#89343b',
-              '&:hover': { bgcolor: '#6d2931' },
+              bgcolor: '#d32f2f',
+              '&:hover': { bgcolor: '#b71c1c' },
               '& .MuiButton-startIcon': {
                 margin: 0,
                 marginRight: '8px',
@@ -486,88 +674,36 @@ const UserManagement = () => {
               }
             }}
           >
-            Add User
+            DELETE SELECTED
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<BlockIcon sx={{ color: 'white' }} />}
+            onClick={handleBulkBlock}
+            sx={{ 
+              bgcolor: '#ed6c02',
+              '&:hover': { bgcolor: '#e65100' },
+              '& .MuiButton-startIcon': {
+                margin: 0,
+                marginRight: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                color: 'white'
+              }
+            }}
+          >
+            BLOCK/UNBLOCK SELECTED
           </Button>
         </Box>
-      </Box>
+      )}
 
-      {/* Search and Filters */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center' }}>
-        <TextField
-          placeholder="Search users..."
-          size="small"
-          value={searchQuery}
-          onChange={handleSearch}
-          sx={{ 
-            flexGrow: 1,
-            '& .MuiOutlinedInput-root': {
-              backgroundColor: 'white',
-              '& fieldset': {
-                borderColor: 'transparent'
-              },
-              '&:hover fieldset': {
-                borderColor: 'transparent'
-              },
-              '&.Mui-focused fieldset': {
-                borderColor: 'transparent'
-              }
-            }
-          }}
-          InputProps={{
-            startAdornment: <SearchIcon sx={{ color: 'action.active', mr: 1 }} />,
-          }}
-        />
-
-        <Button
-          variant="contained"
-          startIcon={<FilterListIcon />}
-          onClick={(e) => setFilterAnchorEl(e.currentTarget)}
-          sx={{ 
-            bgcolor: '#ffd700',
-            color: 'black',
-            '&:hover': {
-              bgcolor: '#ffcd00'
-            },
-            '& .MuiButton-startIcon': {
-              margin: 0,
-              marginRight: '8px',
-              display: 'flex',
-              alignItems: 'center'
-            }
-          }}
-        >
-          Filters
-        </Button>
-
-        <Button
-          variant="contained"
-          startIcon={<FileDownloadIcon />}
-          onClick={exportToExcel}
-          sx={{ 
-            bgcolor: '#89343b',
-            '&:hover': {
-              bgcolor: '#6d2931'
-            },
-            '& .MuiButton-startIcon': {
-              margin: 0,
-              marginRight: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              color: 'white',
-            }
-          }}
-        >
-          Export to Excel
-        </Button>
-      </Box>
-
-      {/* User managenent table */}
+      {/* Table Container */}
       <TableContainer component={Paper} sx={{ mt: 3, height: 'calc(100vh - 250px)' }}>
         <Table stickyHeader>
           <TableHead>
-            <TableRow sx={{ 
-              '& th': { 
-                bgcolor: '#f5f5f5', 
+            <TableRow sx={{
+              '& th': {
+                bgcolor: '#f5f5f5',
                 fontWeight: 'bold',
                 fontSize: '0.875rem',
                 color: 'rgba(0, 0, 0, 0.87)',
@@ -582,7 +718,7 @@ const UserManagement = () => {
                 '& .MuiTableSortLabel-icon': {
                   opacity: 1,
                 }
-              } 
+              }
             }}>
               <TableCell padding="checkbox">
                 <Checkbox
@@ -590,6 +726,15 @@ const UserManagement = () => {
                   checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
                   onChange={handleSelectAll}
                 />
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === 'id'}
+                  direction={orderBy === 'id' ? order : 'asc'}
+                  onClick={() => handleSort('id')}
+                >
+                  ID
+                </TableSortLabel>
               </TableCell>
               <TableCell>
                 <TableSortLabel
@@ -606,20 +751,34 @@ const UserManagement = () => {
                   direction={orderBy === 'name' ? order : 'asc'}
                   onClick={() => handleSort('name')}
                 >
-                  Name
+                  Name 
                 </TableSortLabel>
               </TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Role</TableCell>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === 'lastLogin'}
-                  direction={orderBy === 'lastLogin' ? order : 'asc'}
-                  onClick={() => handleSort('lastLogin')}
-                  sx={{ display: 'flex !important' }}
+                  active={orderBy === 'email'}
+                  direction={orderBy === 'email' ? order : 'asc'}
+                  onClick={() => handleSort('email')}
                 >
-                  Last Login
+                  Email
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === 'contactNo'}
+                  direction={orderBy === 'contactNo' ? order : 'asc'}
+                  onClick={() => handleSort('contactNo')}
+                >
+                  Contact No
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === 'role'}
+                  direction={orderBy === 'role' ? order : 'asc'}
+                  onClick={() => handleSort('role')}
+                >
+                  Role
                 </TableSortLabel>
               </TableCell>
               <TableCell>Actions</TableCell>
@@ -642,29 +801,33 @@ const UserManagement = () => {
                       }}
                     />
                   </TableCell>
+                  <TableCell>{user.id}</TableCell>
                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Avatar src={user.avatar} sx={{ width: 30, height: 30 }} />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Avatar
+                        src={user.profilePhoto ? `http://localhost:8080/profile-images/${user.profilePhoto}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`}
+                        alt={user.username}
+                        sx={{ width: 40, height: 40 }}
+                      />
                       {user.username}
                     </Box>
                   </TableCell>
                   <TableCell>{`${user.firstName} ${user.lastName}`}</TableCell>
                   <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <Chip {...getStatusChipProps(user.status)} />
-                  </TableCell>
+                  <TableCell>{user.contactNo || 'N/A'}</TableCell>
                   <TableCell>{user.role}</TableCell>
-                  <TableCell>{user.lastLogin}</TableCell>
                   <TableCell>
-                    <IconButton onClick={(e) => {   
-                      setSelectedUser(user);
-                      setActionAnchorEl(e.currentTarget);
-                    }}>
+                    <IconButton 
+                      onClick={(e) => {   
+                        setSelectedUser(user);
+                        setActionAnchorEl(e.currentTarget);
+                      }}
+                    >
                       <MoreVertIcon />
                     </IconButton>
                   </TableCell>
                 </TableRow>
-            ))}
+              ))}
           </TableBody>
         </Table>
       </TableContainer>
@@ -680,10 +843,19 @@ const UserManagement = () => {
           setRowsPerPage(parseInt(e.target.value, 10));
           setPage(0);
         }}
+        sx={{
+          backgroundColor: '#f4f4f4',
+          borderTop: '2px solid #ddd',
+          '& .MuiTablePagination-selectIcon': { color: '#555' },
+          '& .MuiTablePagination-caption': { color: '#555' },
+          '& .MuiTablePagination-toolbar': {
+            justifyContent: 'flex-end',
+          },
+          '& .MuiTablePagination-actions': {
+            marginLeft: 0,
+          },
+        }}
       />
-
-      {/* Filter Menu */}
-      <FilterMenu />
 
       {/* Action Menu */}
       <Menu
@@ -706,26 +878,15 @@ const UserManagement = () => {
         </MenuItem>
       </Menu>
 
-      {/* Edit User Modal */}
-      <EditUserModal
-        open={editModalOpen}
+      {/* Update User Modal */}
+      <UpdateUserModal
+        open={updateModalOpen}
         onClose={() => {
-          setEditModalOpen(false);
-          setSelectedUserForEdit(null);
+          setUpdateModalOpen(false);
+          setSelectedUserForUpdate(null);
         }}
-        user={selectedUserForEdit}
-        onSave={(updatedUser) => {
-          const updatedUsers = users.map(u => 
-            u.id === updatedUser.id ? updatedUser : u
-          );
-          setUsers(updatedUsers);
-          setFilteredUsers(updatedUsers);
-          setToast({
-            open: true,
-            message: 'User updated successfully',
-            severity: 'success'
-          });
-        }}
+        user={selectedUserForUpdate}
+        onSave={handleSaveUser}
       />
 
       {/*Toast */}
@@ -751,20 +912,27 @@ const UserManagement = () => {
         </Alert>
       </Snackbar>
 
-      {/* Add User Modal */}
+      {/* Add the menu */}
+      <Menu
+        anchorEl={addMenuAnchorEl}
+        open={Boolean(addMenuAnchorEl)}
+        onClose={handleAddMenuClose}
+      >
+        <MenuItem onClick={() => handleAddOptionClick('user')}>Add User</MenuItem>
+        <MenuItem onClick={() => handleAddOptionClick('admin')}>Add Admin</MenuItem>
+      </Menu>
+
+      {/* Add both modals */}
       <AddUserModal
         open={addUserModalOpen}
         onClose={() => setAddUserModalOpen(false)}
-        onAdd={(newUser) => {
-          const updatedUsers = [...users, { ...newUser, id: users.length + 1 }];
-          setUsers(updatedUsers);
-          setFilteredUsers(updatedUsers);
-          setToast({
-            open: true,
-            message: 'User added successfully',
-            severity: 'success'
-          });
-        }}
+        onAdd={handleAddUser}
+      />
+
+      <AddAdminModal
+        open={addAdminModalOpen}
+        onClose={() => setAddAdminModalOpen(false)}
+        onAdd={handleAddAdmin}
       />
     </Box>
   );

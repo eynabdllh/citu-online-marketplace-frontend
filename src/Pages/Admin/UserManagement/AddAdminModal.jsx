@@ -12,13 +12,12 @@ import {
 } from '@mui/material';
 import axios from 'axios';
 
-const AddUserModal = ({ open, onClose, onAdd }) => {
+const AddAdminModal = ({ open, onClose, onAdd }) => {
   const [formData, setFormData] = useState({
     username: '',
     firstName: '',
     lastName: '',
     password: '',
-    address: '',
     contactNo: '',
     email: ''
   });
@@ -47,10 +46,6 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
       newErrors.password = 'Password must be at least 8 characters';
     }
     
-    if (!formData.address.trim()) {
-      newErrors.address = 'Address is required';
-    }
-    
     if (!formData.contactNo.trim()) {
       newErrors.contactNo = 'Contact number is required';
     }
@@ -72,32 +67,14 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
     }
 
     try {
-      const response = await axios.post('http://localhost:8080/api/seller/postSellerRecord', {
-        username: formData.username,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        password: formData.password,
-        address: formData.address,
-        contactNo: formData.contactNo,
-        email: formData.email
-      });
+      const response = await axios.post('http://localhost:8080/api/admin/addAdmin', formData);
       
       if (response.status === 200) {
         onAdd(response.data);
         onClose();
-        setFormData({
-          username: '',
-          firstName: '',
-          lastName: '',
-          password: '',
-          address: '',
-          contactNo: '',
-          email: ''
-        });
-        setErrors({});
       }
     } catch (error) {
-      setSubmitError(error.response?.data?.message || 'Failed to add seller. Please try again.');
+      setSubmitError(error.response?.data?.message || 'Failed to add admin. Please try again.');
     }
   };
 
@@ -116,7 +93,7 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Add New Seller</DialogTitle>
+      <DialogTitle>Add New Admin</DialogTitle>
       <DialogContent>
         <Box sx={{ mt: 2 }}>
           {submitError && (
@@ -174,19 +151,6 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Address"
-                multiline
-                rows={3}
-                value={formData.address}
-                onChange={handleChange('address')}
-                error={!!errors.address}
-                helperText={errors.address}
-              />
-            </Grid>
-            
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
                 label="Contact Number"
                 value={formData.contactNo}
                 onChange={handleChange('contactNo')}
@@ -232,11 +196,11 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
             ml: 2
           }}
         >
-          Add Seller
+          Add Admin
         </Button>
       </DialogActions>
     </Dialog>
   );
 };
 
-export default AddUserModal;
+export default AddAdminModal;
