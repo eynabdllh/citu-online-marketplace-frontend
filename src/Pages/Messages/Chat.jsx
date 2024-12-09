@@ -8,8 +8,136 @@ import ReviewModal from "./ReviewModal";
 import { toast } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
+const loggedInUsername = sessionStorage.getItem('username');
+// for the message count badge
+export const mockMessagesBuyers = [
+    { 
+        id: 1, 
+        sender: "rucas", 
+        recipient: loggedInUsername, 
+        product: { name: "CIT PE Uniform", price: 450, image: "https://via.placeholder.com/100", status: "Available", markedAsSoldTo: null }, 
+        text: "Naa pa ni available? Size medium unta", 
+        time: "01:09 AM", 
+        unread: false,
+        messages: [
+            { sender: "rucas", text: "Naa pa ni available? Size medium unta", time: "01:09 AM" },
+            { sender: loggedInUsername, text: "Yes available pa, naay medium", time: "01:10 AM" },
+            { sender: "rucas", text: "Asa ta pwede mag meet?", time: "01:11 AM" },
+            { sender: loggedInUsername, text: "Sa GLE lang, what time ka free?", time: "01:12 AM" }
+        ]
+    },
+    { 
+        id: 2, 
+        sender: "leslie", 
+        recipient: loggedInUsername, 
+        product: { name: "Engineering Calculator", price: 1200, image: "https://via.placeholder.com/100", status: "Sold", markedAsSoldTo: loggedInUsername }, 
+        text: "Pwede pa less? Student ra baya ko", 
+        time: "02:15 PM", 
+        unread: true,
+        messages: [
+            { sender: "leslie", text: "Pwede pa less? Student ra baya ko", time: "02:15 PM" },
+            { sender: loggedInUsername, text: "1000 last price na", time: "02:20 PM" },
+            { sender: "leslie", text: "Sige, when ta pwede mag meet?", time: "02:22 PM" },
+            { sender: loggedInUsername, text: "Tomorrow 3PM sa CIT main?", time: "02:25 PM" },
+            { sender: "leslie", text: "Sige, see you!", time: "02:26 PM" }
+        ]
+    },
+    { 
+        id: 3,  
+        sender: "mike", 
+        recipient: loggedInUsername, 
+        product: { name: "Medical Books Bundle", price: 2500, image: "https://via.placeholder.com/100", status: "Available", markedAsSoldTo: null }, 
+        text: "Complete set ni siya? Gray's Anatomy included?", 
+        time: "11:30 AM", 
+        unread: false,
+        messages: [
+            { sender: "mike", text: "Complete set ni siya? Gray's Anatomy included?", time: "11:30 AM" },
+            { sender: loggedInUsername, text: "Yes complete set with Gray's Anatomy", time: "11:35 AM" },
+            { sender: "mike", text: "Last price?", time: "11:36 AM" },
+            { sender: loggedInUsername, text: "2300 na lang", time: "11:40 AM" }
+        ]
+    },
+    { 
+        id: 4, 
+        sender: "sarah", 
+        recipient: loggedInUsername, 
+        product: { name: "Laboratory Coat", price: 350, image: "https://via.placeholder.com/100", status: "Available", markedAsSoldTo: null }, 
+        text: "Is this the required thickness for Chem lab?", 
+        time: "09:45 AM", 
+        unread: false,
+        messages: [
+            { sender: "sarah", text: "Is this the required thickness for Chem lab?", time: "09:45 AM" },
+            { sender: loggedInUsername, text: "Yes, according sa requirements", time: "09:50 AM" },
+            { sender: "sarah", text: "Okay, I'll get one. Free delivery?", time: "09:55 AM" },
+            { sender: loggedInUsername, text: "Pickup only sa campus", time: "10:00 AM" }
+        ]
+    }
+];
+
+export const mockMessagesSellers = [
+    { 
+        id: 1, 
+        sender: loggedInUsername, 
+        recipient: "leslie", 
+        product: { name: "Nursing Scrub Suit", price: 800, image: "https://via.placeholder.com/100", status: "Sold", markedAsSoldTo: loggedInUsername }, 
+        text: "Pwede ra ba installment? 2 gives?", 
+        time: "10:09 AM", 
+        unread: false,
+        messages: [
+            { sender: loggedInUsername, text: "Pwede ra ba installment? 2 gives?", time: "10:09 AM" },
+            { sender: "leslie", text: "Di pwede installment kay need nako cash", time: "10:15 AM" },
+            { sender: loggedInUsername, text: "Ah sige, thanks anyway!", time: "10:20 AM" },
+            { sender: "leslie", text: "Welcome!", time: "10:25 AM" }
+        ]
+    },
+    { 
+        id: 2, 
+        sender: loggedInUsername, 
+        recipient: "rucas", 
+        product: { name: "College Department Shirt", price: 200, image: "https://via.placeholder.com/100", status: "Sold", markedAsSoldTo: "rucas" }, 
+        text: "Asa ka dapit sa CIT? Can meetup today?", 
+        time: "10:09 AM", 
+        unread: false,
+        messages: [
+            { sender: loggedInUsername, text: "Hello! Available pa ni?", time: "10:00 AM" },
+            { sender: "rucas", text: "Yes available pa", time: "10:05 AM" },
+            { sender: loggedInUsername, text: "Asa ka dapit sa CIT? Can meetup today?", time: "10:09 AM" },
+            { sender: "rucas", text: "Sa NGE ko karon", time: "10:15 AM" }
+        ]
+    },
+    { 
+        id: 3, 
+        sender: loggedInUsername, 
+        recipient: "james", 
+        product: { name: "Architecture Drawing Set", price: 1500, image: "https://via.placeholder.com/100", status: "Available", markedAsSoldTo: null }, 
+        text: "Complete set ni with drafting table?", 
+        time: "03:20 PM", 
+        unread: true,
+        messages: [
+            { sender: loggedInUsername, text: "Complete set ni with drafting table?", time: "03:20 PM" },
+            { sender: "james", text: "Yes complete set", time: "03:25 PM" },
+            { sender: loggedInUsername, text: "Last price?", time: "03:30 PM" },
+            { sender: "james", text: "1400 na lang", time: "03:35 PM" }
+        ]
+    },
+    { 
+        id: 4, 
+        sender: loggedInUsername, 
+        recipient: "maria", 
+        product: { name: "Accounting Books Y1", price: 1800, image: "https://via.placeholder.com/100", status: "Available", markedAsSoldTo: null }, 
+        text: "Naa kay picture sa condition sa books?", 
+        time: "05:15 PM", 
+        unread: true,
+        messages: [
+            { sender: loggedInUsername, text: "Naa kay picture sa condition sa books?", time: "05:15 PM" },
+            { sender: "maria", text: "Yes, wait lang", time: "05:20 PM" },
+            { sender: loggedInUsername, text: "Okay, thanks!", time: "05:25 PM" },
+            { sender: "maria", text: "Here's the condition of the books", time: "05:30 PM", image: "accounting-books.jpg" }
+        ]
+    }
+];
+
 const Chat = () => {
-    const loggedInUsername = sessionStorage.getItem('username');
     const navigate = useNavigate();
 
     const mockUsers = [
@@ -21,14 +149,10 @@ const Chat = () => {
         { id: 6, username: "maria", firstName: "Maria", lastName: "Santos", rating: 4.4, location: "Talamban, Cebu City", numProducts: 9 },
     ];
 
-    // Helper function to process messages and mark them as read if user was last sender
+    // helper function to process messages and mark them as read if user was last sender
     const processMessagesReadStatus = (messages, loggedInUsername) => {
         return messages.map(msg => {
-            // Get the last message in the conversation
             const lastMessage = msg.messages[msg.messages.length - 1];
-            
-            // If the last message was sent by logged in user, mark as read
-            // Otherwise, keep the original unread status
             return {
                 ...msg,
                 unread: lastMessage?.sender === loggedInUsername ? false : msg.unread
