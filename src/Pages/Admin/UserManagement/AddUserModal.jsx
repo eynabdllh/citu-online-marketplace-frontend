@@ -6,47 +6,59 @@ import {
   DialogActions,
   TextField,
   Button,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   Grid,
+  Box,
+  Alert
 } from '@mui/material';
+import axios from 'axios';
 
 const AddUserModal = ({ open, onClose, onAdd }) => {
-  const [userData, setUserData] = useState({
+  const [formData, setFormData] = useState({
     username: '',
     firstName: '',
     lastName: '',
-    email: '',
-    status: 'Active',
-    role: 'User',
+    password: '',
+    address: '',
+    contactNo: '',
+    email: ''
   });
 
   const [errors, setErrors] = useState({});
+  const [submitError, setSubmitError] = useState('');
 
   const validateForm = () => {
     const newErrors = {};
     
-    // validations
-    if (!userData.username) {
+    if (!formData.username.trim()) {
       newErrors.username = 'Username is required';
-    } else if (userData.username.length < 3) {
-      newErrors.username = 'Username must be at least 3 characters';
     }
-
-    if (!userData.firstName) {
+    
+    if (!formData.firstName.trim()) {
       newErrors.firstName = 'First name is required';
     }
-
-    if (!userData.lastName) {
+    
+    if (!formData.lastName.trim()) {
       newErrors.lastName = 'Last name is required';
     }
-
+    
+    if (!formData.password.trim()) {
+      newErrors.password = 'Password is required';
+    } else if (formData.password.length < 8) {
+      newErrors.password = 'Password must be at least 8 characters';
+    }
+    
+    if (!formData.address.trim()) {
+      newErrors.address = 'Address is required';
+    }
+    
+    if (!formData.contactNo.trim()) {
+      newErrors.contactNo = 'Contact number is required';
+    }
+    
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!userData.email) {
+    if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
-    } else if (!emailRegex.test(userData.email)) {
+    } else if (!emailRegex.test(formData.email)) {
       newErrors.email = 'Invalid email format';
     }
 
@@ -54,113 +66,149 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleChange = (field, value) => {
-    setUserData(prev => ({
-      ...prev,
-      [field]: value
-    }));
-    // to clear error when user starts typing
-    if (errors[field]) {
-      setErrors(prev => ({
-        ...prev,
-        [field]: undefined
-      }));
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      const response = await axios.post('http://localhost:8080/api/seller/postSellerRecord', {
+        username: formData.username,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        password: formData.password,
+        address: formData.address,
+        contactNo: formData.contactNo,
+        email: formData.email
+      });
+      
+      if (response.status === 200) {
+        onAdd(response.data);
+        onClose();
+        setFormData({
+          username: '',
+          firstName: '',
+          lastName: '',
+          password: '',
+          address: '',
+          contactNo: '',
+          email: ''
+        });
+        setErrors({});
+      }
+    } catch (error) {
+      setSubmitError(error.response?.data?.message || 'Failed to add seller. Please try again.');
     }
   };
 
-  const handleSubmit = () => {
-    if (validateForm()) {
-      onAdd(userData);
-      onClose();
-      setUserData({
-        username: '',
-        firstName: '',
-        lastName: '',
-        email: '',
-        status: 'Active',
-        role: 'User',
-      });
-      setErrors({});
+  const handleChange = (field) => (event) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: event.target.value
+    }));
+    if (errors[field]) {
+      setErrors(prev => ({
+        ...prev,
+        [field]: ''
+      }));
     }
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Add New User</DialogTitle>
+      <DialogTitle>Add New Seller</DialogTitle>
       <DialogContent>
-        <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Username"
-              value={userData.username}
-              onChange={(e) => handleChange('username', e.target.value)}
-              error={!!errors.username}
-              helperText={errors.username}
-            />
+        <Box sx={{ mt: 2 }}>
+          {submitError && (
+            <Alert severity="error" sx={{ mb: 2 }}>
+              {submitError}
+            </Alert>
+          )}
+          
+          <Grid container spacing={2}>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Username"
+                value={formData.username}
+                onChange={handleChange('username')}
+                error={!!errors.username}
+                helperText={errors.username}
+              />
+            </Grid>
+            
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="First Name"
+                value={formData.firstName}
+                onChange={handleChange('firstName')}
+                error={!!errors.firstName}
+                helperText={errors.firstName}
+              />
+            </Grid>
+            
+            <Grid item xs={12} sm={6}>
+              <TextField
+                fullWidth
+                label="Last Name"
+                value={formData.lastName}
+                onChange={handleChange('lastName')}
+                error={!!errors.lastName}
+                helperText={errors.lastName}
+              />
+            </Grid>
+            
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                type="password"
+                label="Password"
+                value={formData.password}
+                onChange={handleChange('password')}
+                error={!!errors.password}
+                helperText={errors.password}
+              />
+            </Grid>
+            
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Address"
+                multiline
+                rows={3}
+                value={formData.address}
+                onChange={handleChange('address')}
+                error={!!errors.address}
+                helperText={errors.address}
+              />
+            </Grid>
+            
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Contact Number"
+                value={formData.contactNo}
+                onChange={handleChange('contactNo')}
+                error={!!errors.contactNo}
+                helperText={errors.contactNo}
+              />
+            </Grid>
+            
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Email"
+                value={formData.email}
+                onChange={handleChange('email')}
+                error={!!errors.email}
+                helperText={errors.email}
+              />
+            </Grid>
           </Grid>
-          <Grid item xs={6}>
-            <TextField
-              fullWidth
-              label="First Name"
-              value={userData.firstName}
-              onChange={(e) => handleChange('firstName', e.target.value)}
-              error={!!errors.firstName}
-              helperText={errors.firstName}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <TextField
-              fullWidth
-              label="Last Name"
-              value={userData.lastName}
-              onChange={(e) => handleChange('lastName', e.target.value)}
-              error={!!errors.lastName}
-              helperText={errors.lastName}
-            />
-          </Grid>
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              label="Email"
-              type="email"
-              value={userData.email}
-              onChange={(e) => handleChange('email', e.target.value)}
-              error={!!errors.email}
-              helperText={errors.email}
-            />
-          </Grid>
-          <Grid item xs={6}>
-            <FormControl fullWidth>
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={userData.status}
-                label="Status"
-                onChange={(e) => handleChange('status', e.target.value)}
-              >
-                <MenuItem value="Active">Active</MenuItem>
-                <MenuItem value="Inactive">Inactive</MenuItem>
-                <MenuItem value="Blocked">Blocked</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-          <Grid item xs={6}>
-            <FormControl fullWidth>
-              <InputLabel>Role</InputLabel>
-              <Select
-                value={userData.role}
-                label="Role"
-                onChange={(e) => handleChange('role', e.target.value)}
-              >
-                <MenuItem value="Admin">Admin</MenuItem>
-                <MenuItem value="User">User</MenuItem>
-                <MenuItem value="Moderator">Moderator</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-        </Grid>
+        </Box>
       </DialogContent>
-      <DialogActions sx={{ padding: '16px 24px' }}>
+      <DialogActions sx={{ p: 2.5 }}>
         <Button 
           onClick={onClose}
           variant="outlined"
@@ -184,7 +232,7 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
             ml: 2
           }}
         >
-          Add User
+          Add Seller
         </Button>
       </DialogActions>
     </Dialog>

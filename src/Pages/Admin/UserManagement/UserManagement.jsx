@@ -1,45 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import {
   Box,
-  Button,
+  Paper,
+  Typography,
   TextField,
+  Button,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  Paper,
-  Checkbox,
-  TableSortLabel,
+  TablePagination,
   IconButton,
   Menu,
   MenuItem,
-  Avatar,
-  Grid,
   FormControl,
   InputLabel,
   Select,
-  Card,
-  Typography,
-  TablePagination,
+  Chip,
   Snackbar,
-  Alert
+  Alert,
+  Checkbox,
+  TableSortLabel,
+  Avatar,
+  Grid,
+  Card,
 } from '@mui/material';
 import {
   Search as SearchIcon,
-  Add as AddIcon,
+  FilterList as FilterListIcon,
   MoreVert as MoreVertIcon,
+  FileDownload as FileDownloadIcon,
+  Block as BlockIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Block as BlockIcon,
+  Add as AddIcon,
   CheckCircle,
+  Cancel,
   AccessTime,
-  Cancel
 } from '@mui/icons-material';
-import axios from 'axios';
-import UpdateUserModal from './UpdateUserModal';
+import * as XLSX from 'xlsx';
 import AddUserModal from './AddUserModal';
+import UpdateUserModal from './UpdateUserModal';
+import axios from 'axios';
 import AddAdminModal from './AddAdminModal';
 
 const UserManagement = () => {
@@ -419,6 +423,30 @@ const UserManagement = () => {
     } else if (type === 'admin') {
       setAddAdminModalOpen(true);
     }
+  };
+
+  const handleAddUser = (newUser) => {
+    // For sellers (no id needed as username is PK)
+    const updatedUsers = [...users, newUser];
+    setUsers(updatedUsers);
+    setFilteredUsers(updatedUsers);
+    setToast({
+      open: true,
+      message: 'User added successfully',
+      severity: 'success'
+    });
+  };
+
+  const handleAddAdmin = (newAdmin) => {
+    // For admins (include id)
+    const updatedUsers = [...users, { ...newAdmin, id: users.length + 1 }];
+    setUsers(updatedUsers);
+    setFilteredUsers(updatedUsers);
+    setToast({
+      open: true,
+      message: 'Admin added successfully',
+      severity: 'success'
+    });
   };
 
   return (
@@ -898,33 +926,13 @@ const UserManagement = () => {
       <AddUserModal
         open={addUserModalOpen}
         onClose={() => setAddUserModalOpen(false)}
-        onAdd={(newUser) => {
-          // Handle adding new user
-          const updatedUsers = [...users, { ...newUser, id: users.length + 1 }];
-          setUsers(updatedUsers);
-          setFilteredUsers(updatedUsers);
-          setToast({
-            open: true,
-            message: 'User added successfully',
-            severity: 'success'
-          });
-        }}
+        onAdd={handleAddUser}
       />
 
       <AddAdminModal
         open={addAdminModalOpen}
         onClose={() => setAddAdminModalOpen(false)}
-        onAdd={(newAdmin) => {
-          // Handle adding new admin
-          const updatedUsers = [...users, { ...newAdmin, id: users.length + 1 }];
-          setUsers(updatedUsers);
-          setFilteredUsers(updatedUsers);
-          setToast({
-            open: true,
-            message: 'Admin added successfully',
-            severity: 'success'
-          });
-        }}
+        onAdd={handleAddAdmin}
       />
     </Box>
   );
