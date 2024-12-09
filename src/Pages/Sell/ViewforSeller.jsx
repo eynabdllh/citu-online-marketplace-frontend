@@ -5,6 +5,7 @@ import axios from 'axios';
 import StarIcon from '@mui/icons-material/Star';
 import UpdateProductForm from '../Sell/UpdateProductForm'; 
 import '../../App.css';
+import { toast } from "react-hot-toast";
 
 const ViewforSeller = () => {
   const { code } = useParams(); 
@@ -53,18 +54,72 @@ const ViewforSeller = () => {
   };
 
   //Deletes Products
-  const handleDelete = async () => {
-    const confirmDelete = window.confirm('Are you sure you want to delete this product?');
-    if (confirmDelete) {
-      try {
-        await axios.delete(`http://localhost:8080/api/product/deleteProduct/${code}`);
-        alert('Product deleted successfully');
-        navigate('/home');
-      } catch (error) {
-        console.error('Error deleting product:', error);
-        alert('Failed to delete the product');
-      }
-    }
+  const handleDelete = () => {
+    toast((t) => (
+        <div>
+            <div style={{ 
+                fontSize: '16px', 
+                marginBottom: '15px',
+                color: '#333',
+                fontWeight: '500'
+            }}>
+                Are you sure you want to delete this product?
+            </div>
+            <div style={{ display: 'flex', gap: '2px', justifyContent: 'flex-end', margin: 0 }}>
+                <button
+                    onClick={() => toast.dismiss(t.id)}
+                    style={{
+                        padding: '8px 16px',
+                        background: '#f5f5f5',
+                        color: '#666',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontWeight: '500',
+                        fontSize: '14px',
+                        margin: 0
+                    }}
+                >
+                    Cancel
+                </button>
+                <button
+                    onClick={async () => {
+                        try {
+                            await axios.delete(`/api/product/deleteProduct/${code}`);
+                            toast.success('Product deleted successfully');
+                            toast.dismiss(t.id);
+                            navigate('/profile');
+                        } catch (error) {
+                            console.error('Error deleting product:', error);
+                            toast.error(error.response?.data?.message || 'Failed to delete product');
+                        }
+                    }}
+                    style={{
+                        padding: '8px 16px',
+                        background: '#89343b',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontWeight: '500',
+                        fontSize: '14px',
+                        margin: 0
+                    }}
+                >
+                    Delete
+                </button>
+            </div>
+        </div>
+    ), { 
+        duration: 6000,
+        style: {
+            background: 'white',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+            borderRadius: '8px',
+            margin: 0,
+            padding: '16px 16px 8px 16px'
+        }
+    });
   };
 
   return (
@@ -178,7 +233,7 @@ const ViewforSeller = () => {
             overflowY: 'auto', 
           }}
         >
-          <UpdateProductForm product={product} onUpdateSuccess={() => setEditing(false)} />
+          <UpdateProductForm product={product} onUpdateSuccess={() => setEditing(false)} setProduct={setProduct} />
         </Box>
       </Modal>
     </Box>

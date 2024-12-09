@@ -3,9 +3,10 @@ import axios from 'axios';
 import { TextField, Button, Container, Typography, Box, FormControl, InputLabel, MenuItem, Select} from '@mui/material';
 import { useNavigate } from 'react-router-dom'; 
 import '../../App.css';
+import { toast } from "react-hot-toast";
 
 
-const UpdateProductForm = ({ product, onUpdateSuccess }) => {
+const UpdateProductForm = ({ product, onUpdateSuccess, setProduct }) => {
   const [productName, setProductName] = useState(product.name || '');
   const [description, setDescription] = useState(product.pdtDescription || '');
   const [quantity, setQuantity] = useState(product.qtyInStock || '');
@@ -28,6 +29,18 @@ const UpdateProductForm = ({ product, onUpdateSuccess }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate negative numbers
+    if (Number(price) <= 0) {
+        toast.error('Price must be greater than 0');
+        return;
+    }
+
+    if (Number(quantity) <= 0) {
+        toast.error('Quantity must be greater than 0');
+        return;
+    }
+
     const formData = new FormData();
 
     const productData = {
@@ -49,20 +62,19 @@ const UpdateProductForm = ({ product, onUpdateSuccess }) => {
     }
 
     try {
-      const response = await axios.put(`http://localhost:8080/api/product/putProductDetails/${product.code}`, formData, {
+      await axios.put(`http://localhost:8080/api/product/putProductDetails/${product.code}`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },
       });
 
-      alert(response.data.message || 'Product updated successfully!');
-      onUpdateSuccess(); 
-      navigate(`/home`); 
+      toast.success('Product updated successfully!');
+      onUpdateSuccess();
+      const response = await axios.get(`/api/product/getProductByCode/${product.code}`);
+      setProduct(response.data);
     } catch (error) {
       console.error('Error updating product:', error);
-      if (error.response) {
-        alert(`Failed to update product: ${error.response.data.message || 'An error occurred.'}`);
-      }
+      toast.error(error.response?.data?.message || 'Failed to update product');
     }
   };
 
@@ -80,6 +92,7 @@ const UpdateProductForm = ({ product, onUpdateSuccess }) => {
             label="Product Name"
             value={productName}
             onChange={(e) => setProductName(e.target.value)}
+            InputLabelProps={{ shrink: true }}
           />
           <TextField
             margin="normal"
@@ -90,6 +103,7 @@ const UpdateProductForm = ({ product, onUpdateSuccess }) => {
             rows={4}
             value={description}
             onChange={(e) => setDescription(e.target.value)}
+            InputLabelProps={{ shrink: true }}
           />
 
           <FormControl fullWidth margin="normal">
@@ -133,6 +147,7 @@ const UpdateProductForm = ({ product, onUpdateSuccess }) => {
             label="Quantity in Stock"
             value={quantity}
             onChange={(e) => setQuantity(e.target.value)}
+            InputLabelProps={{ shrink: true }}
           />
           <TextField
             margin="normal"
@@ -142,14 +157,42 @@ const UpdateProductForm = ({ product, onUpdateSuccess }) => {
             label="Price"
             value={price}
             onChange={(e) => setPrice(e.target.value)}
+            InputLabelProps={{ shrink: true }}
           />
-          <div style={{ marginTop: '10px' }}>
-            <label>Image (optional):</label>
-            <input
-              type="file"
-              onChange={(e) => setImageFile(e.target.files[0])}
-            />
-          </div>
+          <FormControl fullWidth margin="normal">
+            <InputLabel shrink htmlFor="image-upload">Product Image</InputLabel>
+            <Box
+                sx={{
+                    mt: 1,
+                    p: 2,
+                    border: '1px dashed #ccc',
+                    borderRadius: '4px',
+                    textAlign: 'center',
+                    cursor: 'pointer'
+                }}
+                onClick={() => document.getElementById('image-upload').click()}
+            >
+                {imageFile ? (
+                    <div>
+                        <div>Selected: {imageFile.name}</div>
+                        <img 
+                            src={URL.createObjectURL(imageFile)} 
+                            alt="Preview" 
+                            style={{ maxWidth: '200px', maxHeight: '200px', marginTop: '8px' }}
+                        />
+                    </div>
+                ) : (
+                    <div>Click to upload image</div>
+                )}
+                <input
+                    id="image-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setImageFile(e.target.files[0])}
+                    style={{ display: 'none' }}
+                />
+            </Box>
+          </FormControl>
           <Button
             type="submit"
             variant="contained"
