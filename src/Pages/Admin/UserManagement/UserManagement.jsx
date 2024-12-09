@@ -22,10 +22,10 @@ import {
   Snackbar,
   Alert,
   Checkbox,
-  Breadcrumbs,
-  Link,
   TableSortLabel,
   Avatar,
+  Grid,
+  Card,
 } from '@mui/material';
 import {
   Search as SearchIcon,
@@ -36,6 +36,9 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Add as AddIcon,
+  CheckCircle,
+  Cancel,
+  AccessTime,
 } from '@mui/icons-material';
 import * as XLSX from 'xlsx';
 import EditUserModal from './EditUserModal';
@@ -142,27 +145,29 @@ const UserManagement = () => {
   const [order, setOrder] = useState('asc');
   const [addUserModalOpen, setAddUserModalOpen] = useState(false);
 
-  // Handle search
+  //  search function
   const handleSearch = (event) => {
     const query = event.target.value.toLowerCase();
     setSearchQuery(query);
     
-    const filtered = users.filter(user => 
-      user.username.toLowerCase().includes(query) ||
-      user.email.toLowerCase().includes(query) ||
-      `${user.firstName} ${user.lastName}`.toLowerCase().includes(query)
-    );
-    
+    let filtered = [...users].filter(user => {
+      const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+      const words = fullName.split(' ');
+      
+      return user.username.toLowerCase().startsWith(query) ||
+             user.email.toLowerCase().startsWith(query) ||
+             words.some(word => word.startsWith(query));
+    });
+
+    if (filters.status) {
+      filtered = filtered.filter(user => user.status === filters.status);
+    }
+    if (filters.role) {
+      filtered = filtered.filter(user => user.role === filters.role);
+    }
+
     setFilteredUsers(filtered);
     setPage(0);
-  };
-
-  // Export to Excel
-  const exportToExcel = () => {
-    const worksheet = XLSX.utils.json_to_sheet(filteredUsers);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Users");
-    XLSX.writeFile(workbook, "users.xlsx");
   };
 
   // Handle user actions
@@ -206,7 +211,7 @@ const UserManagement = () => {
     setActionAnchorEl(null);
   };
 
-  // Status chip styles
+  // Status chip
   const getStatusChipProps = (status) => {
     const props = {
       label: status === 'Block' ? 'Blocked' : status,
@@ -302,30 +307,6 @@ const UserManagement = () => {
     setFilteredUsers(sortedUsers);
   };
 
-  // filter function
-  const applyFilters = () => {
-    let filtered = [...users];
-    
-    if (searchQuery) {
-      filtered = filtered.filter(user => 
-        user.username.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        `${user.firstName} ${user.lastName}`.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        user.email.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    if (filters.status) {
-      filtered = filtered.filter(user => user.status === filters.status);
-    }
-
-    if (filters.role) {
-      filtered = filtered.filter(user => user.role === filters.role);
-    }
-
-    setFilteredUsers(filtered);
-    setFilterAnchorEl(null);
-  };
-
   // handles bulk block
   const handleBulkBlock = () => {
     const updatedUsers = users.map(user => 
@@ -343,140 +324,222 @@ const UserManagement = () => {
     });
   };
 
-  // filter menu
-  const FilterMenu = () => (
-    <Menu
-      anchorEl={filterAnchorEl}
-      open={Boolean(filterAnchorEl)}
-      onClose={() => setFilterAnchorEl(null)}
-      PaperProps={{
-        sx: { width: 250, mt: 1 }
-      }}
-    >
-      <MenuItem sx={{ flexDirection: 'column', alignItems: 'stretch' }}>
-        <FormControl fullWidth size="small" sx={{ mb: 1 }}>
-          <InputLabel>Status</InputLabel>
-          <Select
-            value={filters.status}
-            label="Status"
-            onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-          >
-            <MenuItem value="">All</MenuItem>
-            <MenuItem value="Active">Active</MenuItem>
-            <MenuItem value="Inactive">Inactive</MenuItem>
-            <MenuItem value="Blocked">Blocked</MenuItem>
-          </Select>
-        </FormControl>
-        <FormControl fullWidth size="small">
-          <InputLabel>Role</InputLabel>
-          <Select
-            value={filters.role}
-            label="Role"
-            onChange={(e) => setFilters(prev => ({ ...prev, role: e.target.value }))}
-          >
-            <MenuItem value="">All</MenuItem>
-            <MenuItem value="Admin">Admin</MenuItem>
-            <MenuItem value="User">User</MenuItem>
-          </Select>
-        </FormControl>
-      </MenuItem>
-      <MenuItem sx={{ gap: 1 }}>
-        <Button 
-          fullWidth 
-          variant="outlined"
-          onClick={() => {
-            setFilters({ status: '', role: '' });
-            setFilteredUsers(users);
-            setFilterAnchorEl(null);
-          }}
-          sx={{ 
-            borderColor: '#89343b',
-            color: '#89343b',
-            '&:hover': {
-              borderColor: '#6d2931',
-              backgroundColor: 'rgba(137, 52, 59, 0.04)'
-            }
-          }}
-        >
-          Reset
-        </Button>
-        <Button 
-          fullWidth 
-          variant="contained"
-          onClick={() => {
-            applyFilters();
-            setFilterAnchorEl(null);
-          }}
-          sx={{ 
-            bgcolor: '#89343b',
-            '&:hover': { bgcolor: '#6d2931' }
-          }}
-        >
-          Apply
-        </Button>
-      </MenuItem>
-    </Menu>
-  );
-
   return (
     <Box sx={{ padding: 3 }}>
-      {/* Breadcrumbs */}
-      <Breadcrumbs sx={{ mb: 2 }}>
-        <Link color="inherit" href="/admin/dashboard">
-          Dashboard
-        </Link>
-        <Typography color="textPrimary">User Management</Typography>
-      </Breadcrumbs>
-
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
         <Typography variant="h4" sx={{ color: '#89343b' }}>
           User Management
         </Typography>
-        <Box sx={{ display: 'flex', gap: 2 }}>
-          {selectedUsers.length > 0 && (
-            <>
-              <Button
-                variant="contained"
-                color="error"
-                startIcon={<DeleteIcon />}
-                onClick={handleBulkDelete}
-                sx={{ 
-                  '& .MuiButton-startIcon': {
-                    margin: 0,
-                    marginRight: '8px',
-                    display: 'flex',
-                    alignItems: 'center'
+      </Box>
+
+      {/* Filter Section */}
+      <Box sx={{ mb: 3 }}>
+        <Grid container spacing={2} alignItems="center">
+          {/* Search Input */}
+          <Grid item xs={12} sm={4} md={4}>
+            <TextField
+              placeholder="Search users..."
+              size="small"
+              value={searchQuery}
+              onChange={handleSearch}
+              sx={{
+                width: '100%',
+                '& .MuiOutlinedInput-root': {
+                  backgroundColor: 'white',
+                  '& fieldset': { borderColor: 'transparent' },
+                  '&:hover fieldset': { borderColor: 'transparent' },
+                  '&.Mui-focused fieldset': { borderColor: 'transparent' },
+                },
+              }}
+              InputProps={{
+                startAdornment: <SearchIcon sx={{ color: 'action.active', mr: 1 }} />,
+              }}
+            />
+          </Grid>
+
+          {/* Status Dropdown */}
+          <Grid item xs={12} sm={2} md={2}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={filters.status}
+                onChange={(e) => {
+                  const newStatus = e.target.value;
+                  setFilters(prev => ({ ...prev, status: newStatus }));
+                  
+                  let filtered = [...users];
+                  if (searchQuery) {
+                    filtered = filtered.filter(user =>
+                      user.username.toLowerCase().startsWith(searchQuery) ||
+                      user.firstName.toLowerCase().startsWith(searchQuery) ||
+                      user.lastName.toLowerCase().startsWith(searchQuery) ||
+                      user.email.toLowerCase().startsWith(searchQuery)
+                    );
                   }
+                  // status filter
+                  if (newStatus) {
+                    filtered = filtered.filter(user => user.status === newStatus);
+                  }
+                  // role filter
+                  if (filters.role) {
+                    filtered = filtered.filter(user => user.role === filters.role);
+                  }
+                  
+                  setFilteredUsers(filtered);
+                  setPage(0);
+                }}
+                label="Status"
+                sx={{
+                  backgroundColor: '#ffd700',
+                  boxShadow: 'none',
+                  border: 'none',
+                  '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                  '&:hover': {
+                    backgroundColor: '#ffcd00',
+                    boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.1)',
+                  },
+                  '&.Mui-focused': {
+                    backgroundColor: '#e0e0e0',
+                    boxShadow: 'none',
+                  },
+                  '& .MuiSelect-icon': { color: '#8A252C' },
                 }}
               >
-                Delete Selected ({selectedUsers.length})
-              </Button>
-              <Button
-                variant="contained"
-                startIcon={<BlockIcon />}
-                onClick={handleBulkBlock}
-                sx={{ 
-                  bgcolor: '#f57c00',
-                  '&:hover': { bgcolor: '#d84315' },
-                  '& .MuiButton-startIcon': {
-                    margin: 0,
-                    marginRight: '8px',
-                    display: 'flex',
-                    alignItems: 'center'
+                <MenuItem value="">All</MenuItem>
+                <MenuItem value="Active">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <CheckCircle sx={{ mr: 1, color: '#28a745' }} />
+                    <Typography variant="body2" sx={{ color: '#333' }}>Active</Typography>
+                  </Box>
+                </MenuItem>
+                <MenuItem value="Inactive">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <AccessTime sx={{ mr: 1, color: '#ff9800' }} />
+                    <Typography variant="body2" sx={{ color: '#333' }}>Inactive</Typography>
+                  </Box>
+                </MenuItem>
+                <MenuItem value="Blocked">
+                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                    <Cancel sx={{ mr: 1, color: '#dc3545' }} />
+                    <Typography variant="body2" sx={{ color: '#333' }}>Blocked</Typography>
+                  </Box>
+                </MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* Role Dropdown */}
+          <Grid item xs={12} sm={2} md={2}>
+            <FormControl fullWidth size="small">
+              <InputLabel>Role</InputLabel>
+              <Select
+                value={filters.role}
+                onChange={(e) => {
+                  const newRole = e.target.value;
+                  setFilters(prev => ({ ...prev, role: newRole }));
+                  
+                  let filtered = [...users];
+       
+                  if (searchQuery) {
+                    filtered = filtered.filter(user =>
+                      user.username.toLowerCase().startsWith(searchQuery) ||
+                      user.firstName.toLowerCase().startsWith(searchQuery) ||
+                      user.lastName.toLowerCase().startsWith(searchQuery) ||
+                      user.email.toLowerCase().startsWith(searchQuery)
+                    );
                   }
+               
+                  if (filters.status) {
+                    filtered = filtered.filter(user => user.status === filters.status);
+                  }
+             
+                  if (newRole) {
+                    filtered = filtered.filter(user => user.role === newRole);
+                  }
+                  
+                  setFilteredUsers(filtered);
+                  setPage(0);
+                }}
+                label="Role"
+                sx={{
+                  backgroundColor: '#ffd700',
+                  boxShadow: 'none',
+                  border: 'none',
+                  '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
+                  '&:hover': {
+                    backgroundColor: '#ffcd00',
+                    boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.1)',
+                  },
+                  '&.Mui-focused': {
+                    backgroundColor: '#e0e0e0',
+                    boxShadow: 'none',
+                  },
+                  '& .MuiSelect-icon': { color: '#8A252C' },
                 }}
               >
-                Block Selected ({selectedUsers.length})
-              </Button>
-            </>
-          )}
+                <MenuItem value="">All</MenuItem>
+                <MenuItem value="Admin">Admin</MenuItem>
+                <MenuItem value="User">User</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
+
+          {/* Add User Button */}
+          <Grid item xs={12} sm={2} md={2} sx={{ display: 'flex', justifyContent: "right", marginLeft: "auto" }}>
+            <Button
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setAddUserModalOpen(true)}
+              sx={{ 
+                bgcolor: '#89343b',
+                '&:hover': { bgcolor: '#6d2931' },
+                '& .MuiButton-startIcon': {
+                  margin: 0,
+                  marginRight: '8px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  color: 'white'
+                }
+              }}
+            >
+              Add User
+            </Button>
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* Summary Cards */}
+      <Box sx={{ display: 'flex', gap: 2, my: 2 }}>
+        <Card sx={{ p: 2, flex: 1, bgcolor: '#ffefc3' }}>
+          <Typography variant="subtitle1">Active</Typography>
+          <Typography variant="h4">
+            {users.filter(user => user.status === 'Active').length}
+          </Typography>
+        </Card>
+        <Card sx={{ p: 2, flex: 1, bgcolor: '#c8e6c9' }}>
+          <Typography variant="subtitle1">Inactive</Typography>
+          <Typography variant="h4">
+            {users.filter(user => user.status === 'Inactive').length}
+          </Typography>
+        </Card>
+        <Card sx={{ p: 2, flex: 1, bgcolor: '#ffcdd2' }}>
+          <Typography variant="subtitle1">Blocked</Typography>
+          <Typography variant="h4">
+            {users.filter(user => user.status === 'Blocked').length}
+          </Typography>
+        </Card>
+      </Box>
+
+      {/* Select action buttons */}
+      {selectedUsers.length > 0 && (
+        <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2, gap: 1 }}>
           <Button
             variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setAddUserModalOpen(true)}
+            startIcon={<DeleteIcon sx={{ color: 'white' }} />}
+            onClick={handleBulkDelete}
             sx={{ 
-              bgcolor: '#89343b',
-              '&:hover': { bgcolor: '#6d2931' },
+              bgcolor: '#d32f2f',
+              '&:hover': { bgcolor: '#b71c1c' },
               '& .MuiButton-startIcon': {
                 margin: 0,
                 marginRight: '8px',
@@ -486,88 +549,36 @@ const UserManagement = () => {
               }
             }}
           >
-            Add User
+            DELETE SELECTED
+          </Button>
+          <Button
+            variant="contained"
+            startIcon={<BlockIcon sx={{ color: 'white' }} />}
+            onClick={handleBulkBlock}
+            sx={{ 
+              bgcolor: '#ed6c02',
+              '&:hover': { bgcolor: '#e65100' },
+              '& .MuiButton-startIcon': {
+                margin: 0,
+                marginRight: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                color: 'white'
+              }
+            }}
+          >
+            BLOCK/UNBLOCK SELECTED
           </Button>
         </Box>
-      </Box>
+      )}
 
-      {/* Search and Filters */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center' }}>
-        <TextField
-          placeholder="Search users..."
-          size="small"
-          value={searchQuery}
-          onChange={handleSearch}
-          sx={{ 
-            flexGrow: 1,
-            '& .MuiOutlinedInput-root': {
-              backgroundColor: 'white',
-              '& fieldset': {
-                borderColor: 'transparent'
-              },
-              '&:hover fieldset': {
-                borderColor: 'transparent'
-              },
-              '&.Mui-focused fieldset': {
-                borderColor: 'transparent'
-              }
-            }
-          }}
-          InputProps={{
-            startAdornment: <SearchIcon sx={{ color: 'action.active', mr: 1 }} />,
-          }}
-        />
-
-        <Button
-          variant="contained"
-          startIcon={<FilterListIcon />}
-          onClick={(e) => setFilterAnchorEl(e.currentTarget)}
-          sx={{ 
-            bgcolor: '#ffd700',
-            color: 'black',
-            '&:hover': {
-              bgcolor: '#ffcd00'
-            },
-            '& .MuiButton-startIcon': {
-              margin: 0,
-              marginRight: '8px',
-              display: 'flex',
-              alignItems: 'center'
-            }
-          }}
-        >
-          Filters
-        </Button>
-
-        <Button
-          variant="contained"
-          startIcon={<FileDownloadIcon />}
-          onClick={exportToExcel}
-          sx={{ 
-            bgcolor: '#89343b',
-            '&:hover': {
-              bgcolor: '#6d2931'
-            },
-            '& .MuiButton-startIcon': {
-              margin: 0,
-              marginRight: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              color: 'white',
-            }
-          }}
-        >
-          Export to Excel
-        </Button>
-      </Box>
-
-      {/* User managenent table */}
+      {/* Table Container */}
       <TableContainer component={Paper} sx={{ mt: 3, height: 'calc(100vh - 250px)' }}>
         <Table stickyHeader>
           <TableHead>
-            <TableRow sx={{ 
-              '& th': { 
-                bgcolor: '#f5f5f5', 
+            <TableRow sx={{
+              '& th': {
+                bgcolor: '#f5f5f5',
                 fontWeight: 'bold',
                 fontSize: '0.875rem',
                 color: 'rgba(0, 0, 0, 0.87)',
@@ -582,7 +593,7 @@ const UserManagement = () => {
                 '& .MuiTableSortLabel-icon': {
                   opacity: 1,
                 }
-              } 
+              }
             }}>
               <TableCell padding="checkbox">
                 <Checkbox
@@ -680,10 +691,19 @@ const UserManagement = () => {
           setRowsPerPage(parseInt(e.target.value, 10));
           setPage(0);
         }}
+        sx={{
+          backgroundColor: '#f4f4f4',
+          borderTop: '2px solid #ddd',
+          '& .MuiTablePagination-selectIcon': { color: '#555' },
+          '& .MuiTablePagination-caption': { color: '#555' },
+          '& .MuiTablePagination-toolbar': {
+            justifyContent: 'flex-end',
+          },
+          '& .MuiTablePagination-actions': {
+            marginLeft: 0,
+          },
+        }}
       />
-
-      {/* Filter Menu */}
-      <FilterMenu />
 
       {/* Action Menu */}
       <Menu
