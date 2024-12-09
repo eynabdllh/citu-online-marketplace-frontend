@@ -149,9 +149,31 @@ const UserProfile = () => {
                                     height: '2px',
                                     borderRadius: '0',
                                     backgroundColor: '#89343b',
+                                    bottom: -20,
                                 },
+                                '& .MuiTab-root': {
+                              
+                                    minWidth: 100,
+                                    fontSize: '15px',
+                                    fontWeight: 400,
+                                    color: '#666',
+                                 
+                                    transition: 'all 0.2s ease-in-out',
+                                    '&:hover': {
+                                        color: '#89343b',
+                                        background: 'transparent',
+                                        opacity: 0.7,
+                                    },
+                                    '&.Mui-selected': {
+                                        color: '#89343b',
+                                        fontWeight: 500,
+                                    },
+                                },
+                                '& .MuiTabs-flexContainer': {
+                                    gap: '24px', 
+                                }
                             }}
-                            aria-label="lab API tabs example"
+                            aria-label="profile tabs"
                             centered
                         >
                             <Tab
