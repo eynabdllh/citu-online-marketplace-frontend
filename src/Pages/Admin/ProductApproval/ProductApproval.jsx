@@ -3,7 +3,7 @@ import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
   TableHead, TablePagination, TableRow, Button, CircularProgress, Snackbar, Link,
   Breadcrumbs, Card, CardMedia, CardContent, Tooltip, Chip, TableSortLabel, TextField,
-  FormControl, InputLabel, Select, MenuItem, Grid, Dialog, DialogActions, DialogContent, DialogTitle
+  FormControl, InputLabel, Select, MenuItem, Grid, Dialog, DialogActions, DialogContent, DialogTitle, Alert
 } from '@mui/material';
 import { Search as SearchIcon, CheckCircle, Cancel, AccessTime } from '@mui/icons-material';
 import axios from 'axios';
@@ -44,6 +44,7 @@ const ProductApproval = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [openModal, setOpenModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
+  const [notification, setNotification] = useState({ open: false, message: '', type: 'success' });
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -105,7 +106,7 @@ const ProductApproval = () => {
   const handleApprove = async (productCode) => {
     try {
       const response = await axios.post('http://localhost:8080/api/product/approve', { productCode });
-      setSuccessMessage('Product approved successfully!');
+      setNotification({ open: true, message: 'Product approved successfully!', type: 'success' });
 
       setProducts((prevProducts) => {
         const updatedProducts = prevProducts.map(product =>
@@ -117,14 +118,14 @@ const ProductApproval = () => {
         return updatedProducts;
       });
     } catch (error) {
-      setError('Error approving product');
+      setNotification({ open: true, message: 'Error approving product', type: 'error' });
     }
   };
 
   const handleReject = async (productCode) => {
     try {
       const response = await axios.post('http://localhost:8080/api/product/reject', { productCode });
-      setSuccessMessage('Product rejected successfully!');
+      setNotification({ open: true, message: 'Product rejected successfully!', type: 'success' });
 
       setProducts((prevProducts) => {
         const updatedProducts = prevProducts.map(product =>
@@ -136,7 +137,7 @@ const ProductApproval = () => {
         return updatedProducts;
       });
     } catch (error) {
-      setError('Error rejecting product');
+      setNotification({ open: true, message: 'Error rejecting product', type: 'error' });
     }
   };
 
@@ -539,49 +540,177 @@ const ProductApproval = () => {
         />
       </Paper>
 
-      {/* Product Details Modal */}
-      <Dialog open={openModal} onClose={handleCloseModal}>
-        <DialogTitle>Product Details</DialogTitle>
-        <DialogContent>
+      {/* Enhanced Product Details Modal */}
+      <Dialog 
+        open={openModal} 
+        onClose={handleCloseModal}
+        maxWidth="md"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: '12px',
+            padding: '16px'
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          borderBottom: '1px solid #e0e0e0',
+          pb: 2,
+          fontSize: '1.5rem',
+          fontWeight: 600
+        }}>
+          Product Details
+        </DialogTitle>
+        <DialogContent sx={{ mt: 2, height: '300px' }}>
           {selectedProduct && (
-            <>
-              {selectedProduct.image && (
-                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
-                  <img src={selectedProduct.image} alt={selectedProduct.productName} style={{ width: '150px', height: '150px', objectFit: 'cover' }} />
+            <Grid container spacing={3} sx={{ height: '100%' }}>
+              {/* Product Image */}
+              <Grid item xs={12} md={4} sx={{ height: '100%' }}>
+                <Box sx={{ 
+                  width: '100%',
+                  height: '100%',
+                  borderRadius: '8px',
+                  overflow: 'hidden',
+                  border: '1px solid #e0e0e0'
+                }}>
+                  {selectedProduct.image ? (
+                    <img 
+                      src={selectedProduct.image} 
+                      alt={selectedProduct.productName}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover'
+                      }}
+                    />
+                  ) : (
+                    <Box sx={{ 
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      bgcolor: '#f5f5f5'
+                    }}>
+                      <Typography color="text.secondary">
+                        No image available
+                      </Typography>
+                    </Box>
+                  )}
                 </Box>
-              )}
-              <Typography variant="h6">Product Name: {selectedProduct.productName}</Typography>
-              <Typography variant="body1">Product Code: {selectedProduct.productCode}</Typography>
-              <Typography variant="body1">Category: {selectedProduct.category}</Typography>
-              <Typography variant="body1">Username: {selectedProduct.user}</Typography>
-              <Typography variant="body1">Approval Status: {selectedProduct.status}</Typography>
-            </>
+              </Grid>
+
+              {/* Product Details */}
+              <Grid item xs={12} md={8} sx={{ height: '270px' }}>
+                <Box sx={{ 
+                  p: 2, 
+                  bgcolor: '#f8f9fa',
+                  borderRadius: '8px',
+                  border: '1px solid #e0e0e0',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}>
+                  <Typography variant="h6" sx={{ color: '#1a237e', mb: 3 }}>
+                    {selectedProduct.productName}
+                  </Typography>
+                  
+                  <Grid container spacing={3}>
+                    <Grid item xs={6}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Product Code
+                      </Typography>
+                      <Typography variant="body1" sx={{ mb: 2, fontWeight: 500 }}>
+                        {selectedProduct.productCode}
+                      </Typography>
+                    </Grid>
+                    
+                    <Grid item xs={6}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Category
+                      </Typography>
+                      <Typography variant="body1" sx={{ mb: 2, fontWeight: 500 }}>
+                        {selectedProduct.category}
+                      </Typography>
+                    </Grid>
+                    
+                    <Grid item xs={6}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Seller
+                      </Typography>
+                      <Typography variant="body1" sx={{ mb: 2, fontWeight: 500 }}>
+                        {selectedProduct.user}
+                      </Typography>
+                    </Grid>
+                    
+                    <Grid item xs={6}>
+                      <Typography variant="subtitle2" color="text.secondary">
+                        Status
+                      </Typography>
+                      <Typography variant="body1" sx={{ mb: 2, fontWeight: 500 }}>
+                        {selectedProduct.status}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Box>
+              </Grid>
+            </Grid>
           )}
         </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseModal} color="default">Cancel</Button>
-          <Button onClick={handleApproveInModal} color="success">Approve</Button>
-          <Button onClick={handleRejectInModal} color="error">Reject</Button>
+        <DialogActions sx={{ 
+          borderTop: '1px solid #e0e0e0',
+          pt: 2,
+          px: 3 
+        }}>
+          <Button 
+            onClick={handleCloseModal} 
+            variant="outlined"
+            sx={{ 
+              borderColor: '#89343b',
+              color: '#89343b',
+              '&:hover': {
+                borderColor: '#6d2931',
+                backgroundColor: 'rgba(137, 52, 59, 0.04)'
+              }
+            }}
+          >
+            Close
+          </Button>
+          <Button 
+            onClick={handleApproveInModal}
+            variant="contained"
+            color="success"
+            sx={{ ml: 1 }}
+            disabled={selectedProduct?.status === 'Approved'}
+          >
+            Approve
+          </Button>
+          <Button 
+            onClick={handleRejectInModal}
+            variant="contained"
+            color="error"
+            sx={{ ml: 1 }}
+            disabled={selectedProduct?.status === 'Rejected'}
+          >
+            Reject
+          </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Error Snackbar */}
+      {/* Updated Toast Message */}
       <Snackbar
-        open={Boolean(error)}
-        message={error}
-        autoHideDuration={3000}
-        onClose={() => setError(null)}
-        severity="error"
-      />
-
-      {/* Success Snackbar */}
-      <Snackbar
-        open={Boolean(successMessage)}
-        message={successMessage}
-        autoHideDuration={3000}
-        onClose={() => setSuccessMessage(null)}
-        severity="success"
-      />
+        open={notification.open}
+        autoHideDuration={6000}
+        onClose={() => setNotification({ ...notification, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          severity={notification.type}
+          sx={{ width: '100%' }}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
