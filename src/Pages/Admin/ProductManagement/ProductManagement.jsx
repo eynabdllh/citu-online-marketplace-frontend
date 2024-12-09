@@ -298,17 +298,27 @@ const ProductSellers = () => {
     }
   };
 
-  const handleEditProduct = (updatedProduct) => {
-    const updatedProducts = products.map(product =>
-      product.product.id === updatedProduct.product.id ? updatedProduct : product
-    );
-    setProducts(updatedProducts);
-    setFilteredProducts(updatedProducts);
-    setToast({
-      open: true,
-      message: 'Product updated successfully',
-      severity: 'success'
-    });
+  const handleEditProduct = async (updatedProducts) => {
+    try {
+      // Update state with the fresh data
+      setProducts(updatedProducts);
+      setFilteredProducts(updatedProducts);
+      setUpdateModalOpen(false);
+      setSelectedProduct(null);
+      
+      setToast({
+        open: true,
+        message: 'Product updated successfully',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error updating product data:', error);
+      setToast({
+        open: true,
+        message: error.response?.data?.message || 'Error updating product data. Please try again.',
+        severity: 'error'
+      });
+    }
   };
 
   const handleDeleteProducts = async (productsToDelete) => {
@@ -761,6 +771,7 @@ const ProductSellers = () => {
         open={updateModalOpen}
         onClose={() => setUpdateModalOpen(false)}
         product={selectedProduct?.product}
+        onSave={handleEditProduct}
       />
 
       <ViewProductAdmin

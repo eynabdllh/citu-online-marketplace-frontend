@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Box,
   Paper,
@@ -41,92 +41,14 @@ import {
   AccessTime,
 } from '@mui/icons-material';
 import * as XLSX from 'xlsx';
-import EditUserModal from './EditUserModal';
 import AddUserModal from './AddUserModal';
-
-const mockUsers = [
-  {
-    id: 1,
-    username: 'juan_dela_cruz',
-    firstName: 'Juan',
-    lastName: 'Dela Cruz',
-    email: 'juandelacruz@gmail.com',
-    status: 'Active',
-    role: 'User',
-    lastLogin: '2024-03-20 14:30',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=juan'
-  },
-  {
-    id: 2,
-    username: 'maria_santos',
-    firstName: 'Maria',
-    lastName: 'Santos',
-    email: 'mariasantos@gmail.com',
-    status: 'Inactive',
-    role: 'Admin',
-    lastLogin: '2024-03-19 09:15',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=maria'
-  },
-  {
-    id: 3,
-    username: 'pedro_reyes',
-    firstName: 'Pedro',
-    lastName: 'Reyes',
-    email: 'pedroreyes@gmail.com',
-    status: 'Blocked',
-    role: 'User',
-    lastLogin: '2024-03-18 16:45',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=pedro'
-  },
-  {
-    id: 4,
-    username: 'rosa_cruz',
-    firstName: 'Rosa',
-    lastName: 'Cruz',
-    email: 'rosacruz@gmail.com',
-    status: 'Active',
-    role: 'Admin',
-    lastLogin: '2024-03-20 11:20',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=rosa'
-  },
-  {
-    id: 5,
-    username: 'carlo_garcia',
-    firstName: 'Carlo',
-    lastName: 'Garcia',
-    email: 'carlogarcia@gmail.com',
-    status: 'Active',
-    role: 'User',
-    lastLogin: '2024-03-20 13:10',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=carlo'
-  },
-  {
-    id: 6,
-    username: 'elena_ramos',
-    firstName: 'Elena',
-    lastName: 'Ramos',
-    email: 'elenaramos@gmail.com',
-    status: 'Active',
-    role: 'User',
-    lastLogin: '2024-03-17 10:30',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=elena'
-  },
-  {
-    id: 7,
-    username: 'miguel_bautista',
-    firstName: 'Miguel',
-    lastName: 'Bautista',
-    email: 'miguelbautista@gmail.com',
-    status: 'Inactive',
-    role: 'User',
-    lastLogin: '2024-03-16 15:45',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=miguel'
-  }
-];
+import UpdateUserModal from './UpdateUserModal';
+import axios from 'axios';
+import AddAdminModal from './AddAdminModal';
 
 const UserManagement = () => {
-  const [users, setUsers] = useState(mockUsers);
-  const [filteredUsers, setFilteredUsers] = useState(mockUsers);
+  const [users, setUsers] = useState([]);
+  const [filteredUsers, setFilteredUsers] = useState([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchQuery, setSearchQuery] = useState('');
@@ -144,6 +66,48 @@ const UserManagement = () => {
   const [orderBy, setOrderBy] = useState('username');
   const [order, setOrder] = useState('asc');
   const [addUserModalOpen, setAddUserModalOpen] = useState(false);
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [selectedUserForUpdate, setSelectedUserForUpdate] = useState(null);
+  const [addMenuAnchorEl, setAddMenuAnchorEl] = useState(null);
+  const [addAdminModalOpen, setAddAdminModalOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const [adminsResponse, sellersResponse] = await Promise.all([
+          axios.get('http://localhost:8080/api/admin/getAllAdmins'),
+          axios.get('http://localhost:8080/api/admin/sellers')
+        ]);
+
+        const adminsWithRole = adminsResponse.data.map(admin => ({
+          ...admin,
+          role: 'Admin'
+        }));
+
+        const sellersWithRole = sellersResponse.data.map(seller => ({
+          ...seller,
+          role: 'User'
+        }));
+
+        const combinedUsers = [...adminsWithRole, ...sellersWithRole].filter((user, index, self) =>
+          index === self.findIndex((t) => t.username === user.username)
+        );
+        
+        setUsers(combinedUsers);
+        setFilteredUsers(combinedUsers);
+        
+      } catch (error) {
+        console.error('Error fetching users:', error);
+        setToast({
+          open: true,
+          message: 'Error fetching users. Please try again later.',
+          severity: 'error'
+        });
+      }
+    };
+
+    fetchUsers();
+  }, []);
 
   //  search function
   const handleSearch = (event) => {
@@ -171,35 +135,66 @@ const UserManagement = () => {
   };
 
   // Handle user actions
-  const handleUserAction = (action, user) => {
+  const handleUserAction = async (action, user) => {
     switch (action) {
       case 'edit':
-        setSelectedUserForEdit(user);
-        setEditModalOpen(true);
+        setSelectedUserForUpdate(user);
+        setUpdateModalOpen(true);
         break;
-      case 'block':
-        const newStatus = user.status === 'Blocked' ? 'Active' : 'Blocked';
-        const updatedUsers = users.map(u => 
-          u.id === user.id ? { ...u, status: newStatus } : u
-        );
-        setUsers(updatedUsers);
-        setFilteredUsers(updatedUsers);
-        setToast({
-          open: true,
-          message: `User ${user.username} has been ${newStatus.toLowerCase()}`,
-          severity: 'success'
-        });
-        break;
+      
       case 'delete':
-        const remainingUsers = users.filter(u => u.id !== user.id);
-        setUsers(remainingUsers);
-        setFilteredUsers(remainingUsers);
-        setToast({
-          open: true,
-          message: `User ${user.username} has been deleted`,
-          severity: 'success'
-        });
+        try {
+          const role = user.role === 'Admin' ? 'admin' : 'seller';
+          const apiUrl = `http://localhost:8080/api/admin/deleteUser/${role}/${user.username}`;
+          
+          console.log('Deleting user:', apiUrl); // Debug log
+          
+          const response = await axios.delete(apiUrl);
+          
+          if (response.status === 200) {
+            // Refresh the data after successful deletion
+            const [adminsResponse, sellersResponse] = await Promise.all([
+              axios.get('http://localhost:8080/api/admin/getAllAdmins'),
+              axios.get('http://localhost:8080/api/admin/sellers')
+            ]);
+
+            const adminsWithRole = adminsResponse.data.map(admin => ({
+              ...admin,
+              role: 'Admin'
+            }));
+
+            const sellersWithRole = sellersResponse.data.map(seller => ({
+              ...seller,
+              role: 'User'
+            }));
+
+            const combinedUsers = [...adminsWithRole, ...sellersWithRole].filter((user, index, self) =>
+              index === self.findIndex((t) => t.username === user.username)
+            );
+            
+            setUsers(combinedUsers);
+            setFilteredUsers(combinedUsers);
+            
+            setToast({
+              open: true,
+              message: `User ${user.username} has been deleted successfully`,
+              severity: 'success'
+            });
+          }
+        } catch (error) {
+          console.error('Error deleting user:', error);
+          setToast({
+            open: true,
+            message: error.response?.data?.message || 'Failed to delete user. Please try again.',
+            severity: 'error'
+          });
+        }
         break;
+
+      case 'block':
+        // We'll implement this with actual API call later
+        break;
+      
       default:
         setToast({
           open: true,
@@ -277,16 +272,56 @@ const UserManagement = () => {
   };
 
   // handlebulk delete
-  const handleBulkDelete = () => {
-    const remainingUsers = users.filter(user => !selectedUsers.includes(user.id));
-    setUsers(remainingUsers);
-    setFilteredUsers(remainingUsers);
-    setSelectedUsers([]);
-    setToast({
-      open: true,
-      message: `${selectedUsers.length} users have been deleted`,
-      severity: 'success'
-    });
+  const handleBulkDelete = async () => {
+    try {
+      // Delete each selected user
+      await Promise.all(
+        selectedUsers.map(async (userId) => {
+          const user = users.find(u => u.id === userId);
+          if (user) {
+            const role = user.role === 'Admin' ? 'admin' : 'seller';
+            await axios.delete(`http://localhost:8080/api/admin/deleteUser/${role}/${user.username}`);
+          }
+        })
+      );
+
+      // Refresh the data after successful deletions
+      const [adminsResponse, sellersResponse] = await Promise.all([
+        axios.get('http://localhost:8080/api/admin/getAllAdmins'),
+        axios.get('http://localhost:8080/api/admin/sellers')
+      ]);
+
+      const adminsWithRole = adminsResponse.data.map(admin => ({
+        ...admin,
+        role: 'Admin'
+      }));
+
+      const sellersWithRole = sellersResponse.data.map(seller => ({
+        ...seller,
+        role: 'User'
+      }));
+
+      const combinedUsers = [...adminsWithRole, ...sellersWithRole].filter((user, index, self) =>
+        index === self.findIndex((t) => t.username === user.username)
+      );
+      
+      setUsers(combinedUsers);
+      setFilteredUsers(combinedUsers);
+      setSelectedUsers([]);
+      
+      setToast({
+        open: true,
+        message: 'Selected users have been deleted successfully',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error in bulk delete:', error);
+      setToast({
+        open: true,
+        message: error.response?.data?.message || 'Failed to delete selected users. Please try again.',
+        severity: 'error'
+      });
+    }
   };
 
   // Sorting function
@@ -301,7 +336,12 @@ const UserManagement = () => {
         const nameB = `${b.firstName} ${b.lastName}`;
         return (isAsc ? -1 : 1) * nameA.localeCompare(nameB);
       }
-      return (isAsc ? -1 : 1) * (a[property] < b[property] ? -1 : 1);
+      // Handle numeric sorting for ID
+      if (property === 'id') {
+        return (isAsc ? -1 : 1) * (a[property] - b[property]);
+      }
+      // Default string sorting for other fields
+      return (isAsc ? -1 : 1) * (a[property]?.toString().localeCompare(b[property]?.toString()) || 0);
     });
 
     setFilteredUsers(sortedUsers);
@@ -320,6 +360,91 @@ const UserManagement = () => {
     setToast({
       open: true,
       message: `Selected users have been ${updatedUsers[0].status === 'Blocked' ? 'blocked' : 'unblocked'}`,
+      severity: 'success'
+    });
+  };
+
+  const handleSaveUser = async (updatedUser) => {
+    try {
+      // Refresh the data immediately after successful update
+      const [adminsResponse, sellersResponse] = await Promise.all([
+        axios.get('http://localhost:8080/api/admin/getAllAdmins'),
+        axios.get('http://localhost:8080/api/admin/sellers')
+      ]);
+
+      const adminsWithRole = adminsResponse.data.map(admin => ({
+        ...admin,
+        role: 'Admin'
+      }));
+
+      const sellersWithRole = sellersResponse.data.map(seller => ({
+        ...seller,
+        role: 'User'
+      }));
+
+      // Remove any duplicates and update state
+      const combinedUsers = [...adminsWithRole, ...sellersWithRole].filter((user, index, self) =>
+        index === self.findIndex((t) => t.username === user.username)
+      );
+      
+      setUsers(combinedUsers);
+      setFilteredUsers(combinedUsers);
+      setUpdateModalOpen(false); // Close the modal after successful update
+      setSelectedUserForUpdate(null); // Clear the selected user
+      
+      setToast({
+        open: true,
+        message: 'User updated successfully',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error refreshing user data:', error);
+      setToast({
+        open: true,
+        message: error.response?.data?.message || 'Error refreshing user data. Please try again.',
+        severity: 'error'
+      });
+    }
+  };
+
+  // Add menu handler
+  const handleAddClick = (event) => {
+    setAddMenuAnchorEl(event.currentTarget);
+  };
+
+  const handleAddMenuClose = () => {
+    setAddMenuAnchorEl(null);
+  };
+
+  const handleAddOptionClick = (type) => {
+    handleAddMenuClose();
+    if (type === 'user') {
+      setAddUserModalOpen(true);
+    } else if (type === 'admin') {
+      setAddAdminModalOpen(true);
+    }
+  };
+
+  const handleAddUser = (newUser) => {
+    // For sellers (no id needed as username is PK)
+    const updatedUsers = [...users, newUser];
+    setUsers(updatedUsers);
+    setFilteredUsers(updatedUsers);
+    setToast({
+      open: true,
+      message: 'User added successfully',
+      severity: 'success'
+    });
+  };
+
+  const handleAddAdmin = (newAdmin) => {
+    // For admins (include id)
+    const updatedUsers = [...users, { ...newAdmin, id: users.length + 1 }];
+    setUsers(updatedUsers);
+    setFilteredUsers(updatedUsers);
+    setToast({
+      open: true,
+      message: 'Admin added successfully',
       severity: 'success'
     });
   };
@@ -489,7 +614,7 @@ const UserManagement = () => {
             <Button
               variant="contained"
               startIcon={<AddIcon />}
-              onClick={() => setAddUserModalOpen(true)}
+              onClick={handleAddClick}
               sx={{ 
                 bgcolor: '#89343b',
                 '&:hover': { bgcolor: '#6d2931' },
@@ -604,6 +729,15 @@ const UserManagement = () => {
               </TableCell>
               <TableCell>
                 <TableSortLabel
+                  active={orderBy === 'id'}
+                  direction={orderBy === 'id' ? order : 'asc'}
+                  onClick={() => handleSort('id')}
+                >
+                  ID
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
                   active={orderBy === 'username'}
                   direction={orderBy === 'username' ? order : 'asc'}
                   onClick={() => handleSort('username')}
@@ -617,20 +751,34 @@ const UserManagement = () => {
                   direction={orderBy === 'name' ? order : 'asc'}
                   onClick={() => handleSort('name')}
                 >
-                  Name
+                  Name 
                 </TableSortLabel>
               </TableCell>
-              <TableCell>Email</TableCell>
-              <TableCell>Status</TableCell>
-              <TableCell>Role</TableCell>
               <TableCell>
                 <TableSortLabel
-                  active={orderBy === 'lastLogin'}
-                  direction={orderBy === 'lastLogin' ? order : 'asc'}
-                  onClick={() => handleSort('lastLogin')}
-                  sx={{ display: 'flex !important' }}
+                  active={orderBy === 'email'}
+                  direction={orderBy === 'email' ? order : 'asc'}
+                  onClick={() => handleSort('email')}
                 >
-                  Last Login
+                  Email
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === 'contactNo'}
+                  direction={orderBy === 'contactNo' ? order : 'asc'}
+                  onClick={() => handleSort('contactNo')}
+                >
+                  Contact No
+                </TableSortLabel>
+              </TableCell>
+              <TableCell>
+                <TableSortLabel
+                  active={orderBy === 'role'}
+                  direction={orderBy === 'role' ? order : 'asc'}
+                  onClick={() => handleSort('role')}
+                >
+                  Role
                 </TableSortLabel>
               </TableCell>
               <TableCell>Actions</TableCell>
@@ -653,29 +801,33 @@ const UserManagement = () => {
                       }}
                     />
                   </TableCell>
+                  <TableCell>{user.id}</TableCell>
                   <TableCell>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                      <Avatar src={user.avatar} sx={{ width: 30, height: 30 }} />
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                      <Avatar
+                        src={user.profilePhoto ? `http://localhost:8080/profile-images/${user.profilePhoto}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`}
+                        alt={user.username}
+                        sx={{ width: 40, height: 40 }}
+                      />
                       {user.username}
                     </Box>
                   </TableCell>
                   <TableCell>{`${user.firstName} ${user.lastName}`}</TableCell>
                   <TableCell>{user.email}</TableCell>
-                  <TableCell>
-                    <Chip {...getStatusChipProps(user.status)} />
-                  </TableCell>
+                  <TableCell>{user.contactNo || 'N/A'}</TableCell>
                   <TableCell>{user.role}</TableCell>
-                  <TableCell>{user.lastLogin}</TableCell>
                   <TableCell>
-                    <IconButton onClick={(e) => {   
-                      setSelectedUser(user);
-                      setActionAnchorEl(e.currentTarget);
-                    }}>
+                    <IconButton 
+                      onClick={(e) => {   
+                        setSelectedUser(user);
+                        setActionAnchorEl(e.currentTarget);
+                      }}
+                    >
                       <MoreVertIcon />
                     </IconButton>
                   </TableCell>
                 </TableRow>
-            ))}
+              ))}
           </TableBody>
         </Table>
       </TableContainer>
@@ -726,26 +878,15 @@ const UserManagement = () => {
         </MenuItem>
       </Menu>
 
-      {/* Edit User Modal */}
-      <EditUserModal
-        open={editModalOpen}
+      {/* Update User Modal */}
+      <UpdateUserModal
+        open={updateModalOpen}
         onClose={() => {
-          setEditModalOpen(false);
-          setSelectedUserForEdit(null);
+          setUpdateModalOpen(false);
+          setSelectedUserForUpdate(null);
         }}
-        user={selectedUserForEdit}
-        onSave={(updatedUser) => {
-          const updatedUsers = users.map(u => 
-            u.id === updatedUser.id ? updatedUser : u
-          );
-          setUsers(updatedUsers);
-          setFilteredUsers(updatedUsers);
-          setToast({
-            open: true,
-            message: 'User updated successfully',
-            severity: 'success'
-          });
-        }}
+        user={selectedUserForUpdate}
+        onSave={handleSaveUser}
       />
 
       {/*Toast */}
@@ -771,20 +912,27 @@ const UserManagement = () => {
         </Alert>
       </Snackbar>
 
-      {/* Add User Modal */}
+      {/* Add the menu */}
+      <Menu
+        anchorEl={addMenuAnchorEl}
+        open={Boolean(addMenuAnchorEl)}
+        onClose={handleAddMenuClose}
+      >
+        <MenuItem onClick={() => handleAddOptionClick('user')}>Add User</MenuItem>
+        <MenuItem onClick={() => handleAddOptionClick('admin')}>Add Admin</MenuItem>
+      </Menu>
+
+      {/* Add both modals */}
       <AddUserModal
         open={addUserModalOpen}
         onClose={() => setAddUserModalOpen(false)}
-        onAdd={(newUser) => {
-          const updatedUsers = [...users, { ...newUser, id: users.length + 1 }];
-          setUsers(updatedUsers);
-          setFilteredUsers(updatedUsers);
-          setToast({
-            open: true,
-            message: 'User added successfully',
-            severity: 'success'
-          });
-        }}
+        onAdd={handleAddUser}
+      />
+
+      <AddAdminModal
+        open={addAdminModalOpen}
+        onClose={() => setAddAdminModalOpen(false)}
+        onAdd={handleAddAdmin}
       />
     </Box>
   );

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogTitle,
@@ -8,30 +8,34 @@ import {
   Button,
   Grid,
   Box,
+  Typography,
   Alert
 } from '@mui/material';
 import axios from 'axios';
 
-const AddUserModal = ({ open, onClose, onAdd }) => {
+const UpdateUserModal = ({ open, onClose, user, onSave }) => {
   const [formData, setFormData] = useState({
-    username: '',
     firstName: '',
     lastName: '',
-    password: '',
-    address: '',
-    contactNo: '',
-    email: ''
+    email: '',
+    contactNo: ''
   });
-
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
 
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        firstName: user.firstName || '',
+        lastName: user.lastName || '',
+        email: user.email || '',
+        contactNo: user.contactNo || ''
+      });
+    }
+  }, [user]);
+
   const validateForm = () => {
     const newErrors = {};
-    
-    if (!formData.username.trim()) {
-      newErrors.username = 'Username is required';
-    }
     
     if (!formData.firstName.trim()) {
       newErrors.firstName = 'First name is required';
@@ -39,20 +43,6 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
     
     if (!formData.lastName.trim()) {
       newErrors.lastName = 'Last name is required';
-    }
-    
-    if (!formData.password.trim()) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 8) {
-      newErrors.password = 'Password must be at least 8 characters';
-    }
-    
-    if (!formData.address.trim()) {
-      newErrors.address = 'Address is required';
-    }
-    
-    if (!formData.contactNo.trim()) {
-      newErrors.contactNo = 'Contact number is required';
     }
     
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -66,41 +56,6 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async () => {
-    if (!validateForm()) {
-      return;
-    }
-
-    try {
-      const response = await axios.post('http://localhost:8080/api/seller/postSellerRecord', {
-        username: formData.username,
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        password: formData.password,
-        address: formData.address,
-        contactNo: formData.contactNo,
-        email: formData.email
-      });
-      
-      if (response.status === 200) {
-        onAdd(response.data);
-        onClose();
-        setFormData({
-          username: '',
-          firstName: '',
-          lastName: '',
-          password: '',
-          address: '',
-          contactNo: '',
-          email: ''
-        });
-        setErrors({});
-      }
-    } catch (error) {
-      setSubmitError(error.response?.data?.message || 'Failed to add seller. Please try again.');
-    }
-  };
-
   const handleChange = (field) => (event) => {
     setFormData(prev => ({
       ...prev,
@@ -109,14 +64,60 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
-        [field]: ''
+        [field]: undefined
       }));
     }
   };
 
+  const handleSubmit = async () => {
+    if (!user) return;
+    
+    setSubmitError('');
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    try {
+      const role = user.role === 'Admin' ? 'admin' : 'seller';
+      const apiUrl = `http://localhost:8080/api/admin/updateUserDetails/${role}/${user.username}`;
+
+      const updateData = {
+        username: user.username,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        email: formData.email,
+        contactNo: formData.contactNo
+      };
+
+      console.log('Sending request to:', apiUrl);
+      console.log('Update data:', updateData);
+
+      const response = await axios.put(apiUrl, updateData);
+
+      if (response.status === 200) {
+        onSave({
+          ...user,
+          ...updateData
+        });
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error updating user:', error);
+      setSubmitError(error.response?.data?.message || 'Failed to update user. Please try again.');
+    }
+  };
+
+  if (!user) return null;
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Add New Seller</DialogTitle>
+      <DialogTitle>
+        <Typography variant="h6">
+          Update User Information
+        </Typography>
+      </DialogTitle>
+      
       <DialogContent>
         <Box sx={{ mt: 2 }}>
           {submitError && (
@@ -126,17 +127,6 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
           )}
           
           <Grid container spacing={2}>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Username"
-                value={formData.username}
-                onChange={handleChange('username')}
-                error={!!errors.username}
-                helperText={errors.username}
-              />
-            </Grid>
-            
             <Grid item xs={12} sm={6}>
               <TextField
                 fullWidth
@@ -162,25 +152,11 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                type="password"
-                label="Password"
-                value={formData.password}
-                onChange={handleChange('password')}
-                error={!!errors.password}
-                helperText={errors.password}
-              />
-            </Grid>
-            
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Address"
-                multiline
-                rows={3}
-                value={formData.address}
-                onChange={handleChange('address')}
-                error={!!errors.address}
-                helperText={errors.address}
+                label="Email"
+                value={formData.email}
+                onChange={handleChange('email')}
+                error={!!errors.email}
+                helperText={errors.email}
               />
             </Grid>
             
@@ -190,24 +166,28 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
                 label="Contact Number"
                 value={formData.contactNo}
                 onChange={handleChange('contactNo')}
-                error={!!errors.contactNo}
-                helperText={errors.contactNo}
               />
             </Grid>
-            
+
             <Grid item xs={12}>
               <TextField
                 fullWidth
-                label="Email"
-                value={formData.email}
-                onChange={handleChange('email')}
-                error={!!errors.email}
-                helperText={errors.email}
+                label="Role"
+                value={user.role}
+                InputProps={{
+                  readOnly: true,
+                }}
+                sx={{
+                  "& .MuiInputBase-input.Mui-readOnly": {
+                    backgroundColor: "#f5f5f5"
+                  }
+                }}
               />
             </Grid>
           </Grid>
         </Box>
       </DialogContent>
+
       <DialogActions sx={{ p: 2.5 }}>
         <Button 
           onClick={onClose}
@@ -232,11 +212,11 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
             ml: 2
           }}
         >
-          Add Seller
+          Update
         </Button>
       </DialogActions>
     </Dialog>
   );
 };
 
-export default AddUserModal;
+export default UpdateUserModal;
