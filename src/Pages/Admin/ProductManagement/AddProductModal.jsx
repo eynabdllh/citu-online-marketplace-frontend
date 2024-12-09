@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-  Dialog,
+ Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
@@ -29,6 +29,8 @@ const AddProductModal = ({ open, onClose, onAdd }) => {
   const [selectedFile, setSelectedFile] = useState(null);
 
   const [errors, setErrors] = useState({});
+
+  const adminId = localStorage.getItem('adminId');
 
   const VisuallyHiddenInput = styled('input')({
     clip: 'rect(0 0 0 0)',
@@ -77,17 +79,25 @@ const AddProductModal = ({ open, onClose, onAdd }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (validateForm()) {
-      onAdd({
-        product: {
-          ...productData,
-          qtyInStock: Number(productData.qtyInStock),
-          buyPrice: Number(productData.buyPrice)
-        },
-        sellerUsername: 'currentUser'
-      });
-      onClose();
+      try {
+        const formData = new FormData();
+        formData.append('code', Math.floor(Math.random() * 1000000));
+        formData.append('name', productData.name);
+        formData.append('pdtDescription', productData.pdtDescription);
+        formData.append('qtyInStock', productData.qtyInStock);
+        formData.append('buyPrice', productData.buyPrice);
+        formData.append('category', productData.category);
+        formData.append('image', selectedFile);
+        formData.append('sellerUsername', localStorage.getItem('username'));
+        formData.append('adminId', adminId);
+
+        onAdd(formData);
+        onClose();
+      } catch (error) {
+        console.error('Error preparing product data:', error);
+      }
     }
   };
 
@@ -156,10 +166,16 @@ const AddProductModal = ({ open, onClose, onAdd }) => {
                 label="Category"
                 onChange={(e) => setProductData({...productData, category: e.target.value})}
               >
-                <MenuItem value="Electronics">Electronics</MenuItem>
+                <MenuItem value="Food">Food</MenuItem>
+                <MenuItem value="Clothes">Clothes</MenuItem>
                 <MenuItem value="Accessories">Accessories</MenuItem>
-                <MenuItem value="Clothing">Clothing</MenuItem>
+                <MenuItem value="Stationery or Arts and Crafts">Stationery / Arts and Crafts</MenuItem>
+                <MenuItem value="Merchandise">Merchandise</MenuItem>
+                <MenuItem value="Supplies">Supplies</MenuItem>
+                <MenuItem value="Electronics">Electronics</MenuItem>
+                <MenuItem value="Beauty">Beauty</MenuItem>
                 <MenuItem value="Books">Books</MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
               </Select>
               {errors.category && (
                 <FormHelperText>{errors.category}</FormHelperText>

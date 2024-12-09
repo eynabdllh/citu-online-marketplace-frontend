@@ -101,19 +101,27 @@ const BuyPage = () => {
 
   useEffect(() => {
     const fetchAllProducts = async () => {
+      setLoading(true); // Add loading indicator state
+      
       try {
         const response = await axios.get(`http://localhost:8080/api/product/getAllProducts/${loggedInUser}`);
-        setAllProducts(response.data);
-        setFilteredProducts(response.data);
+        console.log("API Response: ", response.data);  // Log the API response to see the status values
+
+        // Filter out only approved products (check the status field value carefully)
+        const approvedProducts = response.data.filter(product => product.status && product.status.toLowerCase() === 'approved');
+        
+        setAllProducts(approvedProducts);
+        setFilteredProducts(approvedProducts);
       } catch (error) {
         console.error("Error fetching all products:", error);
       } finally {
-        setLoading(false);
+        setLoading(false);  // Set loading to false after fetching data
       }
     };
 
     fetchAllProducts();
-  }, [loggedInUser]);
+}, [loggedInUser]);
+
 
   useEffect(() => {
     const fetchFilteredProducts = async () => {
