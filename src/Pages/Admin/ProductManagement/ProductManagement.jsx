@@ -192,17 +192,34 @@ const ProductSellers = () => {
     );
   };
 
-  const handleBulkDelete = () => {
-    const remainingProducts = products.filter(item => 
-      !selectedProducts.includes(item.product.code)
-    );
-    setProducts(remainingProducts);
-    setSelectedProducts([]);
-    setToast({
-      open: true,
-      message: `${selectedProducts.length} products have been deleted`,
-      severity: 'success'
-    });
+  const handleBulkDelete = async () => {
+    try {
+      // Send the array of product codes to delete
+      await axios.delete('http://localhost:8080/api/admin/delete-products', {
+        data: selectedProducts // This sends the array of product codes in the request body
+      });
+
+      // Update the local state after successful deletion
+      const remainingProducts = products.filter(item => 
+        !selectedProducts.includes(item.product.code)
+      );
+      setProducts(remainingProducts);
+      setFilteredProducts(remainingProducts);
+      setSelectedProducts([]);
+      
+      setToast({
+        open: true,
+        message: `${selectedProducts.length} products have been deleted`,
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Failed to delete products:', error);
+      setToast({
+        open: true,
+        message: error.response?.data?.message || 'Failed to delete products',
+        severity: 'error'
+      });
+    }
   };
 
   const handleProductAction = async (action, product) => {
