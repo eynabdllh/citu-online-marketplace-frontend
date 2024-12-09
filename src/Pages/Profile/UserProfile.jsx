@@ -99,7 +99,7 @@ const UserProfile = () => {
                             {email}
                         </Typography>
                         <Typography variant="body2" color="inherit" sx={{ textAlign: 'left', marginTop: 1 }}>
-                            {address} · Joined (insert registered date here in format '2y 10m')
+                            {address} 
                         </Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0, margin: 0, padding: 0 }}>
                             {/* Average Rating */}
@@ -250,6 +250,12 @@ const UserProfile = () => {
                         <SellerReviews />
                     </TabPanel>
                 </TabContext>
+            </Box>
+            {/* Footer Section */}
+            <Box sx={{  padding: "20px", textAlign: "center" }}>
+            <Typography variant="body2" sx={{ color: "#555" }}>
+                © 2024 CIT-U Marketplace. All Rights Reserved.
+            </Typography>
             </Box>
         </Container>
     );

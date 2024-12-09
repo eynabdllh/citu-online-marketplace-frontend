@@ -283,6 +283,13 @@ function HomePage() {
             </Typography>
           )}
         </Box>
+
+        {/* Footer Section */}
+        <Box sx={{  padding: "20px", textAlign: "center" }}>
+          <Typography variant="body2" sx={{ color: "#555" }}>
+            © 2024 CIT-U Marketplace. All Rights Reserved.
+          </Typography>
+        </Box>
       </Box>
     </>
   );

@@ -428,6 +428,13 @@ const BuyPage = () => {
           <Typography variant="h6">No products found</Typography>
         )}
       </Grid>
+
+      {/* Footer Section */}
+      <Box sx={{ padding: "20px", textAlign: "center" }}>
+        <Typography variant="body2" sx={{ color: "#555" }}>
+          © 2024 CIT-U Marketplace. All Rights Reserved.
+        </Typography>
+      </Box>
     </Box>
   );
 };
