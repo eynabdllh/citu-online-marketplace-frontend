@@ -477,7 +477,10 @@ const ProductApproval = () => {
                             variant="outlined"
                             color="success"
                             startIcon={<CheckCircle />}
-                            onClick={() => handleApprove(row.productCode)}
+                            onClick={(e) => {
+                              e.stopPropagation(); // Prevent row click event from firing
+                              handleApprove(row.productCode);
+                            }}
                             sx={{
                               marginRight: 1,
                               padding: '4px 12px',
@@ -499,7 +502,10 @@ const ProductApproval = () => {
                             variant="outlined"
                             color="error"
                             startIcon={<Cancel />}
-                            onClick={() => handleReject(row.productCode)}
+                            onClick={(e) => {
+                              e.stopPropagation(); // Prevent row click event from firing
+                              handleReject(row.productCode)
+                            }}
                             sx={{
                               padding: '4px 12px',
                               fontSize: '0.875rem',
