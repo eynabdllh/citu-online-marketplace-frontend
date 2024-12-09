@@ -16,6 +16,7 @@ import {
 } from '@mui/icons-material';
 import * as XLSX from 'xlsx';
 import UpdateProductModal from './UpdateProductModal';
+import ProductViewModal from './ViewProductAdmin';
 
 const ProductSellers = () => {
   const [products, setProducts] = useState([]);
@@ -41,6 +42,7 @@ const ProductSellers = () => {
     message: '',
     severity: 'success'
   });
+  const [viewModalOpen, setViewModalOpen] = useState(false);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -192,17 +194,34 @@ const ProductSellers = () => {
     );
   };
 
-  const handleBulkDelete = () => {
-    const remainingProducts = products.filter(item => 
-      !selectedProducts.includes(item.product.code)
-    );
-    setProducts(remainingProducts);
-    setSelectedProducts([]);
-    setToast({
-      open: true,
-      message: `${selectedProducts.length} products have been deleted`,
-      severity: 'success'
-    });
+  const handleBulkDelete = async () => {
+    try {
+      // Send the array of product codes to delete
+      await axios.delete('http://localhost:8080/api/admin/delete-products', {
+        data: selectedProducts // This sends the array of product codes in the request body
+      });
+
+      // Update the local state after successful deletion
+      const remainingProducts = products.filter(item => 
+        !selectedProducts.includes(item.product.code)
+      );
+      setProducts(remainingProducts);
+      setFilteredProducts(remainingProducts);
+      setSelectedProducts([]);
+      
+      setToast({
+        open: true,
+        message: `${selectedProducts.length} products have been deleted`,
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Failed to delete products:', error);
+      setToast({
+        open: true,
+        message: error.response?.data?.message || 'Failed to delete products',
+        severity: 'error'
+      });
+    }
   };
 
   const handleProductAction = async (action, product) => {
@@ -325,6 +344,11 @@ const ProductSellers = () => {
         severity: 'error'
       });
     }
+  };
+
+  const handleRowClick = (product) => {
+    setSelectedProduct(product);
+    setViewModalOpen(true);
   };
 
   const FilterMenu = () => {
@@ -450,6 +474,11 @@ const ProductSellers = () => {
       </Menu>
     );
   };
+
+  const paginatedProducts = filteredProducts.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
   if (!products.length) {
     return <div style={styles.loading}>Loading...</div>;
@@ -637,21 +666,14 @@ const ProductSellers = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredProducts
+            {paginatedProducts
               .filter(item => item?.product)
               .map((item, index) => (
-                <TableRow key={index}>
+                <TableRow key={index} onClick={() => handleRowClick(item.product)}>
                   <TableCell padding="checkbox">
                     <Checkbox
                       checked={selectedProducts.includes(item.product.code)}
-                      onChange={(e) => {
-                        const productCode = item.product.code;
-                        setSelectedProducts(prev => 
-                          e.target.checked 
-                            ? [...prev, productCode]
-                            : prev.filter(code => code !== productCode)
-                        );
-                      }}
+                      onChange={(e) => handleSelectOne(e, item)}
                     />
                   </TableCell>
                   <TableCell sx={{ py: 1 }}>{item.product.code}</TableCell>
@@ -694,6 +716,7 @@ const ProductSellers = () => {
           setRowsPerPage(parseInt(e.target.value, 10));
           setPage(0);
         }}
+        rowsPerPageOptions={[10, 25, 50]}
       />
 
       <FilterMenu />
@@ -718,6 +741,12 @@ const ProductSellers = () => {
         open={updateModalOpen}
         onClose={() => setUpdateModalOpen(false)}
         product={selectedProduct?.product}
+      />
+
+      <ProductViewModal
+        open={viewModalOpen}
+        onClose={() => setViewModalOpen(false)}
+        product={selectedProduct}
       />
 
       <Snackbar
