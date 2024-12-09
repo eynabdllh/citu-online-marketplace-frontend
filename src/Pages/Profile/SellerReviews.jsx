@@ -3,7 +3,7 @@ import { Paper, Typography, Box, List, ListItem, ListItemAvatar, Avatar, ListIte
 import { Rating } from '@mui/material';
 import StarIcon from '@mui/icons-material/Star';
 
-const mockReviews = [
+export const mockReviews = [
   {
     id: 1,
     username: 'anadia',
@@ -176,7 +176,7 @@ const SellerReviews = () => {
                       </Typography>
                     </Box>
 
-                    <Typography variant="body1" color="text.primary" sx={{ margin: 0, padding: 0 }}>
+                    <Typography variant="body1" color="text.primary" sx={{ margin: 0, padding: 0, position: 'absolute', top: 70 }}>
                       {item.feedback}
                     </Typography>
                   </Box>
