@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Box, InputBase, Button, Typography, Grid, Card, CardMedia, CardContent, Avatar } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import FavoriteIcon from '@mui/icons-material/Favorite';
@@ -23,89 +23,86 @@ const Likes = () => {
   useEffect(() => {
     const handleLikesUpdated = async () => {
       const likedProductIds = JSON.parse(localStorage.getItem('likedProducts')) || [];
-      
+
       try {
         const response = await axios.get(`http://localhost:8080/api/product/getAllProducts/${loggedInUser}`);
         const allProducts = response.data;
-        
+
         const liked = allProducts.filter((product) => likedProductIds.includes(product.code));
         setLikedProducts(liked);
       } catch (error) {
         console.error('Error fetching products:', error);
       }
     };
-  
-    // Add event listener for likes update
+
     window.addEventListener('likesUpdated', handleLikesUpdated);
-  
-    // Fetch liked products initially
     handleLikesUpdated();
-  
+
     return () => {
-      // Remove event listener on cleanup
       window.removeEventListener('likesUpdated', handleLikesUpdated);
     };
   }, [loggedInUser]);
-  
-  
-  
-  
 
   return (
-    <Box sx={{ display: "flex", flexDirection: "column", width: "100%", marginTop: "10px" }}>
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: "center",
-          width: "95%",
-          margin: "5px",
-          marginLeft: "30px"
-        }}
-      >
+    <Box sx={{ display: "flex", flexDirection: "column", padding: "20px", overflowX: 'hidden' }}>
+
+      <Box sx={{
+        height: "300px",
+        position: "relative",
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        borderRadius: "8px",
+        marginBottom: "20px",
+        overflow: "hidden",
+      }}>
         <Box
           sx={{
-            display: "flex",
-            alignItems: "center",
-            border: "1px solid #ddd",
-            borderRadius: 2,
-            backgroundColor: "white",
-            boxShadow: 1,
-            flex: 1,
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundImage: `url('/images/homepage.jpg')`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            zIndex: -2,
           }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              paddingX: 1.5,
-              color: "gray",
-            }}
-          >
-            <SearchIcon />
-          </Box>
+        />
+        <Box
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            zIndex: -1, 
+          }}
+        />
+        <Typography variant="h3" sx={{ color: "white", fontWeight: "bold", textAlign: "center" }}>
+          Discover Your Favorite Products
+        </Typography>
+      </Box>
+
+      {/* Search Bar */}
+      <Box sx={{ display: "flex", justifyContent: "center", marginBottom: "30px" }}>
+        <Box sx={{ display: "flex", alignItems: "center", width: "80%", padding: "10px", backgroundColor: "white", borderRadius: "30px", boxShadow: 3 }}>
+          <SearchIcon sx={{ color: "#8B8B8B", marginRight: "10px" }} />
           <InputBase
             placeholder="Search for an item"
             value={query}
             onChange={handleInputChange}
-            sx={{
-              flex: 1,
-              paddingY: 1,
-              paddingX: 1,
-              fontSize: "16px",
-            }}
+            sx={{ flex: 1, fontSize: "16px" }}
           />
-        </Box>
-        <Box sx={{ marginLeft: "10px" }}>
           <Button
             variant="contained"
             sx={{
               backgroundColor: "#89343b",
               color: "white",
-              borderRadius: "3px",
-              textTransform: "none",
+              borderRadius: "30px",
               fontWeight: "bold",
-              paddingX: 2,
-              height: "40px",
+              padding: "8px 20px",
               '&:hover': {
                 backgroundColor: "#b24d57",
               },
@@ -116,11 +113,16 @@ const Likes = () => {
         </Box>
       </Box>
 
-      <Typography variant="h4" sx={{ marginTop: "15px", color: "primary", fontWeight: '400', marginLeft: "30px" }}>
-        Likes
-      </Typography>
+      {/* Featured Section */}
+      <Box sx={{ marginBottom: "40px", textAlign: "center" }}>
+        <Typography variant="h4" sx={{ color: "#333", fontWeight: 600, marginBottom: "10px" }}>
+          Featured Liked Products
+        </Typography>
+        <Typography variant="body1" sx={{ color: "#555", marginBottom: "20px" }}>
+          Here are some of the most popular products that you might like.
+        </Typography>
 
-      <Grid container spacing={2}>
+        <Grid container spacing={2}>
         {likedProducts.map((product) => (
           <Grid item xs={2.4} key={product.code}>
             <Card
@@ -129,7 +131,7 @@ const Likes = () => {
                 width: '100%',
                 marginLeft: '30px',
                 marginTop: '20px',
-                backgroundColor: 'transparent',
+                backgroundColor: 'white',
                 boxShadow: 'none',
                 transition: '0.3s',
                 '&:hover': {
@@ -172,7 +174,14 @@ const Likes = () => {
           </Grid>
         ))}
       </Grid>
+      </Box>
 
+      {/* Footer Section */}
+      <Box sx={{  padding: "20px", textAlign: "center" }}>
+        <Typography variant="body2" sx={{ color: "#555" }}>
+          © 2024 CIT-U Marketplace. All Rights Reserved.
+        </Typography>
+      </Box>
     </Box>
   );
 };
