@@ -88,7 +88,7 @@ const SellerReviews = () => {
 
   return (
     <Paper elevation={1} sx={{ padding: 3, marginTop: 2, borderRadius: '16px' }}>
-      <Typography variant="h5" gutterBottom>
+      <Typography variant="h6" gutterBottom>
         All Reviews ({mockReviews.length})
       </Typography>
       
