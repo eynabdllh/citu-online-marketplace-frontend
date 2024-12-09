@@ -8,13 +8,15 @@ import { styled } from '@mui/system';
 const Search = styled('div')({
   position: 'relative',
   borderRadius: '4px',
-  backgroundColor: '#f1f1f1',
+  backgroundColor: '#f5f5f5',
   '&:hover': {
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#eeeeee',
   },
   marginLeft: 0,
-  width: '20%',
-  alignContent: 'center',
+  width: '30%',
+  height: '40px',
+  display: 'flex',
+  alignItems: 'center',
 });
 
 const SearchIconWrapper = styled('div')({
@@ -53,6 +55,11 @@ const BuyPage = () => {
     status: '',
     conditionType: '',
   });
+  const [tempFilters, setTempFilters] = useState({
+    category: categoryQuery,
+    status: '',
+    conditionType: '',
+  });
 
   const loggedInUser = sessionStorage.getItem('username');
 
@@ -73,7 +80,7 @@ const BuyPage = () => {
   };
 
   const handleFilterChange = (key, value) => {
-    setFilters((prevFilters) => ({ ...prevFilters, [key]: value }));
+    setTempFilters((prevFilters) => ({ ...prevFilters, [key]: value }));
   };
 
   const handleSearchChange = (event) => {
@@ -90,24 +97,50 @@ const BuyPage = () => {
     }
   };
 
+  const handleApplyFilters = () => {
+    setFilters(tempFilters);
+    
+    const params = new URLSearchParams();
+    if (tempFilters.category) params.set('category', tempFilters.category);
+    if (tempFilters.status) params.set('status', tempFilters.status);
+    if (tempFilters.conditionType) params.set('condition', tempFilters.conditionType);
+    if (searchTerm) params.set('search', searchTerm);
+    
+    navigate({
+      pathname: location.pathname,
+      search: params.toString()
+    });
+    
+    handleFilterClose();
+  };
+
   const handleClearFilters = () => {
-    setFilters({
+    const emptyFilters = {
       category: '',
       status: '',
       conditionType: '',
-    });
+    };
+    setFilters(emptyFilters);
+    setTempFilters(emptyFilters);
     setFilteredProducts(allProducts);
+    
+    const params = new URLSearchParams();
+    if (searchTerm) params.set('search', searchTerm);
+    
+    navigate({
+      pathname: location.pathname,
+      search: params.toString()
+    });
   };
 
   useEffect(() => {
     const fetchAllProducts = async () => {
-      setLoading(true); // Add loading indicator state
+      setLoading(true); 
       
       try {
         const response = await axios.get(`http://localhost:8080/api/product/getAllProducts/${loggedInUser}`);
-        console.log("API Response: ", response.data);  // Log the API response to see the status values
+        console.log("API Response: ", response.data); 
 
-        // Filter out only approved products (check the status field value carefully)
         const approvedProducts = response.data.filter(product => product.status && product.status.toLowerCase() === 'approved');
         
         setAllProducts(approvedProducts);
@@ -115,7 +148,7 @@ const BuyPage = () => {
       } catch (error) {
         console.error("Error fetching all products:", error);
       } finally {
-        setLoading(false);  // Set loading to false after fetching data
+        setLoading(false);  
       }
     };
 
@@ -156,14 +189,21 @@ const BuyPage = () => {
   useEffect(() => {
     if (searchTerm) {
       const lowerCaseSearchTerm = searchTerm.toLowerCase();
-      const searchedProducts = filteredProducts.filter((product) =>
-        product.name.toLowerCase().includes(lowerCaseSearchTerm)
+      const searchedProducts = allProducts.filter((product) =>
+        product.name.toLowerCase().includes(lowerCaseSearchTerm) ||
+        product.name.toLowerCase().split(' ').some(word => 
+          word.startsWith(lowerCaseSearchTerm)
+        )
       );
       setFilteredProducts(searchedProducts);
     } else {
-      setFilteredProducts(filteredProducts);
+      setFilteredProducts(prevFilteredProducts => 
+        filters.category || filters.status || filters.conditionType 
+          ? prevFilteredProducts 
+          : allProducts
+      );
     }
-  }, [searchTerm, filteredProducts]);
+  }, [searchTerm, allProducts, filters]);
 
   if (loading) return <div>Loading...</div>;
 
@@ -194,9 +234,10 @@ const BuyPage = () => {
           sx={{
             '& .MuiPaper-root': {
               backgroundColor: '#ffffff',
-              padding: 1,
-              position: 'fixed',
-              width: '320px', 
+              borderRadius: '8px',
+              boxShadow: '0px 4px 15px rgba(0, 0, 0, 0.1)',
+              padding: '16px',
+              width: '320px',
             },
           }}
         >
@@ -204,9 +245,20 @@ const BuyPage = () => {
             <FormControl fullWidth sx={{ marginBottom: 2 }}>
               <InputLabel>Category</InputLabel>
               <Select
-                value={filters.category}
+                value={tempFilters.category}
                 onChange={(e) => handleFilterChange('category', e.target.value)}
-                label="category"
+                label="Category"
+                sx={{
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#e0e0e0',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#89343b',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#89343b',
+                  },
+                }}
               >
                 <MenuItem value="">All</MenuItem>
                 <MenuItem value="Food">Food</MenuItem>
@@ -225,9 +277,20 @@ const BuyPage = () => {
             <FormControl fullWidth sx={{ marginBottom: 2 }}>
               <InputLabel>Status</InputLabel>
               <Select
-                value={filters.status}
+                value={tempFilters.status}
                 onChange={(e) => handleFilterChange('status', e.target.value)}
-                label="status"
+                label="Status"
+                sx={{
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#e0e0e0',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#89343b',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#89343b',
+                  },
+                }}
               >
                 <MenuItem value="">All</MenuItem>
                 <MenuItem value="Available">Available</MenuItem>
@@ -238,9 +301,20 @@ const BuyPage = () => {
             <FormControl fullWidth sx={{ marginBottom: 2 }}>
               <InputLabel>Condition</InputLabel>
               <Select
-                value={filters.conditionType}
+                value={tempFilters.conditionType}
                 onChange={(e) => handleFilterChange('conditionType', e.target.value)}
                 label="Condition"
+                sx={{
+                  '& .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#e0e0e0',
+                  },
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#89343b',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#89343b',
+                  },
+                }}
               >
                 <MenuItem value="">All</MenuItem>
                 <MenuItem value="Brand New">Brand New</MenuItem>
@@ -249,9 +323,36 @@ const BuyPage = () => {
               </Select>
             </FormControl>
 
-            <Button onClick={handleClearFilters} variant="outlined" color="#89343b" sx={{ width: '100%' }}>
-              Clear Filters
-            </Button>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <Button 
+                onClick={handleClearFilters} 
+                variant="outlined" 
+                sx={{ 
+                  width: '50%',
+                  borderColor: '#89343b',
+                  color: '#89343b',
+                  '&:hover': {
+                    borderColor: '#6b2831',
+                    backgroundColor: 'rgba(137, 52, 59, 0.04)',
+                  }
+                }}
+              >
+                Clear
+              </Button>
+              <Button 
+                onClick={handleApplyFilters} 
+                variant="contained" 
+                sx={{ 
+                  width: '50%', 
+                  bgcolor: '#89343b', 
+                  '&:hover': { 
+                    bgcolor: '#6b2831' 
+                  } 
+                }}
+              >
+                Apply
+              </Button>
+            </Box>
           </Box>
         </Menu>
       </Box>
