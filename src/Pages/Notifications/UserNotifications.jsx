@@ -9,14 +9,13 @@ import {
   Divider, 
   Button, 
   Checkbox,
-  Snackbar,
-  Alert,
   ListItemIcon,
   Stack
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import toast from 'react-hot-toast';
 
 const UserNotifications = () => {
   const [notifications, setNotifications] = useState([
@@ -86,15 +85,10 @@ const UserNotifications = () => {
   ]);
   
   const [selectedNotifications, setSelectedNotifications] = useState([]);
-  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
 
   const handleMarkAsRead = () => {
     if (selectedNotifications.length === 0) {
-      setToast({
-        open: true,
-        message: 'Please select at least one notification',
-        severity: 'error'
-      });
+      toast.error('Please select at least one notification');
       return;
     }
 
@@ -104,30 +98,18 @@ const UserNotifications = () => {
         : notification
     ));
     setSelectedNotifications([]);
-    setToast({
-      open: true,
-      message: 'Notifications marked as read',
-      severity: 'success'
-    });
+    toast.success('Notifications marked as read');
   };
 
   const handleDelete = () => {
     if (selectedNotifications.length === 0) {
-      setToast({
-        open: true,
-        message: 'Please select at least one notification',
-        severity: 'error'
-      });
+      toast.error('Please select at least one notification');
       return;
     }
 
     setNotifications(prev => prev.filter(notification => !selectedNotifications.includes(notification.id)));
     setSelectedNotifications([]);
-    setToast({
-      open: true,
-      message: 'Notifications deleted',
-      severity: 'success'
-    });
+    toast.success('Notifications deleted');
   };
 
   return (
@@ -259,24 +241,6 @@ const UserNotifications = () => {
           </List>
         </Box>
       </Paper>
-
-      <Snackbar 
-        open={toast.open} 
-        autoHideDuration={3000} 
-        onClose={() => setToast({ ...toast, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        sx={{ mb: 2, mr: 2 }}
-      >
-        <Alert 
-          severity={toast.severity}
-          sx={{ 
-            width: '100%',
-            '& .MuiAlert-action': { display: 'none' }
-          }}
-        >
-          {toast.message}
-        </Alert>
-      </Snackbar>
     </Box>
   );
 };
