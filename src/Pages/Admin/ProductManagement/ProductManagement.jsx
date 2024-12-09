@@ -451,6 +451,11 @@ const ProductSellers = () => {
     );
   };
 
+  const paginatedProducts = filteredProducts.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
+
   if (!products.length) {
     return <div style={styles.loading}>Loading...</div>;
   }
@@ -637,21 +642,14 @@ const ProductSellers = () => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredProducts
+            {paginatedProducts
               .filter(item => item?.product)
               .map((item, index) => (
                 <TableRow key={index}>
                   <TableCell padding="checkbox">
                     <Checkbox
                       checked={selectedProducts.includes(item.product.code)}
-                      onChange={(e) => {
-                        const productCode = item.product.code;
-                        setSelectedProducts(prev => 
-                          e.target.checked 
-                            ? [...prev, productCode]
-                            : prev.filter(code => code !== productCode)
-                        );
-                      }}
+                      onChange={(e) => handleSelectOne(e, item)}
                     />
                   </TableCell>
                   <TableCell sx={{ py: 1 }}>{item.product.code}</TableCell>
@@ -694,6 +692,7 @@ const ProductSellers = () => {
           setRowsPerPage(parseInt(e.target.value, 10));
           setPage(0);
         }}
+        rowsPerPageOptions={[10, 25, 50]}
       />
 
       <FilterMenu />
