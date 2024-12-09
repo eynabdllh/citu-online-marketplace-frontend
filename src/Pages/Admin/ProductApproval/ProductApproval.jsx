@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   Box, Typography, Paper, Table, TableBody, TableCell, TableContainer,
   TableHead, TablePagination, TableRow, Button, CircularProgress, Snackbar, Link,
-  Breadcrumbs, Card, CardContent, Tooltip, Chip, TableSortLabel, TextField,
+  Breadcrumbs, Card, CardMedia, CardContent, Tooltip, Chip, TableSortLabel, TextField,
   FormControl, InputLabel, Select, MenuItem, Grid, Dialog, DialogActions, DialogContent, DialogTitle
 } from '@mui/material';
 import { Search as SearchIcon, CheckCircle, Cancel, AccessTime } from '@mui/icons-material';
@@ -16,15 +16,15 @@ const columns = [
   { id: 'status', label: 'Approval Status', minWidth: 170 },
 ];
 
-const createData = (productName, user, productCode, category, status, imagePath) => {
+const createData = (productName, user, productCode, category, status, image) => {
   const formatStatus = (status) => {
     if (status === 'approved') return 'Approved';
     if (status === 'rejected') return 'Rejected';
     if (status === 'Available') return 'Available';
-    return status; 
+    return status;
   };
 
-  return { productName, user, productCode, category, status: formatStatus(status), imagePath  };
+  return { productName, user, productCode, category, status: formatStatus(status)};
 };
 
 const ProductApproval = () => {
@@ -35,31 +35,30 @@ const ProductApproval = () => {
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [summary, setSummary] = useState({ pending: 0, approved: 0, rejected: 0 });
-  const [order, setOrder] = useState('asc'); 
-  const [orderBy, setOrderBy] = useState('user'); 
-  const [searchTerm, setSearchTerm] = useState(""); 
-  const [statusFilter, setStatusFilter] = useState(''); 
-  const [openModal, setOpenModal] = useState(false); 
+  const [order, setOrder] = useState('asc');
+  const [orderBy, setOrderBy] = useState('user');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState('');
+  const [openModal, setOpenModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
       setLoading(true);
       try {
-        const response = await axios.get('http://localhost:8080/api/product/pendingApproval'); 
-        console.log(response.data)
+        const response = await axios.get('http://localhost:8080/api/product/pendingApproval');
+        console.log("Products: ", response.data)
         const productData = response.data.map((product) =>
           createData(
             product.productName,
-            product.sellerUsername, 
+            product.sellerUsername,
             product.productCode,
             product.category,
             product.status,
-            product.imagePath
           )
         );
         setProducts(productData);
-        updateSummary(productData); 
+        updateSummary(productData);
       } catch (error) {
         setError('Error fetching products');
       } finally {
@@ -107,10 +106,10 @@ const ProductApproval = () => {
       setProducts((prevProducts) => {
         const updatedProducts = prevProducts.map(product =>
           product.productCode === productCode
-            ? { ...product, status: 'Approved' } 
+            ? { ...product, status: 'Approved' }
             : product
         );
-        updateSummary(updatedProducts); 
+        updateSummary(updatedProducts);
         return updatedProducts;
       });
     } catch (error) {
@@ -126,7 +125,7 @@ const ProductApproval = () => {
       setProducts((prevProducts) => {
         const updatedProducts = prevProducts.map(product =>
           product.productCode === productCode
-            ? { ...product, status: 'Rejected' } 
+            ? { ...product, status: 'Rejected' }
             : product
         );
         updateSummary(updatedProducts);
@@ -147,11 +146,11 @@ const ProductApproval = () => {
   };
 
   const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value); 
+    setSearchTerm(event.target.value);
   };
 
   const filterProducts = (products) => {
-    if (!searchTerm && !statusFilter) return products; 
+    if (!searchTerm && !statusFilter) return products;
 
     return products.filter((product) => {
       const productName = product.productName ? String(product.productName).toLowerCase() : '';
@@ -201,7 +200,7 @@ const ProductApproval = () => {
           ...props,
           sx: {
             ...props.sx,
-            bgcolor: '#28a745', 
+            bgcolor: '#28a745',
             '&:hover': { bgcolor: '#28a745' }
           }
         };
@@ -210,7 +209,7 @@ const ProductApproval = () => {
           ...props,
           sx: {
             ...props.sx,
-            bgcolor: '#007bff', 
+            bgcolor: '#007bff',
             '&:hover': { bgcolor: '#007bff' }
           }
         };
@@ -219,7 +218,7 @@ const ProductApproval = () => {
           ...props,
           sx: {
             ...props.sx,
-            bgcolor: '#dc3545', 
+            bgcolor: '#dc3545',
             '&:hover': { bgcolor: '#dc3545' }
           }
         };
@@ -261,13 +260,11 @@ const ProductApproval = () => {
 
   return (
     <Box sx={{ padding: 3 }}>
-      {/* Breadcrumbs */}
-      <Breadcrumbs sx={{ mb: 2 }}>
-        <Link color="inherit" href="/admin/dashboard">
-          Dashboard
-        </Link>
-        <Typography color="textPrimary">Product Approval</Typography>
-      </Breadcrumbs>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+      <Typography variant="h4" sx={{ color: '#89343b' }}>
+          Product Approval
+      </Typography>
+      </Box>
 
       {/* Filter Section */}
       <Box sx={{ mb: 3 }}>
@@ -304,9 +301,9 @@ const ProductApproval = () => {
           <Grid item xs={12} sm={6} md={4}>
             <FormControl fullWidth size="small" sx={{ position: 'relative' }}>
               <InputLabel sx={{
-                color: 'Black', 
+                color: 'Black',
                 '&.Mui-focused': {
-                  color: 'Black', 
+                  color: 'Black',
                 }
               }}>Approval Status</InputLabel>
               <Select
@@ -363,26 +360,21 @@ const ProductApproval = () => {
       </Box>
 
       {/* Summary Cards */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
-        <Card sx={{ minWidth: 200, backgroundColor: '#66bb6a', color: 'white' }}>
-          <CardContent>
-            <Typography variant="h6">Pending</Typography>
-            <Typography variant="h4">{summary.pending}</Typography>
-          </CardContent>
+      <Box sx={{ display: 'flex', gap: 2, my: 2 }}>
+        <Card sx={{ p: 2, flex: 1, bgcolor: '#ffefc3' }}>
+          <Typography variant="subtitle1">Pending</Typography>
+          <Typography variant="h4">{summary.pending}</Typography>
         </Card>
-        <Card sx={{ minWidth: 200, backgroundColor: '#ef5350', color: 'white' }}>
-          <CardContent>
-            <Typography variant="h6">Approved</Typography>
-            <Typography variant="h4">{summary.approved}</Typography>
-          </CardContent>
+        <Card sx={{ p: 2, flex: 1, bgcolor: '#c8e6c9' }}>
+          <Typography variant="subtitle1">Approved</Typography>
+          <Typography variant="h4">{summary.approved}</Typography>
         </Card>
-        <Card sx={{ minWidth: 200, backgroundColor: '#f57c00', color: 'white' }}>
-          <CardContent>
-            <Typography variant="h6">Rejected</Typography>
-            <Typography variant="h4">{summary.rejected}</Typography>
-          </CardContent>
+        <Card sx={{ p: 2, flex: 1, bgcolor: '#ffcdd2' }}>
+          <Typography variant="subtitle1">Rejected</Typography>
+          <Typography variant="h4">{summary.rejected}</Typography>
         </Card>
       </Box>
+
 
       {/* Product Table */}
       <Paper>
@@ -440,7 +432,7 @@ const ProductApproval = () => {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {sortData(filterProducts(products)) 
+                {sortData(filterProducts(products))
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => (
                     <TableRow hover role="checkbox" tabIndex={-1} key={index} onClick={() => handleProductClick(row)} sx={{ cursor: 'pointer', '&:hover': { backgroundColor: '#fafafa' } }}>
@@ -542,7 +534,6 @@ const ProductApproval = () => {
               <Typography variant="body1">Category: {selectedProduct.category}</Typography>
               <Typography variant="body1">Username: {selectedProduct.user}</Typography>
               <Typography variant="body1">Approval Status: {selectedProduct.status}</Typography>
-              <img src={`http://localhost:8080/${selectedProduct.imagePath}`} alt={selectedProduct.productName} style={{ maxWidth: '100%', marginTop: '16px' }} />
             </>
           )}
         </DialogContent>
