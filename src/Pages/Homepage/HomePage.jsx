@@ -29,7 +29,8 @@ function HomePage() {
   };
 
   const handleCategoryClick = (category) => {
-    navigate(`/buy?category=${category}`);
+    const mappedCategory = category === "Stationery" ? "Stationery or Arts and Crafts" : category;
+    navigate(`/buy?category=${mappedCategory}`);
   };
 
   const handleCardClick = (code) => {
