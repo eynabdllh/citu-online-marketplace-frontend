@@ -6,6 +6,7 @@ import PropTypes from 'prop-types';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import axios from 'axios';
 import '../../App.css';
+import toast from 'react-hot-toast';
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -66,27 +67,24 @@ const UserAccount = (props) => {
       };
 
     const handleSave = async () => {
-        if (window.confirm('Are you sure you want to update your account?')) {
-            try {
-                const updatedData = { firstName, lastName, email, address, contactNo };
-                const username = sessionStorage.getItem('username'); 
-    
-                const response = await axios.put(`http://localhost:8080/api/seller/putSellerRecord/${username}`, updatedData);
-    
-                if (response.status === 200) {
-                    sessionStorage.setItem('firstName', firstName);
-                    sessionStorage.setItem('lastName', lastName);
-                    sessionStorage.setItem('email', email);
-                    sessionStorage.setItem('address', address);
-                    sessionStorage.setItem('contactNo', contactNo);
-    
-                    setEditMode(false); 
-                } else {
-                    console.error('Error updating user data:', response.statusText);
-                }
-            } catch (error) {
-                console.error('Error updating user data:', error);
+        try {
+            const updatedData = { firstName, lastName, email, address, contactNo };
+            const username = sessionStorage.getItem('username'); 
+
+            const response = await axios.put(`http://localhost:8080/api/seller/putSellerRecord/${username}`, updatedData);
+
+            if (response.status === 200) {
+                sessionStorage.setItem('firstName', firstName);
+                sessionStorage.setItem('lastName', lastName);
+                sessionStorage.setItem('email', email);
+                sessionStorage.setItem('address', address);
+                sessionStorage.setItem('contactNo', contactNo);
+
+                setEditMode(false); 
+                toast.success('Profile updated successfully!');
             }
+        } catch (error) {
+            toast.error('Failed to update profile');
         }
     };
 
@@ -95,57 +93,47 @@ const UserAccount = (props) => {
         if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
             try {
                 const response = await axios.delete(`http://localhost:8080/api/seller/deleteSellerRecord/${username}`);
-
                 if (response.status === 200) {
-                    alert(response.data); 
-                    
+                    toast.success('Account deleted successfully');
                     sessionStorage.clear();
                     window.location.href = '/'; 
-                } else {
-                    console.error('Error deleting user account:', response.statusText);
                 }
             } catch (error) {
-                console.error('Error deleting user account:', error);
+                toast.error('Failed to delete account');
             }
         }
     };
 
     const handleChangePassword = async () => {
         if (!newPassword) {
-            alert('New password cannot be empty! Please input neccessary details.');
+            toast.error('New password cannot be empty');
             return;
         }
         if (newPassword !== confirmPassword) {
-            alert('New password and confirm password do not match!');
+            toast.error('Passwords do not match');
             return;
         }
         if (newPassword.length < 8) {
-            alert('New password should be at least 8 characters long.');
+            toast.error('Password must be at least 8 characters');
             return;
         }
-        
-    
+
         try {
             const username = sessionStorage.getItem('username'); 
             const response = await axios.put(`http://localhost:8080/api/seller/changePassword/${username}`, {
                 currentPassword,
                 newPassword,
             });
-    
+
             if (response.status === 200) {
-                alert('Password changed successfully!');
-                setOpenChangePassword(false); 
-    
+                toast.success('Password changed successfully');
+                setOpenChangePassword(false);
                 setCurrentPassword('');
                 setNewPassword('');
                 setConfirmPassword('');
-            } else {
-                console.error('Error changing password:', response.data);
-                alert(response.data.message || 'An error occurred while changing the password.');
             }
         } catch (error) {
-            console.error('Error changing password:', error);
-            alert('An error occurred while changing the password. Please try again.');
+            toast.error('Failed to change password');
         }
     };
     
@@ -159,8 +147,10 @@ const UserAccount = (props) => {
     };
 
     const handleUploadProfileImage = async () => {
-        if(!profileImage) 
+        if(!profileImage) {
+            toast.error('Please select an image first');
             return;
+        }
 
         const username = sessionStorage.getItem('username');
         const formData = new FormData();
@@ -172,10 +162,8 @@ const UserAccount = (props) => {
             });
 
             if(response.status === 200) {
-                alert('Profile picture updated successfully!');
+                toast.success('Profile picture updated successfully');
                 setPreviewImage(response.data.fileName);
-                //setPreviewImage(URL.createObjectURL(profileImage));
-                //sessionStorage.setItem('profilePhoto', response.data.fileName);
             }
         } catch (error) {
             console.error('Error uploading profile photo: ', error);
@@ -226,7 +214,21 @@ const UserAccount = (props) => {
                 onChange={handleChange}
                 textColor="black"
                 aria-label="Vertical tabs example"
-                sx={{ borderRight: 1, borderColor: 'divider', width: '250px', '& .MuiTabs-indicator': {backgroundColor: '#8A252C'} }}
+                sx={{ 
+                    borderRight: 1, 
+                    borderColor: 'divider', 
+                    width: '250px', 
+                    '& .MuiTabs-indicator': {
+                        backgroundColor: '#8A252C'
+                    },
+                    '& .MuiTab-root': {
+                        cursor: 'pointer',
+                        '&:hover': {
+                            color: '#8A252C',
+                            backgroundColor: 'transparent'
+                        }
+                    }
+                }}
             >
                 <Tab label="Personal Info" {...a11yProps(0)} />
                 <Tab label="Change Password" {...a11yProps(1)} />

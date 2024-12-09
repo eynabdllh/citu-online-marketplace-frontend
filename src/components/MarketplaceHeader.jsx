@@ -10,6 +10,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
 import AddProductForm from '../Pages/Sell/AddProductForm'
 import { mockMessagesBuyers, mockMessagesSellers } from '../Pages/Messages/Chat';
+import toast from 'react-hot-toast';
 
 const MarketplaceHeader = () => {
   const [openModal, setOpenModal] = useState(false);
@@ -120,7 +121,13 @@ const MarketplaceHeader = () => {
   };
 
   const handleMarkAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    if (notifications.some(n => !n.read)) {
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      toast.success('All notifications marked as read');
+    } else {
+      toast.error('No unread notifications');
+    }
+    setNotificationAnchor(null);
   };
 
   const unreadCount = notifications.filter(n => !n.read).length;
