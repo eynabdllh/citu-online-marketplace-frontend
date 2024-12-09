@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Avatar, Button, Divider, TextField, List, ListItem, ListItemIcon, ListItemText, Paper, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
+import { Box, Typography, Avatar, Button, TextField, Paper, Snackbar, Alert } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import axios from 'axios';
 
@@ -16,6 +16,7 @@ const AdminSettings = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [notification, setNotification] = useState({ open: false, message: '', type: 'success' });
 
   const toggleEditMode = () => {
     setEditMode((prev) => !prev);
@@ -30,8 +31,10 @@ const AdminSettings = () => {
   };
 
   const handleUploadProfileImage = async () => {
-    if (!profileImage)
+    if (!profileImage) {
+      setNotification({ open: true, message: 'No profile image selected.', type: 'warning' });
       return;
+    }
 
     const username = sessionStorage.getItem('username');
     const formData = new FormData();
@@ -43,61 +46,65 @@ const AdminSettings = () => {
       });
 
       if (response.status === 200) {
-        alert('Profile picture updated successfully!');
+        setNotification({ open: true, message: 'Profile picture updated successfully!', type: 'success' });
         setPreviewImage(response.data.fileName);
       }
     } catch (error) {
       console.error('Error uploading profile photo: ', error);
-      alert('Failed to upload profile photo');
+      setNotification({ open: true, message: 'Failed to upload profile photo.', type: 'error' });
     }
   };
 
   const handleSave = async () => {
-    if (window.confirm('Are you sure you want to update your account?')) {
-      try {
-        // Updated Data Keys MUST match the backend field names
-        const updatedData = {firstName, lastName, email, contactNo};
-  
-        const username = sessionStorage.getItem('username');
-  
-        const response = await axios.put(`http://localhost:8080/api/admin/putAdminRecord/${username}`,updatedData);
-  
-        if (response.status === 200) {
-          sessionStorage.setItem('firstName', firstName);
-          sessionStorage.setItem('lastName', lastName);
-          sessionStorage.setItem('email', email);
-          sessionStorage.setItem('contactNo', contactNo);
-  
-          setEditMode(false);
-          alert('Admin record updated successfully!');
-        }
-      } catch (error) {
-        console.error('Error updating user data:', error);
-        alert('Failed to update admin record.');
+    setNotification({
+      open: true,
+      message: 'Are you sure you want to update your account?',
+      type: 'info'
+    });
+
+    try {
+      const updatedData = { firstName, lastName, email, contactNo };
+      const username = sessionStorage.getItem('username');
+      const response = await axios.put(`http://localhost:8080/api/admin/putAdminRecord/${username}`, updatedData);
+
+      if (response.status === 200) {
+        sessionStorage.setItem('firstName', firstName);
+        sessionStorage.setItem('lastName', lastName);
+        sessionStorage.setItem('email', email);
+        sessionStorage.setItem('contactNo', contactNo);
+
+        setEditMode(false);
+        setNotification({ open: true, message: 'Admin record updated successfully!', type: 'success' });
       }
+    } catch (error) {
+      console.error('Error updating user data:', error);
+      setNotification({ open: true, message: 'Failed to update admin record.', type: 'error' });
     }
   };
 
   const handleDeleteAccount = async () => {
-    const username = sessionStorage.getItem('username');
-    if (window.confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
-        try {
-            const response = await axios.delete(`http://localhost:8080/api/admin/deleteAdminRecord/${username}`);
+    setNotification({
+      open: true,
+      message: 'Are you sure you want to delete your account? This action cannot be undone.',
+      type: 'info'
+    });
 
-            if (response.status === 200) {
-                alert(response.data); 
-                
-                sessionStorage.clear();
-                window.location.href = '/'; 
-            } else {
-                console.error('Error deleting user account:', response.statusText);
-            }
-        } catch (error) {
-            console.error('Error deleting user account:', error);
-        }
+    const username = sessionStorage.getItem('username');
+    try {
+      const response = await axios.delete(`http://localhost:8080/api/admin/deleteAdminRecord/${username}`);
+
+      if (response.status === 200) {
+        setNotification({ open: true, message: response.data, type: 'success' });
+        sessionStorage.clear();
+        window.location.href = '/';
+      } else {
+        console.error('Error deleting user account:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error deleting user account:', error);
+      setNotification({ open: true, message: 'Failed to delete account.', type: 'error' });
     }
-};
-  
+  };
 
   useEffect(() => {
     const fetchProfileData = async () => {
@@ -247,6 +254,20 @@ const AdminSettings = () => {
           Delete Account
         </Button>
       </Paper>
+
+      <Snackbar
+        open={notification.open}
+        autoHideDuration={6000}
+        onClose={() => setNotification({ ...notification, open: false })}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+      >
+        <Alert
+          severity={notification.type}
+          sx={{ width: '100%' }}
+        >
+          {notification.message}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
