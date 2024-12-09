@@ -21,6 +21,7 @@ const AddProductForm = ({ open, handleClose }) => {
     message: '',
     severity: 'success'
   });
+  const [status, setStatus] = useState('');
 
   useEffect(() => {
     const username = sessionStorage.getItem('username');
@@ -57,7 +58,7 @@ const AddProductForm = ({ open, handleClose }) => {
         return;
     }
 
-    if (!productName || !description || !quantity || !price || !category || !conditionType || !imageFile) {
+    if (!productName || !description || !quantity || !price || !category || !conditionType || !imageFile || !status) {
         toast.error('All fields must be filled in');
         return;
     }
@@ -68,7 +69,7 @@ const AddProductForm = ({ open, handleClose }) => {
     formData.append('qtyInStock', quantity);
     formData.append('buyPrice', price);
     formData.append('category', category);
-    formData.append('status', 'Available');
+    formData.append('status', status);
     formData.append('conditionType', conditionType);
     formData.append('seller_username', sellerUsername); 
 
@@ -98,6 +99,7 @@ const AddProductForm = ({ open, handleClose }) => {
       setCategory('');
       setConditionType('');
       setImageFile(null);
+      setStatus('');
 
       toast.success('Product added successfully!');
       handleClose(); 
@@ -158,6 +160,9 @@ const AddProductForm = ({ open, handleClose }) => {
                 onChange={(e) => setCategory(e.target.value)}
                 required
                 displayEmpty
+                sx={{ 
+                  color: category ? 'inherit' : '#A9A9A9'
+                }}
               >
                 <MenuItem value="" disabled>Select a category</MenuItem>
                 <MenuItem value="Food">Food</MenuItem>
@@ -173,12 +178,30 @@ const AddProductForm = ({ open, handleClose }) => {
               </Select>
             </FormControl>
             <FormControl fullWidth margin="normal">
+              <InputLabel shrink>Status</InputLabel>
+              <Select
+                value={status}
+                onChange={(e) => setStatus(e.target.value)}
+                required
+                displayEmpty
+                sx={{ 
+                  color: status ? 'inherit' : '#A9A9A9'
+                }}
+              >
+                <MenuItem value="" disabled>Select status</MenuItem>
+                <MenuItem value="Available">Available</MenuItem>
+              </Select>
+            </FormControl>
+            <FormControl fullWidth margin="normal">
               <InputLabel shrink>Condition</InputLabel>
               <Select
                 value={conditionType}
                 onChange={(e) => setConditionType(e.target.value)}
                 required
                 displayEmpty
+                sx={{ 
+                  color: conditionType ? 'inherit' : '#A9A9A9'
+                }}
               >
                 <MenuItem value="" disabled>Select condition</MenuItem>
                 <MenuItem value="Brand New">Brand New</MenuItem>

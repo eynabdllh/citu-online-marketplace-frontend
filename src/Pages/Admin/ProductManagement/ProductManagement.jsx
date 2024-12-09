@@ -15,7 +15,6 @@ import {
   Add as AddIcon,
 } from '@mui/icons-material';
 import * as XLSX from 'xlsx';
-import AddNewProductModal from './AddNewProductModal';
 import UpdateProductModal from './UpdateProductModal';
 
 const ProductSellers = () => {
@@ -488,24 +487,6 @@ const ProductSellers = () => {
               Delete Selected ({selectedProducts.length})
             </Button>
           )}
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            onClick={() => setAddModalOpen(true)}
-            sx={{ 
-              bgcolor: '#89343b',
-              '&:hover': { bgcolor: '#6d2931' },
-              '& .MuiButton-startIcon': {
-                margin: 0,
-                marginRight: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                color: 'white'
-              }
-            }}
-          >
-            Add Product
-          </Button>
         </Box>
       </Box>
 
@@ -737,11 +718,6 @@ const ProductSellers = () => {
         open={updateModalOpen}
         onClose={() => setUpdateModalOpen(false)}
         product={selectedProduct?.product}
-      />
-
-      <AddNewProductModal
-        open={addModalOpen}
-        onClose={() => setAddModalOpen(false)}
       />
 
       <Snackbar
