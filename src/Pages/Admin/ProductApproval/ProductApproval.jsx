@@ -10,6 +10,7 @@ import axios from 'axios';
 
 const columns = [
   { id: 'user', label: 'Username', minWidth: 170 },
+  { id: 'image', label: 'Image', minWidth: 120 },
   { id: 'productName', label: 'Product Name', minWidth: 170 },
   { id: 'productCode', label: 'Product Code', minWidth: 100 },
   { id: 'category', label: 'Category', minWidth: 170 },
@@ -24,7 +25,9 @@ const createData = (productName, user, productCode, category, status, image) => 
     return status;
   };
 
-  return { productName, user, productCode, category, status: formatStatus(status)};
+  const imageUrl = image ? `http://localhost:8080/${image}` : null;
+
+  return { productName, user, productCode, category, status: formatStatus(status), image: imageUrl };
 };
 
 const ProductApproval = () => {
@@ -55,6 +58,7 @@ const ProductApproval = () => {
             product.productCode,
             product.category,
             product.status,
+            product.image
           )
         );
         setProducts(productData);
@@ -261,9 +265,9 @@ const ProductApproval = () => {
   return (
     <Box sx={{ padding: 3 }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-      <Typography variant="h4" sx={{ color: '#89343b' }}>
+        <Typography variant="h4" sx={{ color: '#89343b' }}>
           Product Approval
-      </Typography>
+        </Typography>
       </Box>
 
       {/* Filter Section */}
@@ -439,6 +443,18 @@ const ProductApproval = () => {
                       {columns.map((column) => {
                         const value = row[column.id];
 
+                        if (column.id === 'image') {
+                          return (
+                            <TableCell key={column.id} align="left" sx={{ padding: '16px' }}>
+                              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                {row.image && (
+                                  <img src={row.image} alt={row.productName} style={{ width: 50, height: 50, objectFit: 'cover', marginRight: 10 }} />
+                                )}
+                              </Box>
+                            </TableCell>
+                          );
+                        }
+
                         if (column.id === 'status') {
                           const statusProps = getStatusChipProps(value);
                           return (
@@ -529,6 +545,11 @@ const ProductApproval = () => {
         <DialogContent>
           {selectedProduct && (
             <>
+              {selectedProduct.image && (
+                <Box sx={{ mb: 2, display: 'flex', justifyContent: 'center' }}>
+                  <img src={selectedProduct.image} alt={selectedProduct.productName} style={{ width: '150px', height: '150px', objectFit: 'cover' }} />
+                </Box>
+              )}
               <Typography variant="h6">Product Name: {selectedProduct.productName}</Typography>
               <Typography variant="body1">Product Code: {selectedProduct.productCode}</Typography>
               <Typography variant="body1">Category: {selectedProduct.category}</Typography>
