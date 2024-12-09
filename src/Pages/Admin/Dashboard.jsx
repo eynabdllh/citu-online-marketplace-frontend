@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Box, 
   Grid, 
@@ -30,6 +30,7 @@ import {
   Tooltip,
   Legend
 } from 'chart.js';
+import axios from 'axios';
 
 ChartJS.register(
   ArcElement,
@@ -40,103 +41,8 @@ ChartJS.register(
 // mock data 
 const mockData = {
   stats: {
-    totalUsers: 150,
-    totalProducts: 89,
-    pendingApprovals: 12,
-    approvedProducts: 65
-  },
-  recentProducts: [
-    {
-      productCode: 'PRD001',
-      productName: 'Gaming Laptop',
-      sellerUsername: 'juan_dela_cruz',
-      category: 'Electronics',
-      price: 75000,
-      status: 'Approved',
-      imagePath: 'https://picsum.photos/200/300'
+    totalUsers: 7,
     },
-    {
-      productCode: 'PRD002',
-      productName: 'Mechanical Keyboard',
-      sellerUsername: 'maria_santos',
-      category: 'Accessories',
-      price: 5500,
-      status: 'Pending',
-      imagePath: 'https://picsum.photos/200/301'
-    },
-    {
-      productCode: 'PRD003',
-      productName: 'Gaming Mouse',
-      sellerUsername: 'pedro_reyes',
-      category: 'Accessories',
-      price: 2500,
-      status: 'Rejected',
-      imagePath: 'https://picsum.photos/200/302'
-    },
-    {
-      productCode: 'PRD004',
-      productName: 'Monitor Stand',
-      sellerUsername: 'rosa_cruz',
-      category: 'Accessories',
-      price: 850,
-      status: 'Approved',
-      imagePath: 'https://picsum.photos/200/303'
-    },
-    {
-      productCode: 'PRD005',
-      productName: 'USB Hub',
-      sellerUsername: 'carlo_garcia',
-      category: 'Electronics',
-      price: 1500,
-      status: 'Pending',
-      imagePath: 'https://picsum.photos/200/304'
-    },
-    {
-      productCode: 'PRD006',
-      productName: 'Wireless Mouse',
-      sellerUsername: 'pedro_reyes',
-      category: 'Accessories',
-      price: 1200,
-      status: 'Approved',
-      imagePath: 'https://picsum.photos/200/305'
-    },
-    {
-      productCode: 'PRD007',
-      productName: 'Gaming Chair',
-      sellerUsername: 'maria_santos',
-      category: 'Furniture',
-      price: 15000,
-      status: 'Pending',
-      imagePath: 'https://picsum.photos/200/306'
-    },
-    {
-      productCode: 'PRD008',
-      productName: 'Headphones',
-      sellerUsername: 'juan_dela_cruz',
-      category: 'Electronics',
-      price: 3500,
-      status: 'Rejected',
-      imagePath: 'https://picsum.photos/200/307'
-    },
-    {
-      productCode: 'PRD009',
-      productName: 'Gaming Monitor',
-      sellerUsername: 'carlo_garcia',
-      category: 'Electronics',
-      price: 25000,
-      status: 'Approved',
-      imagePath: 'https://picsum.photos/200/308'
-    },
-    {
-      productCode: 'PRD010',
-      productName: 'Webcam HD',
-      sellerUsername: 'rosa_cruz',
-      category: 'Electronics',
-      price: 2800,
-      status: 'Pending',
-      imagePath: 'https://picsum.photos/200/309'
-    }
-  ],
   recentlySold: [
     {
       productCode: 'PRD001',
@@ -202,10 +108,72 @@ const mockData = {
 };
 
 const Dashboard = () => {
+  const [dashboardData, setDashboardData] = useState({
+    stats: {
+      totalUsers: 7, 
+    },
+    recentProducts: [], 
+    recentlySold: mockData.recentlySold 
+  });
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // Fetch pending approvals data
+        const approvalsResponse = await axios.get('http://localhost:8080/api/product/pendingApproval');
+        const approvals = approvalsResponse.data;
+
+        console.log('Approvals data:', approvals); 
+
+        // Calculate stats
+        const totalProducts = approvals.length;
+        const approvedProducts = approvals.filter(p => p.status === 'approved').length;
+        const pendingApprovals = approvals.filter(p => p.status === 'Available').length;
+
+        // Get most recent products (last 10)
+        const recentProducts = approvals
+          .slice(0, 10)
+          .map(item => ({
+            productCode: item.productCode,
+            productName: item.productName,
+            sellerUsername: item.sellerUsername,
+            category: item.category,
+            price: item.product?.buyPrice || 0,
+            status: item.status === 'approved' ? 'Approved' : 
+                   item.status === 'rejected' ? 'Rejected' : 
+                   item.status === 'Available' ? 'Pending' : item.status,
+            imagePath: item.product?.imagePath ? `http://localhost:8080/${item.product.imagePath}` : null
+          }));
+
+        console.log('Mapped recent products:', recentProducts);
+
+        setDashboardData(prev => ({
+          ...prev,
+          stats: {
+            ...prev.stats,
+            totalProducts,
+            pendingApprovals,
+            approvedProducts
+          },
+          recentProducts
+        }));
+
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
   const chartData = {
     labels: ['Approved', 'Pending', 'Rejected'],
     datasets: [{
-      data: [65, 12, 12],
+      data: [
+        dashboardData.stats.approvedProducts,
+        dashboardData.stats.pendingApprovals,
+        dashboardData.stats.totalProducts - (dashboardData.stats.approvedProducts + dashboardData.stats.pendingApprovals)
+      ],
       backgroundColor: [
         '#28a745', // Approved - Green
         '#ffd700', // Pending - Gold
@@ -255,7 +223,7 @@ const Dashboard = () => {
                   <PeopleIcon />
                 </Avatar>
                 <Box>
-                  <Typography variant="h4">{mockData.stats.totalUsers}</Typography>
+                  <Typography variant="h4">{dashboardData.stats.totalUsers}</Typography>
                   <Typography>Total Users</Typography>
                 </Box>
               </Box>
@@ -282,7 +250,7 @@ const Dashboard = () => {
                   <InventoryIcon />
                 </Avatar>
                 <Box>
-                  <Typography variant="h4">{mockData.stats.totalProducts}</Typography>
+                  <Typography variant="h4">{dashboardData.stats.totalProducts}</Typography>
                   <Typography>Total Products</Typography>
                 </Box>
               </Box>
@@ -309,7 +277,7 @@ const Dashboard = () => {
                   <CheckCircleIcon />
                 </Avatar>
                 <Box>
-                  <Typography variant="h4">{mockData.stats.approvedProducts}</Typography>
+                  <Typography variant="h4">{dashboardData.stats.approvedProducts}</Typography>
                   <Typography>Approved Products</Typography>
                 </Box>
               </Box>
@@ -336,7 +304,7 @@ const Dashboard = () => {
                   <PendingIcon />
                 </Avatar>
                 <Box>
-                  <Typography variant="h4">{mockData.stats.pendingApprovals}</Typography>
+                  <Typography variant="h4">{dashboardData.stats.pendingApprovals}</Typography>
                   <Typography>Pending Approvals</Typography>
                 </Box>
               </Box>
@@ -358,13 +326,13 @@ const Dashboard = () => {
 
         {/* Recent Products Table */}
         <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 3, height: { md: 'calc(100% - 54px)' } }}>
+          <Paper sx={{ p: 3, height: { md: 'calc(100% - 49px)' } }}>
             <Typography variant="h6" sx={{ mb: 2 }}>
               Recent Products
             </Typography>
             <TableContainer 
               sx={{ 
-                maxHeight: 430,
+                height: '57vh',
                 overflowY: 'auto',
                 '&::-webkit-scrollbar': {
                   width: '8px'
@@ -389,15 +357,31 @@ const Dashboard = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {mockData.recentProducts.map((product) => (
+                  {dashboardData.recentProducts.map((product) => (
                     <TableRow key={product.productCode} hover>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                          <Avatar
-                            src={product.imagePath}
-                            variant="rounded"
-                            sx={{ width: 40, height: 40, mr: 2 }}
-                          />
+                          {product.imagePath ? (
+                            <Avatar
+                              src={product.imagePath}
+                              variant="rounded"
+                              sx={{ width: 40, height: 40, mr: 2 }}
+                            />
+                          ) : (
+                            <Avatar 
+                              variant="rounded"
+                              sx={{ 
+                                width: 40, 
+                                height: 40, 
+                                mr: 2,
+                                bgcolor: '#f5f5f5'
+                              }}
+                            >
+                              <Typography variant="caption" color="text.secondary">
+                                No img
+                              </Typography>
+                            </Avatar>
+                          )}
                           <Typography variant="subtitle2">
                             {product.productName}
                           </Typography>
@@ -405,7 +389,7 @@ const Dashboard = () => {
                       </TableCell>
                       <TableCell>{product.sellerUsername}</TableCell>
                       <TableCell>{product.category}</TableCell>
-                      <TableCell>₱{product.price.toLocaleString()}</TableCell>
+                      <TableCell>₱{product.price ? product.price.toLocaleString() : '0'}</TableCell>
                       <TableCell>
                         <Chip
                           icon={
@@ -483,7 +467,7 @@ const Dashboard = () => {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {mockData.recentlySold.map((item) => (
+                  {dashboardData.recentlySold.map((item) => (
                     <TableRow key={`${item.productCode}-${item.soldDate}`} hover>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
