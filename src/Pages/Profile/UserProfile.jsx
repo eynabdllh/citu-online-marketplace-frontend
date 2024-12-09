@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Container, Grid, Typography, Avatar, Box, Button, Paper, Tabs, Tab, Card, CardContent, CardMedia } from '@mui/material';
+import { Container, Grid, Typography, Avatar, Box, Button, Paper, Tabs, Tab, Card, CardContent, CardMedia, Rating } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
@@ -7,6 +7,7 @@ import StarIcon from '@mui/icons-material/Star';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import axios from 'axios';
 import SellerReviews from './SellerReviews'; // Import the new component
+import { mockReviews } from './SellerReviews'; // Import mock reviews
 
 const UserProfile = () => {
     const [tabValue, setTabValue] = useState('1');
@@ -66,6 +67,9 @@ const UserProfile = () => {
         fetchProfileData();
     }, []);
 
+    const averageRating = products.length > 0 ? 
+        mockReviews.reduce((sum, review) => sum + review.productQuality, 0) / mockReviews.length : 0;
+
     return (
         <Container maxWidth="lg" sx={{ paddingTop: 4 }}>
             <Paper
@@ -87,28 +91,6 @@ const UserProfile = () => {
                                 alt="Profile Picture"
                                 sx={{ width: 100, height: 100, position: 'absolute', top: -10 }}
                             />
-                             <Button 
-                                component={Link} 
-                                to="/account" 
-                                color="white"
-                                variant="outlined" 
-                                sx={{
-                                    width: "130px",            
-                                    height: "20px",           
-                                    padding: "10px 5px",      
-                                    lineHeight: 1,            
-                                    fontSize: "14px",         
-                                    position: "absolute",
-                                    top: -40,
-                                    left: 980,
-                                    transition: "all 0.3s ease", 
-                                    "&:hover": {
-                                        backgroundColor: "rgba(255, 255, 255, 0.2)", 
-                                    },
-                                }}
-                            >
-                                Edit Profile
-                            </Button>
                         </Box>
                     </Grid>
                     <Grid item xs sx={{ textAlign: 'left', marginLeft: 3 }}>
@@ -119,18 +101,32 @@ const UserProfile = () => {
                         <Typography variant="body2" color="inherit" sx={{ textAlign: 'left', marginTop: 1 }}>
                             {address} · Joined (insert registered date here in format '2y 10m')
                         </Typography>
-                        <Box display="flex" alignItems="center" mt={1}>
-                            <Typography variant="body2" sx={{ display: 'flex', alignItems: 'center' }}>
-                                5.0
-                                {[...Array(5)].map((_, index) => (
-                                    <StarIcon key={index} fontSize="small" color="warning" sx={{ marginLeft: index === 0 ? 0 : 0.5 }} />
-                                ))}
-                                (130 Reviews)
-                            </Typography>
-                        </Box>
-                        <Box display="flex" alignItems="center" mt={1}>
-                            <VerifiedIcon color="primary" sx={{ marginRight: 0.5 }} />
-                            <Typography variant="body2" color="inherit">Verified · Very Responsive</Typography>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0, margin: 0, padding: 0 }}>
+                            {/* Average Rating */}
+                            <Box display="flex" alignItems="center" sx={{ margin: 0, padding: 0 }}>
+                                <Typography variant="body2" sx={{ display: 'flex', margin: 0, padding: 0, gap: 1, mt: 1 }}>
+                                    {averageRating.toFixed(1)}
+                                    <Rating
+                                        value={averageRating}
+                                        readOnly                                    
+                                        sx={{
+                                            color: '#FFD700',
+                                            margin: 0, 
+                                            padding: 0,
+                                            '& .MuiRating-icon': { color: '#FFD700' },
+                                        }}
+                                    />
+                                    ({mockReviews.length} Reviews)
+                                </Typography>
+                            </Box>
+
+                            {/* Verified Badge */}
+                            <Box display="flex" alignItems="center" sx={{ position: 'absolute', top: 320 }}>
+                                <VerifiedIcon color="primary" sx={{ marginRight: 0.5 }} />
+                                <Typography variant="body2" color="inherit">
+                                    Verified · Very Responsive
+                                </Typography>
+                            </Box>
                         </Box>
                     </Grid>
                 </Grid>
@@ -216,7 +212,18 @@ const UserProfile = () => {
                                 <Grid container spacing={2} sx={{ marginTop: '40px' }}>
                                     {products.map((product) => (
                                         <Grid item xs={2.4} key={product.id}>
-                                            <Card sx={{ width: '100%' }} onClick={() => handleCardClick(product.code)}>
+                                            <Card 
+                                                sx={{ 
+                                                    width: '100%',
+                                                    cursor: 'pointer',
+                                                    transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+                                                    '&:hover': {
+                                                        transform: 'translateY(-4px)',
+                                                        boxShadow: '0 4px 20px rgba(0,0,0,0.12)',
+                                                    }
+                                                }} 
+                                                onClick={() => handleCardClick(product.code)}
+                                            >
                                                 <CardMedia
                                                     component="img"
                                                     alt={product.name}
