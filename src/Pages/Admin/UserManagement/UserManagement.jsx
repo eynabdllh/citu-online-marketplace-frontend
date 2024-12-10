@@ -437,16 +437,44 @@ const UserManagement = () => {
     });
   };
 
-  const handleAddAdmin = (newAdmin) => {
-    // For admins (include id)
-    const updatedUsers = [...users, { ...newAdmin, id: users.length + 1 }];
-    setUsers(updatedUsers);
-    setFilteredUsers(updatedUsers);
-    setToast({
-      open: true,
-      message: 'Admin added successfully',
-      severity: 'success'
-    });
+  const handleAddAdmin = async (newAdmin) => {
+    try {
+      // Fetch fresh data after adding new admin
+      const [adminsResponse, sellersResponse] = await Promise.all([
+        axios.get('http://localhost:8080/api/admin/getAllAdmins'),
+        axios.get('http://localhost:8080/api/admin/sellers')
+      ]);
+
+      const adminsWithRole = adminsResponse.data.map(admin => ({
+        ...admin,
+        role: 'Admin'
+      }));
+
+      const sellersWithRole = sellersResponse.data.map(seller => ({
+        ...seller,
+        role: 'User'
+      }));
+
+      const combinedUsers = [...adminsWithRole, ...sellersWithRole].filter((user, index, self) =>
+        index === self.findIndex((t) => t.username === user.username)
+      );
+      
+      setUsers(combinedUsers);
+      setFilteredUsers(combinedUsers);
+      
+      setToast({
+        open: true,
+        message: 'Admin added successfully',
+        severity: 'success'
+      });
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+      setToast({
+        open: true,
+        message: 'Admin added but failed to refresh data. Please reload the page.',
+        severity: 'warning'
+      });
+    }
   };
 
   return (

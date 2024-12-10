@@ -67,14 +67,45 @@ const AddAdminModal = ({ open, onClose, onAdd }) => {
     }
 
     try {
-      const response = await axios.post('http://localhost:8080/api/admin/addAdmin', formData);
+      console.log('Sending admin data:', formData);
+
+      const response = await axios.post('http://localhost:8080/api/admin/addAdmin', {
+        username: formData.username,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        password: formData.password,
+        contactNo: formData.contactNo,
+        email: formData.email,
+        role: 'Admin'
+      });
       
-      if (response.status === 200) {
+      console.log('Admin creation response:', response);
+      
+      // Check for both 200 and 201 status codes
+      if (response.status === 200 || response.status === 201) {
         onAdd(response.data);
+        // Reset form data
+        setFormData({
+          username: '',
+          firstName: '',
+          lastName: '',
+          password: '',
+          contactNo: '',
+          email: ''
+        });
+        setErrors({});
+        setSubmitError('');
         onClose();
+      } else {
+        setSubmitError('Unexpected response from server');
       }
     } catch (error) {
-      setSubmitError(error.response?.data?.message || 'Failed to add admin. Please try again.');
+      console.error('Error adding admin:', error.response || error);
+      setSubmitError(
+        error.response?.data?.message || 
+        error.response?.data?.error || 
+        'Failed to add admin. Please try again.'
+      );
     }
   };
 
