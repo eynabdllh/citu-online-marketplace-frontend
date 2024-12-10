@@ -482,77 +482,6 @@ const UserManagement = () => {
             />
           </Grid>
 
-          {/* Status Dropdown */}
-          <Grid item xs={12} sm={2} md={2}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Status</InputLabel>
-              <Select
-                value={filters.status}
-                onChange={(e) => {
-                  const newStatus = e.target.value;
-                  setFilters(prev => ({ ...prev, status: newStatus }));
-                  
-                  let filtered = [...users];
-                  if (searchQuery) {
-                    filtered = filtered.filter(user =>
-                      user.username.toLowerCase().startsWith(searchQuery) ||
-                      user.firstName.toLowerCase().startsWith(searchQuery) ||
-                      user.lastName.toLowerCase().startsWith(searchQuery) ||
-                      user.email.toLowerCase().startsWith(searchQuery)
-                    );
-                  }
-                  // status filter
-                  if (newStatus) {
-                    filtered = filtered.filter(user => user.status === newStatus);
-                  }
-                  // role filter
-                  if (filters.role) {
-                    filtered = filtered.filter(user => user.role === filters.role);
-                  }
-                  
-                  setFilteredUsers(filtered);
-                  setPage(0);
-                }}
-                label="Status"
-                sx={{
-                  backgroundColor: '#ffd700',
-                  boxShadow: 'none',
-                  border: 'none',
-                  '& .MuiOutlinedInput-notchedOutline': { border: 'none' },
-                  '&:hover': {
-                    backgroundColor: '#ffcd00',
-                    boxShadow: '0px 2px 10px rgba(0, 0, 0, 0.1)',
-                  },
-                  '&.Mui-focused': {
-                    backgroundColor: '#e0e0e0',
-                    boxShadow: 'none',
-                  },
-                  '& .MuiSelect-icon': { color: '#8A252C' },
-                }}
-              >
-                <MenuItem value="">All</MenuItem>
-                <MenuItem value="Active">
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <CheckCircle sx={{ mr: 1, color: '#28a745' }} />
-                    <Typography variant="body2" sx={{ color: '#333' }}>Active</Typography>
-                  </Box>
-                </MenuItem>
-                <MenuItem value="Inactive">
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <AccessTime sx={{ mr: 1, color: '#ff9800' }} />
-                    <Typography variant="body2" sx={{ color: '#333' }}>Inactive</Typography>
-                  </Box>
-                </MenuItem>
-                <MenuItem value="Blocked">
-                  <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                    <Cancel sx={{ mr: 1, color: '#dc3545' }} />
-                    <Typography variant="body2" sx={{ color: '#333' }}>Blocked</Typography>
-                  </Box>
-                </MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
           {/* Role Dropdown */}
           <Grid item xs={12} sm={2} md={2}>
             <FormControl fullWidth size="small">
@@ -609,8 +538,28 @@ const UserManagement = () => {
             </FormControl>
           </Grid>
 
-          {/* Add User Button */}
-          <Grid item xs={12} sm={2} md={2} sx={{ display: 'flex', justifyContent: "right", marginLeft: "auto" }}>
+          {/* Action Buttons */}
+          <Grid item xs={12} sm={4} md={4} sx={{ display: 'flex', justifyContent: "right", marginLeft: "auto", gap: 2 }}>
+            {selectedUsers.length > 0 && (
+              <Button
+                variant="contained"
+                startIcon={<DeleteIcon sx={{ color: 'white' }} />}
+                onClick={handleBulkDelete}
+                sx={{ 
+                  bgcolor: '#d32f2f',
+                  '&:hover': { bgcolor: '#b71c1c' },
+                  '& .MuiButton-startIcon': {
+                    margin: 0,
+                    marginRight: '8px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    color: 'white'
+                  }
+                }}
+              >
+                DELETE SELECTED
+              </Button>
+            )}
             <Button
               variant="contained"
               startIcon={<AddIcon />}
@@ -636,66 +585,18 @@ const UserManagement = () => {
       {/* Summary Cards */}
       <Box sx={{ display: 'flex', gap: 2, my: 2 }}>
         <Card sx={{ p: 2, flex: 1, bgcolor: '#ffefc3' }}>
-          <Typography variant="subtitle1">Active</Typography>
+          <Typography variant="subtitle1">Users</Typography>
           <Typography variant="h4">
-            {users.filter(user => user.status === 'Active').length}
+            {users.filter(user => user.role === 'User').length}
           </Typography>
         </Card>
         <Card sx={{ p: 2, flex: 1, bgcolor: '#c8e6c9' }}>
-          <Typography variant="subtitle1">Inactive</Typography>
+          <Typography variant="subtitle1">Admins</Typography>
           <Typography variant="h4">
-            {users.filter(user => user.status === 'Inactive').length}
-          </Typography>
-        </Card>
-        <Card sx={{ p: 2, flex: 1, bgcolor: '#ffcdd2' }}>
-          <Typography variant="subtitle1">Blocked</Typography>
-          <Typography variant="h4">
-            {users.filter(user => user.status === 'Blocked').length}
+            {users.filter(user => user.role === 'Admin').length}
           </Typography>
         </Card>
       </Box>
-
-      {/* Select action buttons */}
-      {selectedUsers.length > 0 && (
-        <Box sx={{ display: 'flex', justifyContent: 'flex-start', mb: 2, gap: 1 }}>
-          <Button
-            variant="contained"
-            startIcon={<DeleteIcon sx={{ color: 'white' }} />}
-            onClick={handleBulkDelete}
-            sx={{ 
-              bgcolor: '#d32f2f',
-              '&:hover': { bgcolor: '#b71c1c' },
-              '& .MuiButton-startIcon': {
-                margin: 0,
-                marginRight: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                color: 'white'
-              }
-            }}
-          >
-            DELETE SELECTED
-          </Button>
-          <Button
-            variant="contained"
-            startIcon={<BlockIcon sx={{ color: 'white' }} />}
-            onClick={handleBulkBlock}
-            sx={{ 
-              bgcolor: '#ed6c02',
-              '&:hover': { bgcolor: '#e65100' },
-              '& .MuiButton-startIcon': {
-                margin: 0,
-                marginRight: '8px',
-                display: 'flex',
-                alignItems: 'center',
-                color: 'white'
-              }
-            }}
-          >
-            BLOCK/UNBLOCK SELECTED
-          </Button>
-        </Box>
-      )}
 
       {/* Table Container */}
       <TableContainer component={Paper} sx={{ mt: 3, height: 'calc(100vh - 250px)' }}>
@@ -763,24 +664,8 @@ const UserManagement = () => {
                   Email
                 </TableSortLabel>
               </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === 'contactNo'}
-                  direction={orderBy === 'contactNo' ? order : 'asc'}
-                  onClick={() => handleSort('contactNo')}
-                >
-                  Contact No
-                </TableSortLabel>
-              </TableCell>
-              <TableCell>
-                <TableSortLabel
-                  active={orderBy === 'role'}
-                  direction={orderBy === 'role' ? order : 'asc'}
-                  onClick={() => handleSort('role')}
-                >
-                  Role
-                </TableSortLabel>
-              </TableCell>
+              <TableCell>Contact No</TableCell>
+              <TableCell>Role</TableCell>
               <TableCell>Actions</TableCell>
             </TableRow>
           </TableHead>
@@ -865,10 +750,6 @@ const UserManagement = () => {
       >
         <MenuItem onClick={() => handleUserAction('edit', selectedUser)}>
           <EditIcon sx={{ mr: 1 }} /> Edit User
-        </MenuItem>
-        <MenuItem onClick={() => handleUserAction('block', selectedUser)}>
-          <BlockIcon sx={{ mr: 1 }} /> 
-          {selectedUser?.status === 'Blocked' ? 'Unblock User' : 'Block User'}
         </MenuItem>
         <MenuItem 
           onClick={() => handleUserAction('delete', selectedUser)} 
