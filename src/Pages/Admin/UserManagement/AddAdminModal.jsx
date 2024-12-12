@@ -50,6 +50,12 @@ const AddAdminModal = ({ open, onClose, onAdd }) => {
     
     if (!formData.contactNo.trim()) {
       newErrors.contactNo = 'Contact number is required';
+    } else if (!/^\d+$/.test(formData.contactNo)) {
+      newErrors.contactNo = 'Contact number must contain only numbers';
+    } else if (formData.contactNo.length !== 11) {
+      newErrors.contactNo = 'Contact number must be exactly 11 digits';
+    } else if (!formData.contactNo.startsWith('09')) {
+      newErrors.contactNo = 'Contact number must start with 09';
     }
     
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -112,15 +118,35 @@ const AddAdminModal = ({ open, onClose, onAdd }) => {
   };
 
   const handleChange = (field) => (event) => {
+    let value = event.target.value;
+    
+    // Special handling for contact number
+    if (field === 'contactNo') {
+      // Only allow numbers
+      value = value.replace(/[^\d]/g, '');
+      // Limit to 11 digits
+      value = value.slice(0, 11);
+      
+      // Validate starting with 09
+      if (value.length >= 2 && !value.startsWith('09')) {
+        setErrors(prev => ({
+          ...prev,
+          contactNo: 'Contact number must start with 09'
+        }));
+        return;
+      }
+    }
+
     setFormData(prev => ({
       ...prev,
-      [field]: event.target.value
+      [field]: value
     }));
+    
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
-        [field]: ''
-      }));
+        [field]: undefined
+      }));  
     }
   };
 

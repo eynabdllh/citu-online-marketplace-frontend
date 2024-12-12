@@ -73,8 +73,19 @@ const UpdateUserModal = ({ open, onClose, user, onSave }) => {
     
     // Special handling for contact number
     if (field === 'contactNo') {
+      // Only allow numbers
       value = value.replace(/[^\d]/g, '');
+      // Limit to 11 digits
       value = value.slice(0, 11);
+      
+      // Validate starting with 09
+      if (value.length >= 2 && !value.startsWith('09')) {
+        setErrors(prev => ({
+          ...prev,
+          contactNo: 'Contact number must start with 09'
+        }));
+        return;
+      }
     }
 
     setFormData(prev => ({
