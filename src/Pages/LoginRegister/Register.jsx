@@ -57,8 +57,20 @@ const Register = () => {
         }
 
         // Contact number validation
-        if (newSeller.contactNo.length < 11) {
-            setErrorMessage('Please enter a valid phone number.');
+        if (!newSeller.contactNo.trim()) {
+            setErrorMessage('Contact number is required');
+            setIsLoading(false);
+            return;
+        } else if (!/^\d+$/.test(newSeller.contactNo)) {
+            setErrorMessage('Contact number must contain only numbers');
+            setIsLoading(false);
+            return;
+        } else if (newSeller.contactNo.length !== 11) {
+            setErrorMessage('Contact number must be exactly 11 digits');
+            setIsLoading(false);
+            return;
+        } else if (!newSeller.contactNo.startsWith('09')) {
+            setErrorMessage('Contact number must start with 09');
             setIsLoading(false);
             return;
         }
@@ -86,6 +98,31 @@ const Register = () => {
         } finally {
             setIsLoading(false);
         }
+    };
+
+    const handleContactNoChange = (e) => {
+        const value = e.target.value;
+        
+        // Only allow numbers
+        if (!/^\d*$/.test(value)) {
+            setErrorMessage('Contact number must contain only numbers');
+            return;
+        }
+
+        // Must start with 09
+        if (value.length >= 2 && !value.startsWith('09')) {
+            setErrorMessage('Contact number must start with 09');
+            return;
+        }
+
+        // Must be exactly 11 digits
+        if (value.length > 11) {
+            setErrorMessage('Contact number must be exactly 11 digits');
+            return;
+        }
+
+        setErrorMessage('');
+        setNewSeller({ ...newSeller, contactNo: value });
     };
 
     return (
@@ -226,7 +263,9 @@ const Register = () => {
                             fullWidth
                             label="Contact No"
                             value={newSeller.contactNo}
-                            onChange={(e) => setNewSeller({ ...newSeller, contactNo: e.target.value })}
+                            onChange={handleContactNoChange}
+                            error={!!errorMessage && errorMessage.includes('Contact number')}
+                            helperText={errorMessage && errorMessage.includes('Contact number') ? errorMessage : ''}
                             sx={{ mb: 2 }}
                             InputProps={{
                                 startAdornment: (

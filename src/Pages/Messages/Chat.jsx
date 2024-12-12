@@ -481,7 +481,7 @@ const Chat = () => {
     };
 
     const handleViewProfile = (username) => {
-        navigate(`/profile/${username}`);
+        navigate(`/profile`); //navigate(`/profile/${username}`);
         setHeaderMenuAnchor(null);
     };
 

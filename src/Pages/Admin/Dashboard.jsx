@@ -38,92 +38,90 @@ ChartJS.register(
   Legend
 );
 
-// mock data 
-const mockData = {
-  stats: {
-    totalUsers: 7,
-    },
-  recentlySold: [
-    {
-      productCode: 'PRD001',
-      productName: 'Gaming Laptop',
-      sellerUsername: 'juan_dela_cruz',
-      buyerUsername: 'maria_santos',
-      category: 'Electronics',
-      price: 75000,
-      soldDate: '2024-03-20',
-      imagePath: 'https://picsum.photos/200/300'
-    },
-    {
-      productCode: 'PRD006',
-      productName: 'Wireless Mouse',
-      sellerUsername: 'pedro_reyes',
-      buyerUsername: 'rosa_cruz',
-      category: 'Accessories',
-      price: 1200,
-      soldDate: '2024-03-19',
-      imagePath: 'https://picsum.photos/200/305'
-    },
-    {
-      productCode: 'PRD008',
-      productName: 'Headphones',
-      sellerUsername: 'maria_santos',
-      buyerUsername: 'juan_dela_cruz',
-      category: 'Electronics',
-      price: 3500,
-      soldDate: '2024-03-18',
-      imagePath: 'https://picsum.photos/200/306'
-    },
-    {
-      productCode: 'PRD002',
-      productName: 'Mechanical Keyboard',
-      sellerUsername: 'carlo_garcia',
-      buyerUsername: 'pedro_reyes',
-      category: 'Accessories',
-      price: 5500,
-      soldDate: '2024-03-17',
-      imagePath: 'https://picsum.photos/200/301'
-    },
-    {
-      productCode: 'PRD007',
-      productName: 'Gaming Chair',
-      sellerUsername: 'rosa_cruz',
-      buyerUsername: 'maria_santos',
-      category: 'Furniture',
-      price: 15000,
-      soldDate: '2024-03-16',
-      imagePath: 'https://picsum.photos/200/306'
-    },
-    {
-      productCode: 'PRD009',
-      productName: 'Gaming Monitor',
-      sellerUsername: 'juan_dela_cruz',
-      buyerUsername: 'carlo_garcia',
-      category: 'Electronics',
-      price: 25000,
-      soldDate: '2024-03-15',
-      imagePath: 'https://picsum.photos/200/308'
-    }
-  ]
-};
-
 const Dashboard = () => {
   const [dashboardData, setDashboardData] = useState({
     stats: {
       totalUsers: 7, 
     },
     recentProducts: [], 
-    recentlySold: mockData.recentlySold 
+    recentlySold: [
+      {
+        productCode: 'PRD001',
+        productName: 'Gaming Laptop',
+        sellerUsername: 'juan_dela_cruz',
+        buyerUsername: 'maria_santos',
+        category: 'Electronics',
+        price: 75000,
+        soldDate: '2024-03-20',
+        imagePath: 'https://picsum.photos/200/300'
+      },
+      {
+        productCode: 'PRD006',
+        productName: 'Wireless Mouse',
+        sellerUsername: 'pedro_reyes',
+        buyerUsername: 'rosa_cruz',
+        category: 'Accessories',
+        price: 1200,
+        soldDate: '2024-03-19',
+        imagePath: 'https://picsum.photos/200/305'
+      },
+      {
+        productCode: 'PRD008',
+        productName: 'Headphones',
+        sellerUsername: 'maria_santos',
+        buyerUsername: 'juan_dela_cruz',
+        category: 'Electronics',
+        price: 3500,
+        soldDate: '2024-03-18',
+        imagePath: 'https://picsum.photos/200/306'
+      },
+      {
+        productCode: 'PRD002',
+        productName: 'Mechanical Keyboard',
+        sellerUsername: 'carlo_garcia',
+        buyerUsername: 'pedro_reyes',
+        category: 'Accessories',
+        price: 5500,
+        soldDate: '2024-03-17',
+        imagePath: 'https://picsum.photos/200/301'
+      },
+      {
+        productCode: 'PRD007',
+        productName: 'Gaming Chair',
+        sellerUsername: 'rosa_cruz',
+        buyerUsername: 'maria_santos',
+        category: 'Furniture',
+        price: 15000,
+        soldDate: '2024-03-16',
+        imagePath: 'https://picsum.photos/200/306'
+      },
+      {
+        productCode: 'PRD009',
+        productName: 'Gaming Monitor',
+        sellerUsername: 'juan_dela_cruz',
+        buyerUsername: 'carlo_garcia',
+        category: 'Electronics',
+        price: 25000,
+        soldDate: '2024-03-15',
+        imagePath: 'https://picsum.photos/200/308'
+      }
+    ]
   });
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
+        // Fetch users data (same as UserManagement.jsx)
+        const [adminsResponse, sellersResponse] = await Promise.all([
+          axios.get('http://localhost:8080/api/admin/getAllAdmins'),
+          axios.get('http://localhost:8080/api/admin/sellers')
+        ]);
+
+        const totalUsers = adminsResponse.data.length + sellersResponse.data.length;
+
         // Fetch pending approvals data
         const approvalsResponse = await axios.get('http://localhost:8080/api/product/pendingApproval');
         const approvals = approvalsResponse.data;
-
-        console.log('Approvals data:', approvals); 
 
         // Calculate stats
         const totalProducts = approvals.length;
@@ -150,7 +148,7 @@ const Dashboard = () => {
         setDashboardData(prev => ({
           ...prev,
           stats: {
-            ...prev.stats,
+            totalUsers,
             totalProducts,
             pendingApprovals,
             approvedProducts

@@ -204,24 +204,6 @@ const AdminLogin = () => {
                     >
                         Login
                     </Button>
-                    <Typography variant="body2" sx={{ mt: 2 }}>
-                        Don't have an account?{' '}
-                        <Link
-                            component={RouterLink}
-                            to="/register"
-                            underline="none"
-                            sx={{
-                                fontWeight: 'bold',
-                                color: '#8A252C',
-                                textDecoration: 'none',
-                                '&:hover': {
-                                    textDecoration: 'underline',
-                                },
-                            }}
-                        >
-                            Sign up for free
-                        </Link>
-                    </Typography>
                 </Paper>
             </Grid>
         </Grid>
