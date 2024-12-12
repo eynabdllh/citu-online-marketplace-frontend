@@ -40,7 +40,10 @@ function HomePage() {
     const fetchProducts = async () => {
       try {
         const response = await axios.get(`http://localhost:8080/api/product/getAllProducts/${loggedInUser}`);
-        setProducts(Array.isArray(response.data) ? response.data : []);
+        const approvedProducts = Array.isArray(response.data) 
+          ? response.data.filter(product => product.status && product.status.toLowerCase() === 'approved')
+          : [];
+        setProducts(approvedProducts);
       } catch (error) {
         console.error('Error fetching products:', error);
         setProducts([]);
@@ -155,6 +158,16 @@ function HomePage() {
             },
             zIndex: 2,
           }}
+          ref={(el) => {
+            if (el) {
+              el.addEventListener('wheel', (e) => {
+                if (e.deltaY !== 0) {
+                  e.preventDefault();
+                  el.scrollLeft += e.deltaY;
+                }
+              }, { passive: false });
+            }
+          }}
         >
           <Box
             sx={{
@@ -209,7 +222,18 @@ function HomePage() {
             gap: 2,
             p: 2,
             '&::-webkit-scrollbar': {
-              display: 'none'
+              height: '8px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: 'rgba(139, 0, 0, 0.5)',
+              borderRadius: '4px',
+              '&:hover': {
+                background: 'rgba(139, 0, 0, 0.7)',
+              },
             },
             msOverflowStyle: 'none',
             scrollbarWidth: 'none',

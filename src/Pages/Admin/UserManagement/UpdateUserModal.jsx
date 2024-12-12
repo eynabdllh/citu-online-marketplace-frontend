@@ -54,15 +54,34 @@ const UpdateUserModal = ({ open, onClose, user, onSave }) => {
       newErrors.email = 'Invalid email format';
     }
 
+    if (formData.contactNo && formData.contactNo.trim()) {
+      if (!/^\d+$/.test(formData.contactNo)) {
+        newErrors.contactNo = 'Contact number must contain only numbers';
+      } else if (formData.contactNo.length !== 11) {
+        newErrors.contactNo = 'Contact number must be exactly 11 digits';
+      } else if (!formData.contactNo.startsWith('09')) {
+        newErrors.contactNo = 'Contact number must start with 09';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleChange = (field) => (event) => {
+    let value = event.target.value;
+    
+    // Special handling for contact number
+    if (field === 'contactNo') {
+      value = value.replace(/[^\d]/g, '');
+      value = value.slice(0, 11);
+    }
+
     setFormData(prev => ({
       ...prev,
-      [field]: event.target.value
+      [field]: value
     }));
+    
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
@@ -178,6 +197,8 @@ const UpdateUserModal = ({ open, onClose, user, onSave }) => {
                 label="Contact Number"
                 value={formData.contactNo}
                 onChange={handleChange('contactNo')}
+                error={!!errors.contactNo}
+                helperText={errors.contactNo}
               />
             </Grid>
 
