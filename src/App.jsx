@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, useLocation, Navigate, useNavig
 import SellPage from './Pages/Sell/SellPage';
 import AddProductForm from './Pages/Sell/AddProductForm';
 import ViewProduct from './Pages/Sell/ViewProduct';
+import SellerProfile from './Pages/Sell/SellerProfile';
 import UpdateProductForm from './Pages/Sell/UpdateProductForm';
 import MarketplaceHeader from './components/MarketplaceHeader';
 import HomePage from './Pages/Homepage/HomePage';
@@ -120,6 +121,7 @@ const App = () => {
             <Route path="/buy" element={<ProtectedUserRoute><BuyPage /></ProtectedUserRoute>} />
             <Route path="/sell" element={<ProtectedUserRoute><SellPage /></ProtectedUserRoute>} />
             <Route path="/profile" element={<ProtectedUserRoute><Profile /></ProtectedUserRoute>} />
+            <Route path="/profile/:username" element={<ProtectedUserRoute><SellerProfile /></ProtectedUserRoute>} />
             <Route path="/likes" element={<ProtectedUserRoute><Likes /></ProtectedUserRoute>} />
             <Route path="/account" element={<ProtectedUserRoute><Settings /></ProtectedUserRoute>} />
             <Route path="/message" element={<ProtectedUserRoute><Message /></ProtectedUserRoute>} />
