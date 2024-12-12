@@ -57,8 +57,20 @@ const Register = () => {
         }
 
         // Contact number validation
-        if (newSeller.contactNo.length < 11) {
-            setErrorMessage('Please enter a valid phone number.');
+        if (!newSeller.contactNo.trim()) {
+            setErrorMessage('Contact number is required');
+            setIsLoading(false);
+            return;
+        } else if (!/^\d+$/.test(newSeller.contactNo)) {
+            setErrorMessage('Contact number must contain only numbers');
+            setIsLoading(false);
+            return;
+        } else if (newSeller.contactNo.length !== 11) {
+            setErrorMessage('Contact number must be exactly 11 digits');
+            setIsLoading(false);
+            return;
+        } else if (!newSeller.contactNo.startsWith('09')) {
+            setErrorMessage('Contact number must start with 09');
             setIsLoading(false);
             return;
         }
