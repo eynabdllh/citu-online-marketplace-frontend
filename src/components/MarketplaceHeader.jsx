@@ -19,7 +19,7 @@ const MarketplaceHeader = () => {
   const location = useLocation();
   const [anchor, setAnchor] = React.useState(null);
   const open = Boolean(anchor);
-  const firstName = sessionStorage.getItem('firstName');
+  const username = sessionStorage.getItem('username');
   const [profilePhoto, setProfilePhoto] = useState(''); 
   const [notificationAnchor, setNotificationAnchor] = useState(null);
   const [notifications, setNotifications] = useState([
@@ -225,7 +225,7 @@ const MarketplaceHeader = () => {
           <IconButton edge="end" color="black" aria-label="profile" onClick={handleClick} >
             <Avatar src={profilePhoto} />
             <Typography variant="subtitle1" sx={{ ml: 1 }}>
-              {firstName}
+              {username}
             </Typography>
           </IconButton>
           <IconButton edge="end" color="black"  onClick={handleLikesClick} sx={{marginLeft: "25px"}}>

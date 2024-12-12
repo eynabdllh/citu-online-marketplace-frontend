@@ -189,7 +189,7 @@ const AddProductForm = ({ open, handleClose }) => {
                 }}
               >
                 <MenuItem value="" disabled>Select status</MenuItem>
-                <MenuItem value="Available">Available</MenuItem>
+                <MenuItem value="Available">Pending</MenuItem>
               </Select>
             </FormControl>
             <FormControl fullWidth margin="normal">

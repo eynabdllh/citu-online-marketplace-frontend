@@ -22,7 +22,7 @@ const createData = (productName, user, productCode, category, status, image) => 
   const formatStatus = (status) => {
     if (status === 'approved') return 'Approved';
     if (status === 'rejected') return 'Rejected';
-    if (status === 'Available') return 'Available';
+    if (status === 'Available') return 'Pending';
     return status;
   };
 
@@ -100,7 +100,7 @@ const ProductApproval = () => {
   const updateSummary = (data) => {
     const approved = data.filter(p => p.status === 'Approved').length;
     const rejected = data.filter(p => p.status === 'Rejected').length;
-    const pending = data.filter(p => p.status === 'Available').length;
+    const pending = data.filter(p => p.status === 'Pending').length;
     setSummary({ approved, rejected, pending });
   };
 
@@ -201,7 +201,7 @@ const ProductApproval = () => {
     };
 
     switch (status) {
-      case 'Available':
+      case 'Pending':
         return {
           ...props,
           sx: {
