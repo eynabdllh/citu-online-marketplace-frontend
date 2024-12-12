@@ -43,7 +43,6 @@ const BuyPage = () => {
   const searchParams = new URLSearchParams(location.search);
   const searchQuery = searchParams.get('search') || '';
   const categoryQuery = searchParams.get('category') || '';
-
   const [allProducts, setAllProducts] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -139,12 +138,12 @@ const BuyPage = () => {
       
       try {
         const response = await axios.get(`http://localhost:8080/api/product/getAllProducts/${loggedInUser}`);
-        console.log("API Response: ", response.data); 
-
-        const approvedProducts = response.data.filter(product => product.status && product.status.toLowerCase() === 'approved');
-        
-        setAllProducts(approvedProducts);
-        setFilteredProducts(approvedProducts);
+        if (response.status === 200) {
+          const approvedProducts = response.data.filter(product => product.status && product.status.toLowerCase() === 'approved');
+          const { sellerPhoto } = response.data;
+          setAllProducts(approvedProducts);
+          setFilteredProducts(approvedProducts);
+        }
       } catch (error) {
         console.error("Error fetching all products:", error);
       } finally {
@@ -375,7 +374,10 @@ const BuyPage = () => {
                 }}
               >
                 <Box sx={{ display: 'flex', alignItems: 'center', margin: '5px', color: 'gray', padding: '10px' }}>
-                  <Avatar />
+                  <Avatar
+                    src={`http://localhost:8080/profile-images/${product.sellerPhoto}`} // Construct full URL
+                    alt={product.sellerUsername}
+                  />
                   <Box sx={{ ml: 1 }}>
                     <Typography variant="subtitle1" color="black" sx={{ lineHeight: 1, mb: 0, fontWeight: 500 }}>
                       {product.sellerUsername}

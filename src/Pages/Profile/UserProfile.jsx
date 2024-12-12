@@ -49,6 +49,7 @@ const UserProfile = () => {
             const username = sessionStorage.getItem('username');
             try {
                 const response = await axios.get(`http://localhost:8080/api/seller/getSellerRecord/${username}`);
+                console.log("Response: ", response.data)
                 if (response.status === 200) {
                     const { firstName, email, profilePhoto } = response.data;
 
