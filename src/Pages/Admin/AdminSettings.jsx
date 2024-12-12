@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Box, Typography, Avatar, Button, TextField, Paper, Snackbar, Alert } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import axios from 'axios';
+import ToastManager from '../../components/ToastManager';
 
 const AdminSettings = () => {
   const [username, setUsername] = useState(sessionStorage.getItem('userName') || '');
@@ -16,7 +17,7 @@ const AdminSettings = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [notification, setNotification] = useState({ open: false, message: '', type: 'success' });
+  const [toasts, setToasts] = useState([]);
 
   const toggleEditMode = () => {
     setEditMode((prev) => !prev);
@@ -32,7 +33,7 @@ const AdminSettings = () => {
 
   const handleUploadProfileImage = async () => {
     if (!profileImage) {
-      setNotification({ open: true, message: 'No profile image selected.', type: 'warning' });
+      showToast('No profile image selected.', 'warning');
       return;
     }
 
@@ -46,21 +47,17 @@ const AdminSettings = () => {
       });
 
       if (response.status === 200) {
-        setNotification({ open: true, message: 'Profile picture updated successfully!', type: 'success' });
+        showToast('Profile picture updated successfully!', 'success');
         setPreviewImage(response.data.fileName);
       }
     } catch (error) {
       console.error('Error uploading profile photo: ', error);
-      setNotification({ open: true, message: 'Failed to upload profile photo.', type: 'error' });
+      showToast('Failed to upload profile photo.', 'error');
     }
   };
 
   const handleSave = async () => {
-    setNotification({
-      open: true,
-      message: 'Are you sure you want to update your account?',
-      type: 'info'
-    });
+    showToast('Are you sure you want to update your account?', 'info');
 
     try {
       const updatedData = { firstName, lastName, email, contactNo };
@@ -74,27 +71,23 @@ const AdminSettings = () => {
         sessionStorage.setItem('contactNo', contactNo);
 
         setEditMode(false);
-        setNotification({ open: true, message: 'Admin record updated successfully!', type: 'success' });
+        showToast('Admin record updated successfully!', 'success');
       }
     } catch (error) {
       console.error('Error updating user data:', error);
-      setNotification({ open: true, message: 'Failed to update admin record.', type: 'error' });
+      showToast('Failed to update admin record.', 'error');
     }
   };
 
   const handleDeleteAccount = async () => {
-    setNotification({
-      open: true,
-      message: 'Are you sure you want to delete your account? This action cannot be undone.',
-      type: 'info'
-    });
+    showToast('Are you sure you want to delete your account? This action cannot be undone.', 'info');
 
     const username = sessionStorage.getItem('username');
     try {
       const response = await axios.delete(`http://localhost:8080/api/admin/deleteAdminRecord/${username}`);
 
       if (response.status === 200) {
-        setNotification({ open: true, message: response.data, type: 'success' });
+        showToast(response.data, 'success');
         sessionStorage.clear();
         window.location.href = '/';
       } else {
@@ -102,8 +95,18 @@ const AdminSettings = () => {
       }
     } catch (error) {
       console.error('Error deleting user account:', error);
-      setNotification({ open: true, message: 'Failed to delete account.', type: 'error' });
+      showToast('Failed to delete account.', 'error');
     }
+  };
+
+  const showToast = (message, severity = 'success') => {
+    const newToast = {
+      id: Date.now(),
+      message,
+      severity,
+      open: true
+    };
+    setToasts(current => [newToast, ...current].slice(0, 2));
   };
 
   useEffect(() => {
@@ -255,19 +258,13 @@ const AdminSettings = () => {
         </Button>
       </Paper>
 
-      <Snackbar
-        open={notification.open}
-        autoHideDuration={6000}
-        onClose={() => setNotification({ ...notification, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert
-          severity={notification.type}
-          sx={{ width: '100%' }}
-        >
-          {notification.message}
-        </Alert>
-      </Snackbar>
+      <ToastManager toasts={toasts} handleClose={(id) => {
+        setToasts(current => 
+          current.map(toast => 
+            toast.id === id ? { ...toast, open: false } : toast
+          )
+        );
+      }} />
     </Box>
   );
 };

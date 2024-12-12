@@ -124,28 +124,57 @@ const ViewforSeller = () => {
 
   return (
     <Box sx={{ padding: '20px', justifyContent: 'center', display: 'flex', flexDirection: 'column' }}>
-      <Card sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, borderRadius: '8px', boxShadow: 3, width: '90%', height: '75vh', margin: '0 auto' }}>
+      <Card sx={{ 
+        display: 'flex', 
+        flexDirection: { xs: 'column', md: 'row' }, 
+        borderRadius: '8px', 
+        boxShadow: 3, 
+        width: { xs: '90%', md: '80%' },
+        minHeight: { xs: 'auto', md: '75vh' },
+        margin: '0 auto',
+        overflow: 'hidden'
+      }}>
         {/* Product Image */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={6} sx={{ 
+          position: 'relative',
+          minHeight: { xs: '300px', sm: '400px', md: '600px' },
+          maxHeight: { xs: '400px', md: '600px' },
+          width: '60%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: '#f5f5f5'
+        }}>
           <CardMedia
             component="img"
             alt={product.name}
             image={`http://localhost:8080/${product.imagePath}`} 
             sx={{
-              width: '700px',
-              height: '75vh', 
+              width: '100%',
+              height: '100%',
               objectFit: 'cover',
-              borderRadius: '8px 0px 0px 8px',
-              boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
             }}
           />
         </Grid>
 
         {/* Product Details */}
         <Grid item xs={12} md={6}>
-          <CardContent sx={{ padding: '16px', marginLeft: '70px', marginTop: '30px' }}>
-            <Typography variant="h3" sx={{ fontWeight: 'bold' }}>{product.name}</Typography>
-            <Typography variant="h5" color="primary" sx={{ fontWeight: 'bold', marginLeft: '7px' }}>
+          <CardContent sx={{ 
+            padding: { xs: '24px', md: '32px' },
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            maxWidth: '600px',
+            margin: '0 auto'
+          }}>
+            <Typography variant="h3" sx={{ 
+              fontWeight: 'bold',
+              fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' }
+            }}>
+              {product.name}
+            </Typography>
+
+            <Typography variant="h5" color="primary" sx={{ fontWeight: 'bold', marginLeft: '7px', }}>
               PHP {product.buyPrice.toFixed(2)}
             </Typography>
 
@@ -203,7 +232,14 @@ const ViewforSeller = () => {
             </Box>
 
             {/* Buttons */}
-            <Box sx={{ display: 'flex', gap: '20px', marginTop: '20%', marginBottom: '36px', flexWrap: 'wrap' }}>
+            <Box sx={{ 
+              display: 'flex', 
+              gap: '20px', 
+              mt: 'auto',
+              mb: 'auto',
+              flexWrap: 'wrap',
+              justifyContent: { xs: 'center', md: 'flex-start' }
+            }}>
               <Button variant="contained" sx={{ bgcolor: '#89343b' }} onClick={handleUpdate}>
                 Update
               </Button>

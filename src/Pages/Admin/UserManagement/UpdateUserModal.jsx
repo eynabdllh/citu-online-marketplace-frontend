@@ -12,6 +12,7 @@ import {
   Alert
 } from '@mui/material';
 import axios from 'axios';
+import ToastManager from '../../../components/ToastManager';
 
 const UpdateUserModal = ({ open, onClose, user, onSave }) => {
   const [formData, setFormData] = useState({
@@ -22,6 +23,7 @@ const UpdateUserModal = ({ open, onClose, user, onSave }) => {
   });
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
+  const [toasts, setToasts] = useState([]);
 
   useEffect(() => {
     if (user) {
@@ -106,6 +108,16 @@ const UpdateUserModal = ({ open, onClose, user, onSave }) => {
       console.error('Error updating user:', error);
       setSubmitError(error.response?.data?.message || 'Failed to update user. Please try again.');
     }
+  };
+
+  const showToast = (message, severity = 'success') => {
+    const newToast = {
+      id: Date.now(),
+      message,
+      severity,
+      open: true
+    };
+    setToasts(current => [newToast, ...current].slice(0, 2));
   };
 
   if (!user) return null;
@@ -215,6 +227,13 @@ const UpdateUserModal = ({ open, onClose, user, onSave }) => {
           Update
         </Button>
       </DialogActions>
+      <ToastManager toasts={toasts} handleClose={(id) => {
+        setToasts(current => 
+          current.map(toast => 
+            toast.id === id ? { ...toast, open: false } : toast
+          )
+        );
+      }} />
     </Dialog>
   );
 };

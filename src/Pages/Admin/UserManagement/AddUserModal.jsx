@@ -11,6 +11,7 @@ import {
   Alert
 } from '@mui/material';
 import axios from 'axios';
+import ToastManager from '../../../components/ToastManager';
 
 const AddUserModal = ({ open, onClose, onAdd }) => {
   const [formData, setFormData] = useState({
@@ -25,6 +26,7 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
 
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
+  const [toasts, setToasts] = useState([]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -95,9 +97,11 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
           email: ''
         });
         setErrors({});
+        showToast('Seller added successfully', 'success');
       }
     } catch (error) {
       setSubmitError(error.response?.data?.message || 'Failed to add seller. Please try again.');
+      showToast(error.response?.data?.message || 'Failed to add seller. Please try again.', 'error');
     }
   };
 
@@ -112,6 +116,16 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
         [field]: ''
       }));
     }
+  };
+
+  const showToast = (message, severity = 'success') => {
+    const newToast = {
+      id: Date.now(),
+      message,
+      severity,
+      open: true
+    };
+    setToasts(current => [newToast, ...current].slice(0, 2));
   };
 
   return (
@@ -235,6 +249,13 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
           Add Seller
         </Button>
       </DialogActions>
+      <ToastManager toasts={toasts} handleClose={(id) => {
+        setToasts(current => 
+          current.map(toast => 
+            toast.id === id ? { ...toast, open: false } : toast
+          )
+        );
+      }} />
     </Dialog>
   );
 };

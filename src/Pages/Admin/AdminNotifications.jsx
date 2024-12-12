@@ -42,42 +42,42 @@ const AdminNotifications = () => {
       read: false 
     },
     { 
-      id: 1, 
+      id: 4, 
       title: 'Product Approval Request',
       content: 'New product "iPhone 15 Pro" needs your approval',
       time: '1 hour ago', 
       read: false 
     },
     { 
-      id: 2, 
+      id: 5, 
       title: 'User Report',
       content: 'A user reported an issue with order #12345',
       time: '2 hours ago', 
       read: false 
     },
     { 
-      id: 3, 
+      id: 6, 
       title: 'System Update',
       content: 'System maintenance and updates have been completed successfully',
       time: '3 hours ago', 
       read: false 
     },
     { 
-      id: 1, 
+      id: 7, 
       title: 'Product Approval Request',
       content: 'New product "iPhone 15 Pro" needs your approval',
       time: '3 hours ago', 
       read: true 
     },
     { 
-      id: 2, 
+      id: 8, 
       title: 'User Report',
       content: 'A user reported an issue with order #12345',
       time: '4 hours ago', 
       read: true 
     },
     { 
-      id: 3, 
+      id: 9, 
       title: 'System Update',
       content: 'System maintenance and updates have been completed successfully',
       time: '4 hours ago', 

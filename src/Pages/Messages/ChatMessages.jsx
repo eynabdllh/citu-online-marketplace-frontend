@@ -12,16 +12,22 @@ const ChatMessages = ({ messages, selectedUser }) => {
     scrollToBottom();
   }, [messages]); // Scroll when messages update
 
+  if (!messages || !selectedUser) {
+    return null;
+  }
+
   return (
     <Box flex="1" overflow="auto" padding="16px" display="flex" flexDirection="column" bgcolor="#f9f9f9">
-      {messages && selectedUser && messages
-        .filter(
-          (msg) =>
-            msg.sender === selectedUser?.username || msg.recipient === selectedUser?.username
+      {messages
+        .filter(msg => 
+          msg?.sender === selectedUser?.username || 
+          msg?.recipient === selectedUser?.username
         )
         .map((conversation) => (
-          conversation?.messages ? 
-            conversation.messages.map((msg, index) => (
+          conversation?.messages?.map((msg, index) => {
+            if (!msg?.sender) return null;
+            
+            return (
               <Box
                 key={`${conversation.id}-${index}`}
                 display="flex"
@@ -35,7 +41,7 @@ const ChatMessages = ({ messages, selectedUser }) => {
                     bgcolor: msg.sender === selectedUser?.username ? "#ffb74d": "#64b5f6",
                   }}
                 >
-                  {msg.sender.charAt(0).toUpperCase()}
+                  {msg.sender?.charAt(0)?.toUpperCase() || '?'}
                 </Avatar>
                 <Box
                   bgcolor={msg.sender === selectedUser?.username ? "#f5f5f5": "#e3f2fd"}
@@ -67,8 +73,8 @@ const ChatMessages = ({ messages, selectedUser }) => {
                   </Typography>
                 </Box>
               </Box>
-            ))
-          : null
+            );
+          })
         ))}
       <div ref={messagesEndRef} />
     </Box>

@@ -804,19 +804,10 @@ const UserManagement = () => {
         autoHideDuration={3000}
         onClose={() => setToast({ ...toast, open: false })}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        sx={{ 
-          position: 'fixed',
-          bottom: 16,
-          right: 16
-        }}
+        TransitionProps={{ enter: true }}
+        sx={{ maxWidth: '100%' }}
       >
-        <Alert 
-          severity={toast.severity} 
-          sx={{ 
-            width: '100%',
-            boxShadow: 3
-          }}
-        >
+        <Alert severity={toast.severity} sx={{ width: '100%' }}>
           {toast.message}
         </Alert>
       </Snackbar>
