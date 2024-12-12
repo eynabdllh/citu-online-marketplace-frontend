@@ -12,6 +12,7 @@ import {
   Alert
 } from '@mui/material';
 import axios from 'axios';
+import ToastManager from '../../../components/ToastManager';
 
 const UpdateUserModal = ({ open, onClose, user, onSave }) => {
   const [formData, setFormData] = useState({
@@ -22,6 +23,7 @@ const UpdateUserModal = ({ open, onClose, user, onSave }) => {
   });
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
+  const [toasts, setToasts] = useState([]);
 
   useEffect(() => {
     if (user) {
@@ -52,15 +54,34 @@ const UpdateUserModal = ({ open, onClose, user, onSave }) => {
       newErrors.email = 'Invalid email format';
     }
 
+    if (formData.contactNo && formData.contactNo.trim()) {
+      if (!/^\d+$/.test(formData.contactNo)) {
+        newErrors.contactNo = 'Contact number must contain only numbers';
+      } else if (formData.contactNo.length !== 11) {
+        newErrors.contactNo = 'Contact number must be exactly 11 digits';
+      } else if (!formData.contactNo.startsWith('09')) {
+        newErrors.contactNo = 'Contact number must start with 09';
+      }
+    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleChange = (field) => (event) => {
+    let value = event.target.value;
+    
+    // Special handling for contact number
+    if (field === 'contactNo') {
+      value = value.replace(/[^\d]/g, '');
+      value = value.slice(0, 11);
+    }
+
     setFormData(prev => ({
       ...prev,
-      [field]: event.target.value
+      [field]: value
     }));
+    
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
@@ -106,6 +127,16 @@ const UpdateUserModal = ({ open, onClose, user, onSave }) => {
       console.error('Error updating user:', error);
       setSubmitError(error.response?.data?.message || 'Failed to update user. Please try again.');
     }
+  };
+
+  const showToast = (message, severity = 'success') => {
+    const newToast = {
+      id: Date.now(),
+      message,
+      severity,
+      open: true
+    };
+    setToasts(current => [newToast, ...current].slice(0, 2));
   };
 
   if (!user) return null;
@@ -166,6 +197,8 @@ const UpdateUserModal = ({ open, onClose, user, onSave }) => {
                 label="Contact Number"
                 value={formData.contactNo}
                 onChange={handleChange('contactNo')}
+                error={!!errors.contactNo}
+                helperText={errors.contactNo}
               />
             </Grid>
 
@@ -215,6 +248,13 @@ const UpdateUserModal = ({ open, onClose, user, onSave }) => {
           Update
         </Button>
       </DialogActions>
+      <ToastManager toasts={toasts} handleClose={(id) => {
+        setToasts(current => 
+          current.map(toast => 
+            toast.id === id ? { ...toast, open: false } : toast
+          )
+        );
+      }} />
     </Dialog>
   );
 };

@@ -213,10 +213,12 @@ const Sidebar = ({
                     return (
                         <ListItem
                             key={user.id}
-                            button
                             onClick={() => showCheckboxes ? null : handleUserClick(user)}
                             selected={selectedUser?.id === user.id}
-                            sx={{ bgcolor: selectedUser?.id === user.id ? "#f5f5f5" : "transparent" }}
+                            sx={{ 
+                                bgcolor: selectedUser?.id === user.id ? "#f5f5f5" : "transparent",
+                                cursor: 'pointer'
+                            }}
                         >
                             {showCheckboxes && (
                                 <Checkbox

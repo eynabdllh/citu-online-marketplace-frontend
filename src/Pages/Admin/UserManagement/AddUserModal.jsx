@@ -11,6 +11,7 @@ import {
   Alert
 } from '@mui/material';
 import axios from 'axios';
+import ToastManager from '../../../components/ToastManager';
 
 const AddUserModal = ({ open, onClose, onAdd }) => {
   const [formData, setFormData] = useState({
@@ -25,6 +26,7 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
 
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
+  const [toasts, setToasts] = useState([]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -53,6 +55,12 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
     
     if (!formData.contactNo.trim()) {
       newErrors.contactNo = 'Contact number is required';
+    } else if (!/^\d+$/.test(formData.contactNo)) {
+      newErrors.contactNo = 'Contact number must contain only numbers';
+    } else if (formData.contactNo.length !== 11) {
+      newErrors.contactNo = 'Contact number must be exactly 11 digits';
+    } else if (!formData.contactNo.startsWith('09')) {
+      newErrors.contactNo = 'Contact number must start with 09';
     }
     
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -95,23 +103,46 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
           email: ''
         });
         setErrors({});
+        showToast('Seller added successfully', 'success');
       }
     } catch (error) {
       setSubmitError(error.response?.data?.message || 'Failed to add seller. Please try again.');
+      showToast(error.response?.data?.message || 'Failed to add seller. Please try again.', 'error');
     }
   };
 
   const handleChange = (field) => (event) => {
+    let value = event.target.value;
+    
+    // Special handling for contact number
+    if (field === 'contactNo') {
+      // Only allow numbers
+      value = value.replace(/[^\d]/g, '');
+      // Limit to 11 digits
+      value = value.slice(0, 11);
+    }
+
     setFormData(prev => ({
       ...prev,
-      [field]: event.target.value
+      [field]: value
     }));
+    
     if (errors[field]) {
       setErrors(prev => ({
         ...prev,
         [field]: ''
       }));
     }
+  };
+
+  const showToast = (message, severity = 'success') => {
+    const newToast = {
+      id: Date.now(),
+      message,
+      severity,
+      open: true
+    };
+    setToasts(current => [newToast, ...current].slice(0, 2));
   };
 
   return (
@@ -235,6 +266,13 @@ const AddUserModal = ({ open, onClose, onAdd }) => {
           Add Seller
         </Button>
       </DialogActions>
+      <ToastManager toasts={toasts} handleClose={(id) => {
+        setToasts(current => 
+          current.map(toast => 
+            toast.id === id ? { ...toast, open: false } : toast
+          )
+        );
+      }} />
     </Dialog>
   );
 };

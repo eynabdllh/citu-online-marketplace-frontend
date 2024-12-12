@@ -11,6 +11,7 @@ import {
   Alert
 } from '@mui/material';
 import axios from 'axios';
+import ToastManager from '../../../components/ToastManager';
 
 const AddAdminModal = ({ open, onClose, onAdd }) => {
   const [formData, setFormData] = useState({
@@ -24,6 +25,7 @@ const AddAdminModal = ({ open, onClose, onAdd }) => {
 
   const [errors, setErrors] = useState({});
   const [submitError, setSubmitError] = useState('');
+  const [toasts, setToasts] = useState([]);
 
   const validateForm = () => {
     const newErrors = {};
@@ -120,6 +122,16 @@ const AddAdminModal = ({ open, onClose, onAdd }) => {
         [field]: ''
       }));
     }
+  };
+
+  const showToast = (message, severity = 'success') => {
+    const newToast = {
+      id: Date.now(),
+      message,
+      severity,
+      open: true
+    };
+    setToasts(current => [newToast, ...current].slice(0, 2));
   };
 
   return (
@@ -230,6 +242,13 @@ const AddAdminModal = ({ open, onClose, onAdd }) => {
           Add Admin
         </Button>
       </DialogActions>
+      <ToastManager toasts={toasts} handleClose={(id) => {
+        setToasts(current => 
+          current.map(toast => 
+            toast.id === id ? { ...toast, open: false } : toast
+          )
+        );
+      }} />
     </Dialog>
   );
 };

@@ -14,7 +14,6 @@ import { useNavigate } from "react-router-dom";
 function HomePage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
   const loggedInUser = sessionStorage.getItem("username") || "User";
@@ -41,7 +40,10 @@ function HomePage() {
     const fetchProducts = async () => {
       try {
         const response = await axios.get(`http://localhost:8080/api/product/getAllProducts/${loggedInUser}`);
-        setProducts(Array.isArray(response.data) ? response.data : []);
+        const approvedProducts = Array.isArray(response.data) 
+          ? response.data.filter(product => product.status && product.status.toLowerCase() === 'approved')
+          : [];
+        setProducts(approvedProducts);
       } catch (error) {
         console.error('Error fetching products:', error);
         setProducts([]);
@@ -49,7 +51,7 @@ function HomePage() {
     };
 
     fetchProducts();
-  }, []);
+  }, [loggedInUser]);
 
   const sortedProducts = Array.isArray(products) 
     ? [...products]
@@ -130,48 +132,81 @@ function HomePage() {
           />
         </Box>
 
-        {/* Scrollable Category Buttons */}
+        {/* Category Buttons */}
         <Box
           sx={{
-            display: "flex",
+            display: 'flex',
             gap: 2,
             mt: 2,
-            overflowX: "auto",
-            whiteSpace: "nowrap",
-            paddingBottom: 2,
-            scrollbarWidth: "none",
-            "&::-webkit-scrollbar": {
-              display: "none",
+            overflowX: 'auto',
+            width: '100%',
+            pb: 2,
+            mx: 'auto',
+            '&::-webkit-scrollbar': {
+              height: '8px',
+            },
+            '&::-webkit-scrollbar-track': {
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+              background: 'rgba(255, 215, 0, 0.5)',
+              borderRadius: '4px',
+              '&:hover': {
+                background: 'rgba(255, 215, 0, 0.7)',
+              },
             },
             zIndex: 2,
           }}
+          ref={(el) => {
+            if (el) {
+              el.addEventListener('wheel', (e) => {
+                if (e.deltaY !== 0) {
+                  e.preventDefault();
+                  el.scrollLeft += e.deltaY;
+                }
+              }, { passive: false });
+            }
+          }}
         >
-          {[
-            "Food",
-            "Clothes",
-            "Accessories",
-            "Stationery",
-            "Merchandise",
-            "Supplies",
-            "Electronics",
-            "Beauty",
-            "Books",
-            "Other",
-          ].map((category) => (
-            <Button
-              variant="outlined"
-              key={category}
-              onClick={() => handleCategoryClick(category)}
-              sx={{
-                fontWeight: "bold",
-                border: "2px solid #ffd700",
-                color: "#ffd700",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {category}
-            </Button>
-          ))}
+          <Box
+            sx={{
+              display: 'flex',
+              gap: 2,
+              minWidth: 'min-content',
+            }}
+          >
+            {[
+              "Food",
+              "Clothes",
+              "Accessories",
+              "Stationery",
+              "Merchandise",
+              "Supplies",
+              "Electronics",
+              "Beauty",
+              "Books",
+            ].map((category) => (
+              <Button
+                key={category}
+                variant="outlined"
+                onClick={() => handleCategoryClick(category)}
+                sx={{
+                  whiteSpace: 'nowrap',
+                  fontWeight: "bold",
+                  border: "2px solid #ffd700",
+                  color: "#ffd700",
+                  '&:hover': {
+                    border: "2px solid #fff",
+                    color: "#fff",
+                    bgcolor: 'rgba(255, 215, 0, 0.1)',
+                  },
+                }}
+              >
+                {category}
+              </Button>
+            ))}
+          </Box>
         </Box>
       </Box>
 
@@ -183,39 +218,35 @@ function HomePage() {
         <Box
           sx={{
             display: 'flex',
-            gap: 2,
             overflowX: 'auto',
-            ml: 2,
-            pb: 2,
+            gap: 2,
+            p: 2,
             '&::-webkit-scrollbar': {
-                height: '8px',
+              height: '8px',
             },
             '&::-webkit-scrollbar-track': {
-                background: '#f1f1f1',
-                borderRadius: '4px',
+              background: 'rgba(255, 255, 255, 0.1)',
+              borderRadius: '4px',
             },
             '&::-webkit-scrollbar-thumb': {
-                background: '#89343b',
-                borderRadius: '4px',
-                '&:hover': {
-                    background: '#6d2931',
-                },
+              background: 'rgba(139, 0, 0, 0.5)',
+              borderRadius: '4px',
+              '&:hover': {
+                background: 'rgba(139, 0, 0, 0.7)',
+              },
             },
-            scrollbarWidth: 'thin',
-            scrollbarColor: '#89343b #f1f1f1',
-            overflowY: 'hidden',
-            '&': {
-                scrollBehavior: 'smooth',
-            },
-            '&:hover': {
-                cursor: 'grab',
-            }
+            msOverflowStyle: 'none',
+            scrollbarWidth: 'none',
           }}
-          onWheel={(e) => {
-            const container = e.currentTarget;
-            if (e.deltaY !== 0) {
-                e.preventDefault();
-                container.scrollLeft += e.deltaY;
+          ref={(el) => {
+            if (el) {
+              // Add non-passive wheel event listener
+              el.addEventListener('wheel', (e) => {
+                if (e.deltaY !== 0) {
+                  e.preventDefault();
+                  el.scrollLeft += e.deltaY;
+                }
+              }, { passive: false });
             }
           }}
         >

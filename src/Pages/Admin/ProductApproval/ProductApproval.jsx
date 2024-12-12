@@ -7,6 +7,7 @@ import {
 } from '@mui/material';
 import { Search as SearchIcon, CheckCircle, Cancel, AccessTime } from '@mui/icons-material';
 import axios from 'axios';
+import ToastManager from '../../../components/ToastManager';
 
 const columns = [
   { id: 'user', label: 'Username', minWidth: 170 },
@@ -44,7 +45,7 @@ const ProductApproval = () => {
   const [statusFilter, setStatusFilter] = useState('');
   const [openModal, setOpenModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(null);
-  const [notification, setNotification] = useState({ open: false, message: '', type: 'success' });
+  const [toasts, setToasts] = useState([]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -106,7 +107,7 @@ const ProductApproval = () => {
   const handleApprove = async (productCode) => {
     try {
       const response = await axios.post('http://localhost:8080/api/product/approve', { productCode });
-      setNotification({ open: true, message: 'Product approved successfully!', type: 'success' });
+      showToast('Product approved successfully!', 'success');
 
       setProducts((prevProducts) => {
         const updatedProducts = prevProducts.map(product =>
@@ -118,14 +119,14 @@ const ProductApproval = () => {
         return updatedProducts;
       });
     } catch (error) {
-      setNotification({ open: true, message: 'Error approving product', type: 'error' });
+      showToast('Error approving product', 'error');
     }
   };
 
   const handleReject = async (productCode) => {
     try {
       const response = await axios.post('http://localhost:8080/api/product/reject', { productCode });
-      setNotification({ open: true, message: 'Product rejected successfully!', type: 'success' });
+      showToast('Product rejected successfully!', 'success');
 
       setProducts((prevProducts) => {
         const updatedProducts = prevProducts.map(product =>
@@ -137,7 +138,7 @@ const ProductApproval = () => {
         return updatedProducts;
       });
     } catch (error) {
-      setNotification({ open: true, message: 'Error rejecting product', type: 'error' });
+      showToast('Error rejecting product', 'error');
     }
   };
 
@@ -261,6 +262,16 @@ const ProductApproval = () => {
       return 0;
     });
     return sortedData;
+  };
+
+  const showToast = (message, severity = 'success') => {
+    const newToast = {
+      id: Date.now(),
+      message,
+      severity,
+      open: true
+    };
+    setToasts(current => [newToast, ...current].slice(0, 2));
   };
 
   return (
@@ -704,19 +715,13 @@ const ProductApproval = () => {
       </Dialog>
 
       {/* Updated Toast Message */}
-      <Snackbar
-        open={notification.open}
-        autoHideDuration={6000}
-        onClose={() => setNotification({ ...notification, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert
-          severity={notification.type}
-          sx={{ width: '100%' }}
-        >
-          {notification.message}
-        </Alert>
-      </Snackbar>
+      <ToastManager toasts={toasts} handleClose={(id) => {
+        setToasts(current => 
+          current.map(toast => 
+            toast.id === id ? { ...toast, open: false } : toast
+          )
+        );
+      }} />
     </Box>
   );
 };

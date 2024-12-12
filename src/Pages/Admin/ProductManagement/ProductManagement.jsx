@@ -17,6 +17,7 @@ import {
 import * as XLSX from 'xlsx';
 import UpdateProductModal from './UpdateProductModal';
 import ViewProductAdmin from './ViewProductAdmin';
+import ToastManager from '../../../components/ToastManager';
 
 const ProductSellers = () => {
   const [products, setProducts] = useState([]);
@@ -37,11 +38,7 @@ const ProductSellers = () => {
     stockRange: { min: '', max: '' },
     priceRange: { min: '', max: '' }
   });
-  const [toast, setToast] = useState({
-    open: false,
-    message: '',
-    severity: 'success'
-  });
+  const [toasts, setToasts] = useState([]);
   const [viewModalOpen, setViewModalOpen] = useState(false);
 
   useEffect(() => {
@@ -209,18 +206,10 @@ const ProductSellers = () => {
       setFilteredProducts(remainingProducts);
       setSelectedProducts([]);
       
-      setToast({
-        open: true,
-        message: `${selectedProducts.length} products have been deleted`,
-        severity: 'success'
-      });
+      showToast(`${selectedProducts.length} products have been deleted`, 'success');
     } catch (error) {
       console.error('Failed to delete products:', error);
-      setToast({
-        open: true,
-        message: error.response?.data?.message || 'Failed to delete products',
-        severity: 'error'
-      });
+      showToast(error.response?.data?.message || 'Failed to delete products', 'error');
     }
   };
 
@@ -236,18 +225,10 @@ const ProductSellers = () => {
           const updatedProducts = products.filter(p => p.product.code !== product.product.code);
           setProducts(updatedProducts);
           setFilteredProducts(updatedProducts);
-          setToast({
-            open: true,
-            message: `Product ${product.product.name} has been deleted`,
-            severity: 'success'
-          });
+          showToast(`Product ${product.product.name} has been deleted`, 'success');
         } catch (error) {
           console.error('Failed to delete product:', error);
-          setToast({
-            open: true,
-            message: error.response?.data?.message || 'Failed to delete product',
-            severity: 'error'
-          });
+          showToast(error.response?.data?.message || 'Failed to delete product', 'error');
         }
         break;
       default:
@@ -279,22 +260,14 @@ const ProductSellers = () => {
           setProducts(newProducts);
           setFilteredProducts(newProducts);
           
-          setToast({
-            open: true,
-            message: 'Product added successfully',
-            severity: 'success'
-          });
+          showToast('Product added successfully', 'success');
           
           setAddModalOpen(false);
         }
       }
     } catch (error) {
       console.error('Error adding product:', error);
-      setToast({
-        open: true,
-        message: error.response?.data?.message || 'Failed to add product',
-        severity: 'error'
-      });
+      showToast(error.response?.data?.message || 'Failed to add product', 'error');
     }
   };
 
@@ -306,18 +279,10 @@ const ProductSellers = () => {
       setUpdateModalOpen(false);
       setSelectedProduct(null);
       
-      setToast({
-        open: true,
-        message: 'Product updated successfully',
-        severity: 'success'
-      });
+      showToast('Product updated successfully', 'success');
     } catch (error) {
       console.error('Error updating product data:', error);
-      setToast({
-        open: true,
-        message: error.response?.data?.message || 'Error updating product data. Please try again.',
-        severity: 'error'
-      });
+      showToast(error.response?.data?.message || 'Error updating product data. Please try again.', 'error');
     }
   };
 
@@ -341,18 +306,10 @@ const ProductSellers = () => {
       setProducts(updatedProducts);
       setFilteredProducts(updatedProducts);
       setSelectedProducts([]);
-      setToast({
-        open: true,
-        message: `${productCodes.length > 1 ? 'Products' : 'Product'} deleted successfully`,
-        severity: 'success'
-      });
+      showToast(`${productCodes.length > 1 ? 'Products' : 'Product'} deleted successfully`, 'success');
     } catch (error) {
       console.error('Failed to delete products:', error);
-      setToast({
-        open: true,
-        message: 'Failed to delete products',
-        severity: 'error'
-      });
+      showToast('Failed to delete products', 'error');
     }
   };
 
@@ -493,6 +450,25 @@ const ProductSellers = () => {
     page * rowsPerPage,
     page * rowsPerPage + rowsPerPage
   );
+
+  const showToast = (message, severity = 'success') => {
+    const newToast = {
+      id: Date.now(),
+      message,
+      severity,
+      open: true
+    };
+    
+    setToasts(current => [newToast, ...current].slice(0, 2));
+  };
+
+  const handleClose = (id) => {
+    setToasts(current => 
+      current.map(toast => 
+        toast.id === id ? { ...toast, open: false } : toast
+      )
+    );
+  };
 
   if (!products.length) {
     return <div style={styles.loading}>Loading...</div>;
@@ -780,16 +756,7 @@ const ProductSellers = () => {
         product={selectedProduct}
       />
 
-      <Snackbar
-        open={toast.open}
-        autoHideDuration={3000}
-        onClose={() => setToast({ ...toast, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert severity={toast.severity}>
-          {toast.message}
-        </Alert>
-      </Snackbar>
+      <ToastManager toasts={toasts} handleClose={handleClose} />
     </Box>
   );
 };

@@ -18,7 +18,6 @@ import {
   FormControl,
   InputLabel,
   Select,
-  Chip,
   Snackbar,
   Alert,
   Checkbox,
@@ -36,9 +35,6 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Add as AddIcon,
-  CheckCircle,
-  Cancel,
-  AccessTime,
 } from '@mui/icons-material';
 import * as XLSX from 'xlsx';
 import AddUserModal from './AddUserModal';
@@ -265,7 +261,8 @@ const UserManagement = () => {
   // handles bulk selection
   const handleSelectAll = (event) => {
     if (event.target.checked) {
-      setSelectedUsers(filteredUsers.map(user => user.id));
+      const newSelected = filteredUsers.map(user => user.username);
+      setSelectedUsers(newSelected);
     } else {
       setSelectedUsers([]);
     }
@@ -277,7 +274,7 @@ const UserManagement = () => {
       // Delete each selected user
       await Promise.all(
         selectedUsers.map(async (userId) => {
-          const user = users.find(u => u.id === userId);
+          const user = users.find(u => u.username === userId);
           if (user) {
             const role = user.role === 'Admin' ? 'admin' : 'seller';
             await axios.delete(`http://localhost:8080/api/admin/deleteUser/${role}/${user.username}`);
@@ -350,7 +347,7 @@ const UserManagement = () => {
   // handles bulk block
   const handleBulkBlock = () => {
     const updatedUsers = users.map(user => 
-      selectedUsers.includes(user.id) 
+      selectedUsers.includes(user.username) 
         ? { ...user, status: user.status === 'Blocked' ? 'Active' : 'Blocked' }
         : user
     );
@@ -652,7 +649,7 @@ const UserManagement = () => {
               <TableCell padding="checkbox">
                 <Checkbox
                   indeterminate={selectedUsers.length > 0 && selectedUsers.length < filteredUsers.length}
-                  checked={selectedUsers.length === filteredUsers.length && filteredUsers.length > 0}
+                  checked={filteredUsers.length > 0 && selectedUsers.length === filteredUsers.length}
                   onChange={handleSelectAll}
                 />
               </TableCell>
@@ -701,16 +698,15 @@ const UserManagement = () => {
             {filteredUsers
               .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
               .map((user) => (
-                <TableRow key={user.id}>
+                <TableRow key={user.username}>
                   <TableCell padding="checkbox">
                     <Checkbox
-                      checked={selectedUsers.includes(user.id)}
-                      onChange={(e) => {
-                        setSelectedUsers(prev => 
-                          e.target.checked 
-                            ? [...prev, user.id]
-                            : prev.filter(id => id !== user.id)
-                        );
+                      checked={selectedUsers.includes(user.username)}
+                      onChange={(event) => {
+                        const newSelected = event.target.checked
+                          ? [...selectedUsers, user.username]
+                          : selectedUsers.filter(username => username !== user.username);
+                        setSelectedUsers(newSelected);
                       }}
                     />
                   </TableCell>
@@ -718,13 +714,14 @@ const UserManagement = () => {
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       <Avatar
-                        src={user.profilePhoto ? `http://localhost:8080/profile-images/${user.profilePhoto}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`}
+                        src={user.profilePhoto}
+                        //src={user.profilePhoto ? `http://localhost:8080/api/images/${user.profilePhoto}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`}
                         alt={user.username}
                         sx={{ width: 40, height: 40 }}
                       />
                       {user.username}
                     </Box>
-                  </TableCell>
+                  </TableCell>  
                   <TableCell>{`${user.firstName} ${user.lastName}`}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell>{user.contactNo || 'N/A'}</TableCell>
@@ -804,19 +801,10 @@ const UserManagement = () => {
         autoHideDuration={3000}
         onClose={() => setToast({ ...toast, open: false })}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        sx={{ 
-          position: 'fixed',
-          bottom: 16,
-          right: 16
-        }}
+        TransitionProps={{ enter: true }}
+        sx={{ maxWidth: '100%' }}
       >
-        <Alert 
-          severity={toast.severity} 
-          sx={{ 
-            width: '100%',
-            boxShadow: 3
-          }}
-        >
+        <Alert severity={toast.severity} sx={{ width: '100%' }}>
           {toast.message}
         </Alert>
       </Snackbar>

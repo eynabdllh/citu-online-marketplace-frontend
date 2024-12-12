@@ -15,6 +15,7 @@ import {
   Alert,
   Snackbar
 } from '@mui/material';
+import ToastManager from '../../../components/ToastManager';
 
 const UpdateProductModal = ({ open, onClose, product }) => {
   const [editData, setEditData] = useState({
@@ -26,7 +27,7 @@ const UpdateProductModal = ({ open, onClose, product }) => {
     status: ''
   });
   const [errors, setErrors] = useState({});
-  const [notification, setNotification] = useState({ open: false, message: '', type: 'success' });
+  const [toasts, setToasts] = useState([]);
 
   useEffect(() => {
     if (product) {
@@ -70,21 +71,23 @@ const UpdateProductModal = ({ open, onClose, product }) => {
         );
 
         if (response.status === 200) {
-          setNotification({
-            open: true,
-            message: 'Product updated successfully',
-            type: 'success'
-          });
+          showToast('Product updated successfully', 'success');
           onClose();
         }
       } catch (error) {
-        setNotification({
-          open: true,
-          message: error.response?.data?.message || 'Error updating product',
-          type: 'error'
-        });
+        showToast(error.response?.data?.message || 'Error updating product', 'error');
       }
     }
+  };
+
+  const showToast = (message, severity = 'success') => {
+    const newToast = {
+      id: Date.now(),
+      message,
+      severity,
+      open: true
+    };
+    setToasts(current => [newToast, ...current].slice(0, 2));
   };
 
   return (
@@ -211,20 +214,13 @@ const UpdateProductModal = ({ open, onClose, product }) => {
         </DialogActions>
       </Dialog>
 
-      <Snackbar
-        open={notification.open}
-        autoHideDuration={6000}
-        onClose={() => setNotification({ ...notification, open: false })}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-      >
-        <Alert 
-          onClose={() => setNotification({ ...notification, open: false })}
-          severity={notification.type}
-          sx={{ width: '100%' }}
-        >
-          {notification.message}
-        </Alert>
-      </Snackbar>
+      <ToastManager toasts={toasts} handleClose={(id) => {
+        setToasts(current => 
+          current.map(toast => 
+            toast.id === id ? { ...toast, open: false } : toast
+          )
+        );
+      }} />
     </>
   );
 };

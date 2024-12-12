@@ -5,6 +5,7 @@ import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
+import ToastManager from './ToastManager';
 
 const AdminHeader = () => {
   const navigate = useNavigate();
@@ -37,35 +38,35 @@ const AdminHeader = () => {
       read: false 
     },
     { 
-      id: 1, 
+      id: 4, 
       title: 'Product Approval Request',
       content: 'New product "iPhone 15 Pro" needs your approval',
       time: '1 hour ago', 
       read: false 
     },
     { 
-      id: 2, 
+      id: 5, 
       title: 'User Report',
       content: 'A user reported an issue with order #12345',
       time: '2 hours ago', 
       read: false 
     },
     { 
-      id: 3, 
+      id: 6, 
       title: 'System Update',
       content: 'System maintenance and updates have been completed successfully',
       time: '3 hours ago', 
       read: false 
     },
     { 
-      id: 1, 
+      id: 7, 
       title: 'Product Approval Request',
       content: 'New product "iPhone 15 Pro" needs your approval',
       time: '3 hours ago', 
       read: true 
     },
   ]);
-  const [toast, setToast] = useState({ open: false, message: '', severity: 'success' });
+  const [toasts, setToasts] = useState([]);
 
   const handleClick = (event) => {
     setAnchor(event.currentTarget);
@@ -110,11 +111,13 @@ const AdminHeader = () => {
 
   const handleMarkAllAsRead = () => {
     setNotifications(prev => prev.map(n => ({ ...n, read: true })));
-    setToast({
-      open: true,
+    const newToast = {
+      id: Date.now(),
       message: 'All notifications marked as read',
-      severity: 'success'
-    });
+      severity: 'success',
+      open: true
+    };
+    setToasts(current => [newToast, ...current].slice(0, 2));
   };
 
   const baseButtonStyle = {
@@ -431,19 +434,13 @@ const AdminHeader = () => {
         ))}
       </Box>
 
-      <Snackbar 
-        open={toast.open} 
-        autoHideDuration={3000} 
-        onClose={() => setToast({ ...toast, open: false })}
-      >
-        <Alert 
-          onClose={() => setToast({ ...toast, open: false })} 
-          severity={toast.severity}
-          sx={{ width: '100%' }}
-        >
-          {toast.message}
-        </Alert>
-      </Snackbar>
+      <ToastManager toasts={toasts} handleClose={(id) => {
+        setToasts(current => 
+          current.map(toast => 
+            toast.id === id ? { ...toast, open: false } : toast
+          )
+        );
+      }} />
     </Box>
   );
 };

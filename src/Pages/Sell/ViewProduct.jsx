@@ -13,36 +13,39 @@ const ViewProduct = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
-  const navigate = useNavigate(); 
   const [sellerUsername, setSellerUsername] = useState('');
-  
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const username = sessionStorage.getItem('username');
     if (username) {
       setSellerUsername(username);
     } else {
-      alert('Please log in to add a product');
+      alert('Please log in to view product details');
       navigate('/login');
     }
   }, [navigate]);
 
   useEffect(() => {
-
     const fetchProductDetails = async () => {
       try {
         const response = await axios.get(`http://localhost:8080/api/product/getProductByCode/${code}`);
         setProduct(response.data);
-      } catch (error) {
-        console.error('Error fetching product details:', error);
         setLoading(false);
-      } finally {
+
+        // Fetch seller username
+        const sellerResponse = await axios.get(`http://localhost:8080/api/product/getSellerByProductCode/${code}`);
+        if (sellerResponse.status === 200) {
+          setSellerUsername(sellerResponse.data.sellerUsername);
+        }
+      } catch (error) {
+        console.error('Error fetching product or seller details:', error);
         setLoading(false);
       }
     };
 
     fetchProductDetails();
-  }, [code]); 
+  }, [code]);
 
   useEffect(() => {
     const likedProducts = JSON.parse(localStorage.getItem('likedProducts')) || [];
@@ -50,15 +53,6 @@ const ViewProduct = () => {
       setLiked(true);
     }
   }, [product?.code]);
-  
-
-  if (loading) {
-    return <Typography variant="h6">Loading product details...</Typography>;
-  }
-
-  if (!product) {
-    return <Typography variant="h6">Product not found.</Typography>;
-  }
 
   const handleChatRedirect = () => {
     navigate(`/message`); //navigate(`/message/${sellerUsername}`);
@@ -70,42 +64,76 @@ const ViewProduct = () => {
     if (liked) {
       const updatedLikes = likedProducts.filter((id) => id !== product.code);
       localStorage.setItem('likedProducts', JSON.stringify(updatedLikes));
-      console.log('Updated Likes (removed):', updatedLikes); // Debug log
     } else {
       likedProducts.push(product.code);
       localStorage.setItem('likedProducts', JSON.stringify(likedProducts));
-      console.log('Updated Likes (added):', likedProducts); // Debug log
     }
 
     window.dispatchEvent(new Event('likesUpdated'));
     setLiked(!liked);
-};
+  };
 
-  
+  if (loading) {
+    return <Typography variant="h6">Loading product details...</Typography>;
+  }
+
+  if (!product) {
+    return <Typography variant="h6">Product not found.</Typography>;
+  }
+
   return (
     <Box sx={{ padding: '20px', justifyContent: 'center', display: 'flex', flexDirection: 'column' }}>
-      <Card sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, borderRadius: '8px', boxShadow: 3, width: '90%', height:'75vh', margin: '0 auto' }}>
+      <Card sx={{ 
+        display: 'flex', 
+        flexDirection: { xs: 'column', md: 'row' }, 
+        borderRadius: '8px', 
+        boxShadow: 3, 
+        width: { xs: '90%', md: '80%' },
+        minHeight: { xs: 'auto', md: '75vh' },
+        margin: '0 auto',
+        overflow: 'hidden'
+      }}>
         {/* Product Image */}
-        <Grid item xs={12} md={6}>
+        <Grid item xs={12} md={6} sx={{ 
+          position: 'relative',
+          minHeight: { xs: '300px', sm: '400px', md: '600px' },
+          maxHeight: { xs: '400px', md: '600px' },
+          width: '60%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: '#f5f5f5'
+        }}>
           <CardMedia
             component="img"
             alt={product.name}
             image={`http://localhost:8080/${product.imagePath}`} 
             sx={{
-              width: '700px',
-              height: '75vh', 
+              width: '100%',
+              height: '100%',
               objectFit: 'cover',
-              borderRadius: '8px 0px 0px 8px',
-              boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
             }}
           />
         </Grid>
 
         {/* Product Details */}
         <Grid item xs={12} md={6}>
-          <CardContent sx={{ padding: '16px', marginLeft: '70px', marginTop: '30px' }}>
-            <Typography variant="h3" sx={{ fontWeight: 'bold' }}>{product.name}</Typography>
-            <Typography variant="h5" color="primary" sx={{ fontWeight: 'bold', marginLeft: '7px', }}>
+          <CardContent sx={{ 
+            padding: { xs: '24px', md: '32px' },
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
+            maxWidth: '600px',
+            margin: '0 auto'
+          }}>
+            <Typography variant="h3" sx={{ 
+              fontWeight: 'bold',
+              fontSize: { xs: '2rem', sm: '2.5rem', md: '3rem' }
+            }}>
+              {product.name}
+            </Typography>
+
+            <Typography variant="h5" color="primary" sx={{ fontWeight: 'bold', marginLeft: '7px' }}>
               PHP {product.buyPrice.toFixed(2)}
             </Typography>
 
@@ -122,9 +150,9 @@ const ViewProduct = () => {
                     fontWeight: 'bold',
                     cursor: 'pointer',
                   }}
-                  onClick={() => navigate(`/profile`)} //onClick={() => navigate(`/profile/${sellerUsername}`)}
+                  onClick={() => navigate(`/profile/${sellerUsername}`)}
                 >
-                 {sellerUsername}
+                  {sellerUsername}
                 </Typography>
 
                 {/* Seller Rating and Sold Count */}
@@ -133,7 +161,7 @@ const ViewProduct = () => {
                     <StarIcon
                       key={index}
                       sx={{
-                        color: index < product.sellerRating ? '#FFD700' : '#FFD700', //color: index < product.sellerRating ? '#FFD700' : '#ccc'
+                        color: index < product.sellerRating ? '#FFD700' : '#FFD700', 
                         fontSize: '16px',
                       }}
                     />
@@ -165,7 +193,14 @@ const ViewProduct = () => {
             </Box>
 
             {/* Buttons */}
-            <Box sx={{ display: 'flex', gap: '20px', marginTop: '20%', marginBottom: '36px', flexWrap: 'wrap' }}>
+            <Box sx={{ 
+              display: 'flex', 
+              gap: '20px', 
+              mt: 'auto', 
+              mb: 'auto',
+              flexWrap: 'wrap',
+              justifyContent: { xs: 'center', md: 'flex-start' }
+            }}>
               <Button variant="contained" sx={{ bgcolor: '#89343b' }} onClick={handleChatRedirect}>
                 <MessageIcon sx={{ marginRight: '8px' }} /> Chat with Seller
               </Button>
