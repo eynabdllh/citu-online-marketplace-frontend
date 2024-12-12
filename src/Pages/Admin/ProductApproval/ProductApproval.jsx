@@ -75,12 +75,12 @@ const ProductApproval = () => {
   }, []);
 
   const handleProductClick = (product) => {
-    setSelectedProduct(product); // Set selected product data
-    setOpenModal(true); // Open modal
+    setSelectedProduct(product); 
+    setOpenModal(true); 
   };
 
   const handleCloseModal = () => {
-    setOpenModal(false); // Close modal
+    setOpenModal(false); 
   };
 
   const handleApproveInModal = async () => {
@@ -362,7 +362,7 @@ const ProductApproval = () => {
                     <Typography variant="body2" sx={{ color: '#333' }}>Rejected</Typography>
                   </Box>
                 </MenuItem>
-                <MenuItem value="Available">
+                <MenuItem value="Pending">
                   <Box sx={{ display: 'flex', alignItems: 'center' }}>
                     <AccessTime sx={{ mr: 1, color: '#ff9800' }} />
                     <Typography variant="body2" sx={{ color: '#333' }}>Pending</Typography>

@@ -31,7 +31,11 @@ const SellerProfile = () => {
         const fetchProducts = async () => {
             try {
                 const response = await axios.get(`http://localhost:8080/api/product/getAllProducts/${loggedInUser}`);
-                setProducts(response.data);
+                if (response.status == 200) {
+                    const approvedProducts = response.data.filter(product => product.status && product.status.toLowerCase() === 'approved');
+                    setProducts(approvedProducts);
+                }
+                
             } catch (error) {
                 console.error('Error fetching products:', error);
             } finally {
