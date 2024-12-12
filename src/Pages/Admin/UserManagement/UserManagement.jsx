@@ -714,8 +714,8 @@ const UserManagement = () => {
                   <TableCell>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       <Avatar
-                        src={user.profilePhoto}
-                        //src={user.profilePhoto ? `http://localhost:8080/api/images/${user.profilePhoto}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`}
+                        //src={user.profilePhoto ? `http://localhost:8080/api/images/profile/${user.profilePhoto}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`}
+                        src={user.profilePhoto ? `http://localhost:8080/profile-images/${user.profilePhoto}` : `https://api.dicebear.com/7.x/avataaars/svg?seed=${user.username}`}
                         alt={user.username}
                         sx={{ width: 40, height: 40 }}
                       />
