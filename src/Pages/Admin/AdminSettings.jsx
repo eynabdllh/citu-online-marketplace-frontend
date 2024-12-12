@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Avatar, Button, TextField, Paper, Snackbar, Alert } from '@mui/material';
+import { Box, Typography, Avatar, Button, TextField, Paper, Snackbar, Alert, Dialog, DialogActions, DialogContent, DialogTitle } from '@mui/material';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import axios from 'axios';
 import ToastManager from '../../components/ToastManager';
+import toast from 'react-hot-toast';
 
 const AdminSettings = () => {
   const [username, setUsername] = useState(sessionStorage.getItem('userName') || '');
@@ -18,10 +19,23 @@ const AdminSettings = () => {
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [toasts, setToasts] = useState([]);
+  const [openModal, setOpenModal] = useState(false);
 
   const toggleEditMode = () => {
     setEditMode((prev) => !prev);
   };
+
+  const handleOpenModal = () => {
+    setOpenModal(true);
+  };
+  
+  const handleCloseModal = () => {
+    setOpenModal(false);
+  };
+  
+  const handleChangePassword = () => {
+    handleOpenModal();
+  };  
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -55,6 +69,40 @@ const AdminSettings = () => {
       showToast('Failed to upload profile photo.', 'error');
     }
   };
+
+  const handleSavePassword = async () => {
+    if (!newPassword) {
+        toast.error('New password cannot be empty');
+        return;
+    }
+    if (newPassword !== confirmPassword) {
+        toast.error('Passwords do not match');
+        return;
+    }
+    if (newPassword.length < 8) {
+        toast.error('Password must be at least 8 characters');
+        return;
+    }
+
+    try {
+        const username = sessionStorage.getItem('username'); 
+        const response = await axios.put(`http://localhost:8080/api/admin/changePassword/${username}`, {
+            currentPassword,
+            newPassword,
+        });
+
+        if (response.status === 200) {
+            toast.success('Password changed successfully');
+            setOpenChangePassword(false);
+            setOpenModal(false);
+            setCurrentPassword('');
+            setNewPassword('');
+            setConfirmPassword('');
+        }
+    } catch (error) {
+        toast.error('Failed to change password');
+    }
+};
 
   const handleSave = async () => {
     showToast('Are you sure you want to update your account?', 'info');
@@ -211,6 +259,18 @@ const AdminSettings = () => {
           )}
         </Box>
 
+        <Box sx={{ mt: 2 }}>
+          <Typography variant="body2" color="grey">Password</Typography>
+          <Typography variant="body1">********  </Typography>
+          <Button
+            variant="outlined"
+            onClick={handleChangePassword}
+            sx={{ mt: 1, color: 'black', borderColor: 'rgba(0, 0, 0, 0.23)', borderRadius: '20px', textTransform: 'none', marginLeft: '0px' }}
+          >
+            Change Password
+          </Button>
+        </Box>
+
         <Box sx={{ display: 'flex', alignItems: 'center', marginTop: 3, marginBottom: 1 }}>
           <LockOutlinedIcon sx={{ marginRight: 1 }} />
           <Typography variant="h6">Private Information</Typography>
@@ -241,6 +301,49 @@ const AdminSettings = () => {
             <Typography variant="body1" color="black">{contactNo}</Typography>
           )}
         </Box>
+
+        <Dialog open={openModal} onClose={handleCloseModal}>
+          <DialogTitle>Change Password</DialogTitle>
+          <DialogContent>
+            {/* Add your form fields for the current and new passwords here */}
+            <TextField
+              label="Current Password"
+              type="password"
+              fullWidth
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              sx={{ mt: 2 }}
+            />
+            <TextField
+              label="New Password"
+              type="password"
+              fullWidth
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              sx={{ mt: 2 }}
+            />
+            <TextField
+              label="Confirm Password"
+              type="password"
+              fullWidth
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              sx={{ mt: 2 }}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseModal} color="primary">
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSavePassword} // Define this to save the new password
+              color="primary"
+            >
+              Save
+            </Button>
+          </DialogActions>
+        </Dialog>
+
 
         <Button
           variant="outlined"
