@@ -10,12 +10,12 @@ import axios from 'axios';
 import ToastManager from '../../../components/ToastManager';
 
 const columns = [
-  { id: 'user', label: 'Username', minWidth: 170 },
-  { id: 'image', label: 'Image', minWidth: 120 },
-  { id: 'productName', label: 'Product Name', minWidth: 170 },
-  { id: 'productCode', label: 'Product Code', minWidth: 100 },
-  { id: 'category', label: 'Category', minWidth: 170 },
-  { id: 'status', label: 'Approval Status', minWidth: 170 },
+  { id: 'user', label: 'Username', minWidth: 170, sortable: true },
+  { id: 'image', label: 'Image', minWidth: 120, sortable: false },
+  { id: 'productName', label: 'Product Name', minWidth: 170, sortable: true },
+  { id: 'productCode', label: 'Product Code', minWidth: 100, sortable: true },
+  { id: 'category', label: 'Category', minWidth: 170, sortable: true },
+  { id: 'status', label: 'Approval Status', minWidth: 170, sortable: false },
 ];
 
 const createData = (productName, user, productCode, category, status, image) => {
@@ -425,21 +425,19 @@ const ProductApproval = () => {
                     <TableCell
                       key={column.id}
                       align="left"
-                      sx={{
-                        backgroundColor: '#f4f4f4',
-                        fontWeight: 'bold',
-                        color: '#555',
-                        borderBottom: '2px solid #ddd',
-                        minWidth: column.minWidth,
-                      }}
+                      style={{ minWidth: column.minWidth }}
                     >
-                      <TableSortLabel
-                        active={orderBy === column.id}
-                        direction={orderBy === column.id ? order : 'asc'}
-                        onClick={(event) => handleRequestSort(event, column.id)}
-                      >
-                        {column.label}
-                      </TableSortLabel>
+                      {column.sortable ? (
+                        <TableSortLabel
+                          active={orderBy === column.id}
+                          direction={orderBy === column.id ? order : 'asc'}
+                          onClick={(event) => handleRequestSort(event, column.id)}
+                        >
+                          {column.label}
+                        </TableSortLabel>
+                      ) : (
+                        column.label
+                      )}
                     </TableCell>
                   ))}
                   <TableCell key="actions" align="left" sx={{ backgroundColor: '#f4f4f4', borderBottom: '2px solid #ddd' }}>
