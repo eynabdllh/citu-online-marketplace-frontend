@@ -182,7 +182,7 @@ const ViewforSeller = () => {
             <Box sx={{ display: 'flex', alignItems: 'center', marginTop: '8px' }}>
               <Avatar
                 sx={{ width: 50, height: 50, marginRight: '12px' }}
-                src={`http://localhost:8080/${product.sellerProfileImage}`}
+                src={`http://localhost:8080/profile-images/${product.sellerPhoto}`}
               />
               <Box>
                 <Typography
