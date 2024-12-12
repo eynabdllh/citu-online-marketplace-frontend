@@ -129,6 +129,8 @@ const App = () => {
             <Route path="/buy/product/:code" element={<ViewProduct section="Buy" />} />
             <Route path="/addnewproduct" element={<AddProductForm />} />
             <Route path="/product/:code" element={<ViewProduct />} />
+            {/*New Route Added*/}
+            <Route path="/profile/:username/product/:code" element={<ViewProduct />} />
             <Route path="sell/product/:code" element={<ViewforSeller />} /> 
             <Route path="/update/:code" element={<UpdateProductForm />} />
             <Route path="*" element={<NotFound />} />
