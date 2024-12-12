@@ -214,7 +214,7 @@ const Login = () => {
                                 },
                             }}
                         >
-                            Sign up for free
+                            Register
                         </Link>
                     </Typography>
                 </Paper>

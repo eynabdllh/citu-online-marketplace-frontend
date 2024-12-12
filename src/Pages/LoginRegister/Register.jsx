@@ -14,6 +14,7 @@ import {
 import { Person, Email, Lock, LocationOn, Phone, AccountCircle } from '@mui/icons-material';
 import logo from '../../assets/img/logocit-1.png';
 import cit from '../../assets/img/cit-1.jpg';
+import { toast } from 'react-hot-toast';
 
 const Register = () => {
     const [newSeller, setNewSeller] = useState({
@@ -88,7 +89,15 @@ const Register = () => {
                 contactNo: '',
                 email: '',
             });
-            navigate('/');
+            
+            toast.success('Registration successful!', {
+                duration: 2000
+            });
+            
+            // Delay navigation slightly to show toast
+            setTimeout(() => {
+                navigate('/');
+            }, 2000);
         } catch (error) {
             if (error.response && error.response.data.message) {
                 setErrorMessage(error.response.data.message);
