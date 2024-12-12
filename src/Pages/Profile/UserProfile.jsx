@@ -52,7 +52,7 @@ const UserProfile = () => {
                 if (response.status === 200) {
                     const { firstName, email, profilePhoto } = response.data;
 
-                    setUsername(firstName);
+                    setUsername(username);
                     setEmail(email);
 
                     if (profilePhoto) {
