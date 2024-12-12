@@ -55,7 +55,7 @@ const ViewProduct = () => {
   }, [product?.code]);
 
   const handleChatRedirect = () => {
-    navigate(`/message/${sellerUsername}`); // Redirects to chat with seller
+    navigate(`/message`); //navigate(`/message/${sellerUsername}`);
   };
 
   const handleLikeToggle = () => {
@@ -161,7 +161,7 @@ const ViewProduct = () => {
                     <StarIcon
                       key={index}
                       sx={{
-                        color: index < product.sellerRating ? '#FFD700' : '#ccc',
+                        color: index < product.sellerRating ? '#FFD700' : '#FFD700', 
                         fontSize: '16px',
                       }}
                     />
@@ -171,7 +171,7 @@ const ViewProduct = () => {
                     color="textSecondary"
                     sx={{ marginLeft: '8px', fontSize: '14px' }}
                   >
-                    {product.sellerRating} | {product.soldCount} Sold
+                    5.0 | 10K+ Sold {/*{product.sellerRating} | {product.soldCount} Sold*/}
                   </Typography>
                 </Box>
               </Box>
