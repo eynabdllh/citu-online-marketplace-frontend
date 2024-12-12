@@ -13,36 +13,39 @@ const ViewProduct = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [liked, setLiked] = useState(false);
-  const navigate = useNavigate(); 
   const [sellerUsername, setSellerUsername] = useState('');
-  
+  const navigate = useNavigate(); 
 
   useEffect(() => {
     const username = sessionStorage.getItem('username');
     if (username) {
       setSellerUsername(username);
     } else {
-      alert('Please log in to add a product');
+      alert('Please log in to view product details');
       navigate('/login');
     }
   }, [navigate]);
 
   useEffect(() => {
-
     const fetchProductDetails = async () => {
       try {
         const response = await axios.get(`http://localhost:8080/api/product/getProductByCode/${code}`);
         setProduct(response.data);
-      } catch (error) {
-        console.error('Error fetching product details:', error);
         setLoading(false);
-      } finally {
+
+        // Fetch seller username
+        const sellerResponse = await axios.get(`http://localhost:8080/api/product/getSellerByProductCode/${code}`);
+        if (sellerResponse.status === 200) {
+          setSellerUsername(sellerResponse.data.sellerUsername);
+        }
+      } catch (error) {
+        console.error('Error fetching product or seller details:', error);
         setLoading(false);
       }
     };
 
     fetchProductDetails();
-  }, [code]); 
+  }, [code]);
 
   useEffect(() => {
     const likedProducts = JSON.parse(localStorage.getItem('likedProducts')) || [];
@@ -50,7 +53,25 @@ const ViewProduct = () => {
       setLiked(true);
     }
   }, [product?.code]);
+
+  const handleChatRedirect = () => {
+    navigate(`/message/${sellerUsername}`); // Redirects to chat with seller
+  };
+
+  const handleLikeToggle = () => {
+    const likedProducts = JSON.parse(localStorage.getItem('likedProducts')) || [];
   
+    if (liked) {
+      const updatedLikes = likedProducts.filter((id) => id !== product.code);
+      localStorage.setItem('likedProducts', JSON.stringify(updatedLikes));
+    } else {
+      likedProducts.push(product.code);
+      localStorage.setItem('likedProducts', JSON.stringify(likedProducts));
+    }
+
+    window.dispatchEvent(new Event('likesUpdated'));
+    setLiked(!liked);
+  };
 
   if (loading) {
     return <Typography variant="h6">Loading product details...</Typography>;
@@ -60,28 +81,6 @@ const ViewProduct = () => {
     return <Typography variant="h6">Product not found.</Typography>;
   }
 
-  const handleChatRedirect = () => {
-    navigate(`/message`); //navigate(`/message/${sellerUsername}`);
-  };
-
-  const handleLikeToggle = () => {
-    const likedProducts = JSON.parse(localStorage.getItem('likedProducts')) || [];
-  
-    if (liked) {
-      const updatedLikes = likedProducts.filter((id) => id !== product.code);
-      localStorage.setItem('likedProducts', JSON.stringify(updatedLikes));
-      console.log('Updated Likes (removed):', updatedLikes); // Debug log
-    } else {
-      likedProducts.push(product.code);
-      localStorage.setItem('likedProducts', JSON.stringify(likedProducts));
-      console.log('Updated Likes (added):', likedProducts); // Debug log
-    }
-
-    window.dispatchEvent(new Event('likesUpdated'));
-    setLiked(!liked);
-};
-
-  
   return (
     <Box sx={{ padding: '20px', justifyContent: 'center', display: 'flex', flexDirection: 'column' }}>
       <Card sx={{ 
@@ -134,7 +133,7 @@ const ViewProduct = () => {
               {product.name}
             </Typography>
 
-            <Typography variant="h5" color="primary" sx={{ fontWeight: 'bold', marginLeft: '7px', }}>
+            <Typography variant="h5" color="primary" sx={{ fontWeight: 'bold', marginLeft: '7px' }}>
               PHP {product.buyPrice.toFixed(2)}
             </Typography>
 
@@ -151,9 +150,9 @@ const ViewProduct = () => {
                     fontWeight: 'bold',
                     cursor: 'pointer',
                   }}
-                  onClick={() => navigate(`/profile`)} //onClick={() => navigate(`/profile/${sellerUsername}`)}
+                  onClick={() => navigate(`/profile/${sellerUsername}`)}
                 >
-                 {sellerUsername}
+                  {sellerUsername}
                 </Typography>
 
                 {/* Seller Rating and Sold Count */}
@@ -162,7 +161,7 @@ const ViewProduct = () => {
                     <StarIcon
                       key={index}
                       sx={{
-                        color: index < product.sellerRating ? '#FFD700' : '#FFD700', //color: index < product.sellerRating ? '#FFD700' : '#ccc'
+                        color: index < product.sellerRating ? '#FFD700' : '#ccc',
                         fontSize: '16px',
                       }}
                     />
@@ -172,7 +171,7 @@ const ViewProduct = () => {
                     color="textSecondary"
                     sx={{ marginLeft: '8px', fontSize: '14px' }}
                   >
-                    5.0 | 10K+ Sold {/*{product.sellerRating} | {product.soldCount} Sold*/}
+                    {product.sellerRating} | {product.soldCount} Sold
                   </Typography>
                 </Box>
               </Box>
