@@ -100,6 +100,31 @@ const Register = () => {
         }
     };
 
+    const handleContactNoChange = (e) => {
+        const value = e.target.value;
+        
+        // Only allow numbers
+        if (!/^\d*$/.test(value)) {
+            setErrorMessage('Contact number must contain only numbers');
+            return;
+        }
+
+        // Must start with 09
+        if (value.length >= 2 && !value.startsWith('09')) {
+            setErrorMessage('Contact number must start with 09');
+            return;
+        }
+
+        // Must be exactly 11 digits
+        if (value.length > 11) {
+            setErrorMessage('Contact number must be exactly 11 digits');
+            return;
+        }
+
+        setErrorMessage('');
+        setNewSeller({ ...newSeller, contactNo: value });
+    };
+
     return (
         <Grid container sx={{ minHeight: '100vh' }}>
             {/* Left Side: Image */}
@@ -238,7 +263,9 @@ const Register = () => {
                             fullWidth
                             label="Contact No"
                             value={newSeller.contactNo}
-                            onChange={(e) => setNewSeller({ ...newSeller, contactNo: e.target.value })}
+                            onChange={handleContactNoChange}
+                            error={!!errorMessage && errorMessage.includes('Contact number')}
+                            helperText={errorMessage && errorMessage.includes('Contact number') ? errorMessage : ''}
                             sx={{ mb: 2 }}
                             InputProps={{
                                 startAdornment: (
