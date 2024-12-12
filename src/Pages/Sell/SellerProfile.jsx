@@ -1,22 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { Container, Grid, Typography, Avatar, Box, Button, Paper, Tabs, Tab, Card, CardContent, CardMedia, Rating } from '@mui/material';
 import { TabContext, TabList, TabPanel } from '@mui/lab';
-import { Link } from 'react-router-dom';
+import { Link, useParams } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import StarIcon from '@mui/icons-material/Star';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import axios from 'axios';
-import SellerReviews from './SellerReviews'; // Import the new component
-import { mockReviews } from './SellerReviews'; // Import mock reviews
+import { mockReviews } from '../Profile/SellerReviews';
 
-const UserProfile = () => {
+const SellerProfile = () => {
     const [tabValue, setTabValue] = useState('1');
-    const [username, setUsername] = useState(sessionStorage.getItem('username') || '');
-    const [email, setEmail] = useState(sessionStorage.getItem('email') || '');
-    const [address, setAddress] = useState(sessionStorage.getItem('address') || '');
     const [profilePhoto, setProfilePhoto] = useState('');
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const { username  } = useParams();
+    const [sellerData, setSellerData] = useState(null);
 
     const loggedInUser = sessionStorage.getItem('username');
     const navigate = useNavigate();
@@ -26,14 +24,18 @@ const UserProfile = () => {
     };
 
     const handleCardClick = (code) => {
-        navigate(`/sell/product/${code}`);
+        navigate(`product/${code}`);
     };
 
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const response = await axios.get(`http://localhost:8080/api/product/getProductsBySeller/${loggedInUser}`);
-                setProducts(response.data);
+                const response = await axios.get(`http://localhost:8080/api/product/getAllProducts/${loggedInUser}`);
+                if (response.status == 200) {
+                    const approvedProducts = response.data.filter(product => product.status && product.status.toLowerCase() === 'approved');
+                    setProducts(approvedProducts);
+                }
+                
             } catch (error) {
                 console.error('Error fetching products:', error);
             } finally {
@@ -45,27 +47,31 @@ const UserProfile = () => {
     }, []);
 
     useEffect(() => {
-        const fetchProfileData = async () => {
-            const username = sessionStorage.getItem('username');
-            try {
-                const response = await axios.get(`http://localhost:8080/api/seller/getSellerRecord/${username}`);
-                if (response.status === 200) {
-                    const { firstName, email, profilePhoto } = response.data;
+        const fetchSellerProfile = async () => {
+          try {
+            const response = await axios.get(`http://localhost:8080/api/seller/getSellerRecord/${username}`);
+            if (response.status === 200) {
+                const { firstName, email, profilePhoto } = response.data;
 
-                    setUsername(username);
-                    setEmail(email);
+                setSellerData(response.data);
 
-                    if (profilePhoto) {
-                        setProfilePhoto(`http://localhost:8080/profile-images/${profilePhoto}`);
-                    }
+                if (profilePhoto) {
+                    setProfilePhoto(`http://localhost:8080/profile-images/${profilePhoto}`);
                 }
-            } catch (error) {
-                console.error('Error fetching user data:', error);
             }
+          } catch (error) {
+            console.error('Error fetching seller profile data:', error);
+          }
         };
-
-        fetchProfileData();
-    }, []);
+    
+        if (username) {
+          fetchSellerProfile();
+        }
+      }, [username]); 
+      
+      if (!sellerData) {
+        return <div>Loading...</div>;
+      }
 
     const averageRating = products.length > 0 ? 
         mockReviews.reduce((sum, review) => sum + review.productQuality, 0) / mockReviews.length : 0;
@@ -94,16 +100,15 @@ const UserProfile = () => {
                         </Box>
                     </Grid>
                     <Grid item xs sx={{ textAlign: 'left', marginLeft: 3 }}>
-                        <Typography variant="h5">{username}</Typography>
+                        <Typography variant="h5">{sellerData.username}</Typography>
                         <Typography variant="body2" color="inherit">
-                            {email}
+                            {sellerData.email}
                         </Typography>
                         <Typography variant="body2" color="inherit" sx={{ textAlign: 'left', marginTop: 1 }}>
-                            {address} 
+                            {sellerData.address} 
                         </Typography>
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0, margin: 0, padding: 0 }}>
-                            {/* Average Rating */}
-                            <Box display="flex" alignItems="center" sx={{ margin: 0, padding: 0 }}>
+                        <Box display="flex" alignItems="center" sx={{ margin: 0, padding: 0 }}>
                                 <Typography variant="body2" sx={{ display: 'flex', margin: 0, padding: 0, gap: 1, mt: 1 }}>
                                     {averageRating.toFixed(1)}
                                     <Rating
@@ -182,23 +187,13 @@ const UserProfile = () => {
                                     },
                                 }}
                             />
-                            <Tab
-                                label="Reviews"
-                                value="2"
-                                sx={{
-                                    paddingBottom: 3,
-                                    '&.Mui-selected': {
-                                        color: '#89343b',
-                                    },
-                                }}
-                            />
                         </TabList>
                     </Box>
                     {/* Listings Tab */}
                     <TabPanel value="1">
                         <Paper elevation={1} sx={{ padding: 3, marginTop: 2 }}>
                             <Typography variant="h6" gutterBottom>
-                                My Products
+                                Products
                             </Typography>
                             {loading ? (
                                 <Typography variant="h6" sx={{ marginTop: '16px' }}>
@@ -244,11 +239,6 @@ const UserProfile = () => {
                             )}
                         </Paper>
                     </TabPanel>
-
-                    {/* Reviews Tab */}
-                    <TabPanel value="2">
-                        <SellerReviews />
-                    </TabPanel>
                 </TabContext>
             </Box>
             {/* Footer Section */}
@@ -261,4 +251,4 @@ const UserProfile = () => {
     );
 };
 
-export default UserProfile;
+export default SellerProfile;
